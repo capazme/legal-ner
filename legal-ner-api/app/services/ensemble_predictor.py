@@ -5,14 +5,16 @@ import torch
 import structlog
 from app.services.semantic_validator import SemanticValidator
 from app.services.entity_merger import EntityMerger
+from app.services.confidence_calibrator import ConfidenceCalibrator
 
 log = structlog.get_logger()
 
 class EnsemblePredictor:
-    def __init__(self, validator: SemanticValidator = SemanticValidator(), merger: EntityMerger = EntityMerger()):
+    def __init__(self, validator: SemanticValidator = SemanticValidator(), merger: EntityMerger = EntityMerger(), calibrator: ConfidenceCalibrator = ConfidenceCalibrator()):
         self.models = self._load_models()
         self.validator = validator
         self.merger = merger
+        self.calibrator = calibrator
 
     def _load_models(self) -> List[Tuple[AutoModelForTokenClassification, AutoTokenizer]]:
         """Loads all models specified in the configuration."""
@@ -118,7 +120,7 @@ class EnsemblePredictor:
 
         # For now, we return all entities from all models. Semantic consensus will merge them later.
         merged_entities = self._semantic_consensus(all_processed_entities)
-        calibrated_entities = self._calibrate_confidence(merged_entities)
+        calibrated_entities = self.calibrator.calibrate(merged_entities)
 
         return calibrated_entities, requires_review, overall_uncertainty
 
@@ -151,9 +153,4 @@ class EnsemblePredictor:
         validated_entities = self.validator.validate_entities(merged_entities)
         return validated_entities
 
-    def _calibrate_confidence(self, entities: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Calibrates the confidence scores of the entities."""
-        log.info("Calibrating confidence (placeholder)", input_entities_count=len(entities))
-        # Placeholder: This would involve adjusting confidence scores based on ensemble agreement
-        # or other calibration techniques.
-        return entities
+    

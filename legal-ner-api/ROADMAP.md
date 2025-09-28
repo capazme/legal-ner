@@ -24,14 +24,14 @@ In questa fase, l'obiettivo è costruire lo scheletro dell'applicazione, configu
 
 Questa fase si concentra sull'implementazione della logica di Machine Learning, sostituendo i placeholder con modelli reali e la logica di ensemble.
 
-- [x] **Caricamento Modelli Reali**: Implementare il caricamento di modelli Transformer da Hugging Face o percorsi locali in `EnsemblePredictor` (due modelli integrati).
+- [x] **Caricamento Modelli Reali**: Implementare il caricamento di modelli Transformer da Hugging Face o percorsi locali in `EnsemblePredictor` (due modelli integrati: `dlicari/distil-ita-legal-bert` e `DeepMount00/Italian_NER_XXL_v2`).
 - [x] **Predizione a Singolo Modello**: Sviluppare la logica per eseguire l'inferenza con un singolo modello.
 - [x] **Orchestrazione Ensemble**: Eseguire le predizioni in parallelo su tutti i modelli dell'ensemble.
 - [x] **Consenso Semantico**: Implementare la logica in `_semantic_consensus` per raggruppare e filtrare le entità basandosi sulla somiglianza semantica e testuale (implementato basic exact match e integrazione `EntityMerger`).
 - [x] **Estrazione Fonti Giuridiche**: Implementare un servizio `LegalSourceExtractor` per estrarre fonti giuridiche strutturate dal testo.
 - [x] **Validazione Semantica**: Sviluppare il `SemanticValidator` per verificare le entità estratte rispetto a un set di concetti legali noti (implementato basic keyword lookup).
 - [x] **Unione di Entità**: Implementare l'`EntityMerger` per fondere entità sovrapposte o duplicate (implementato basic overlap merging).
-- [ ] **Calibrazione della Confidenza**: Sviluppare il `ConfidenceCalibrator` per aggiustare i punteggi di confidenza (placeholder).
+- [x] **Calibrazione della Confidenza**: Sviluppare il `ConfidenceCalibrator` per aggiustare i punteggi di confidenza (implementata versione base/placeholder).
 
 **Obiettivo di Fase**: L'endpoint `/predict` deve essere in grado di restituire predizioni reali e di alta qualità, sfruttando la potenza dell'approccio ensemble.
 
@@ -42,11 +42,11 @@ Questa fase si concentra sull'implementazione della logica di Machine Learning, 
 L'obiettivo di questa fase è costruire il ciclo di feedback che permette al sistema di migliorare continuamente attraverso la revisione umana.
 
 - [x] **Endpoint di Feedback**: Implementare l'endpoint `/feedback` per ricevere le annotazioni corrette.
-- [ ] **Sicurezza Endpoint**: Aggiungere l'autenticazione e l'autorizzazione per l'endpoint di feedback.
+- [x] **Sicurezza Endpoint**: Aggiungere l'autenticazione e l'autorizzazione per l'endpoint di feedback (implementata autenticazione base con API Key).
 - [x] **Logica di Active Learning**: Sviluppare l'`ActiveLearningPipeline` per calcolare l'incertezza e il disaccordo del modello e decidere quando una revisione è necessaria. (Implementata logica di incertezza).
-- [ ] **Creazione Task di Annotazione**: Salvare i campioni che necessitano di revisione nel database.
+- [x] **Creazione Task di Annotazione**: Salvare i campioni che necessitano di revisione nel database (implementata creazione task base).
 - [x] **Raccolta e Stoccaggio Feedback**: Implementare l' `AnnotationCollector` per processare e salvare il feedback degli annotatori. (Implementata funzione CRUD).
-- [ ] **Costruzione Dataset**: Sviluppare il `DatasetBuilder` per creare e versionare nuovi dataset di training basati sul feedback raccolto.
+- [x] **Costruzione Dataset**: Sviluppare il `DatasetBuilder` per creare e versionare nuovi dataset di training basati sul feedback raccolto (implementato con query al DB).
 
 **Obiettivo di Fase**: Avere un sistema completo per l'apprendimento continuo, dove i dati più informativi vengono selezionati per la revisione umana e utilizzati per creare nuovi dataset di addestramento.
 

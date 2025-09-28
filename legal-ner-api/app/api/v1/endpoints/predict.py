@@ -27,6 +27,7 @@ async def predict(
     entities, requires_review, overall_uncertainty = await predictor.predict(request.text)
 
     # Convert dicts to Pydantic models
+    extracted_sources = extractor.extract_sources(request.text)
     pydantic_entities = [schemas.Entity(**e) for e in entities]
     pydantic_legal_sources = [schemas.LegalSource(**s) for s in extracted_sources]
 

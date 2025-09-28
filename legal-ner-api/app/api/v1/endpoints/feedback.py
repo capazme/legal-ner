@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 from app.api.v1 import schemas
 from app.database import crud
 from app.database.database import get_db
-from app.core.dependencies import get_api_key
+from app.core.dependencies import get_api_key, get_dataset_builder
+from app.feedback.dataset_builder import DatasetBuilder
 
 router = APIRouter()
 
@@ -22,3 +23,20 @@ def submit_feedback(
     crud.create_annotations(db, annotations=feedback.annotations, user_id=user_id)
 
     return {"message": "Feedback received successfully."}
+
+@router.post("/build-dataset", status_code=201)
+def build_dataset_endpoint(
+    version_name: str,
+    db: Session = Depends(get_db),
+    builder: DatasetBuilder = Depends(get_dataset_builder),
+    api_key: str = Depends(get_api_key) # Protect with API key
+):
+    """
+    Triggers the process of building a new dataset from collected annotations
+    and uploading it to MinIO.
+    """
+    try:
+        object_name = builder.build_dataset(db, version_name)
+        return {"message": "Dataset built and uploaded successfully.", "object_name": object_name}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to build dataset: {str(e)}")

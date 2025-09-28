@@ -35,12 +35,31 @@ class DatasetBuilder:
         # retrieve associated documents and entities, and transform them into a training format (e.g., IOB2).
         # For now, we'll create a dummy dataset.
 
-        dummy_data = [
-            {"text": "La Corte di Cassazione", "labels": [("Corte di Cassazione", "ORG")]},
-            {"text": "Il sig. Rossi è un avvocato.", "labels": [("Rossi", "PER"), ("avvocato", "PROFESSIONE")]}
-        ]
+        # Query for all correct annotations and their associated entities and documents
+        correct_annotations = db.query(models.Annotation, models.Entity, models.Document)\
+            .join(models.Entity, models.Annotation.entity_id == models.Entity.id)\
+            .join(models.Document, models.Entity.document_id == models.Document.id)\
+            .filter(models.Annotation.is_correct == True)\
+            .all()
 
-        dataset_content = json.dumps(dummy_data, indent=2)
+        # Group entities by document
+        documents_data = {}
+        for annotation, entity, document in correct_annotations:
+            if document.id not in documents_data:
+                documents_data[document.id] = {
+                    "text": document.text,
+                    "labels": []
+                }
+            
+            # Use corrected_label if available, otherwise use the original entity label
+            label_to_use = annotation.corrected_label if annotation.corrected_label else entity.label
+            
+            documents_data[document.id]["labels"].append((entity.text, label_to_use))
+        
+        # Convert dictionary values to a list
+        dataset_to_upload = list(documents_data.values())
+
+        dataset_content = json.dumps(dataset_to_upload, indent=2)
         dataset_bytes = dataset_content.encode('utf-8')
         data_stream = io.BytesIO(dataset_bytes)
         data_length = len(dataset_bytes)

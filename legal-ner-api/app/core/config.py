@@ -26,7 +26,7 @@ class Settings(BaseSettings):
 
     # ML Models
     # Example: ["model1_path_or_name", "model2_path_or_name"]
-    ENSEMBLE_MODELS: List[str] = ["Babelscape/wikineural-multilingual-ner", "DeepMount00/Italian_NER_XXL_v2"]
+    ENSEMBLE_MODELS: List[str] = ["dlicari/distil-ita-legal-bert", "DeepMount00/Italian_NER_XXL_v2"]
     UNCERTAINTY_THRESHOLD: float = 0.5
 
     class Config:
