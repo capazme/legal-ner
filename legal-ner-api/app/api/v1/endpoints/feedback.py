@@ -3,9 +3,9 @@ from sqlalchemy.orm import Session
 from app.api.v1 import schemas
 from app.database import crud
 from app.database.database import get_db
-from app.core.dependencies import get_api_key, get_dataset_builder, get_predictor
+from app.core.dependencies import get_api_key, get_dataset_builder, get_feedback_loop
 from app.feedback.dataset_builder import DatasetBuilder
-from app.services.ensemble_predictor import EnsemblePredictor
+from app.services.feedback_loop import FeedbackLoop
 from datetime import datetime
 
 router = APIRouter()
@@ -29,12 +29,12 @@ def submit_feedback(
 @router.post("/enhanced-feedback", response_model=schemas.FeedbackResponse)
 async def provide_enhanced_feedback(
     request: schemas.EnhancedFeedbackRequest,
-    predictor: EnsemblePredictor = Depends(get_predictor),
+    feedback_loop: FeedbackLoop = Depends(get_feedback_loop),
     api_key: str = Depends(get_api_key),
     db: Session = Depends(get_db)
 ):
     """
-    Enhanced feedback endpoint for the new three-stage pipeline system.
+    Enhanced feedback endpoint for the specialized pipeline system.
     Integrates directly with golden dataset and continuous learning.
     """
     try:
@@ -47,22 +47,18 @@ async def provide_enhanced_feedback(
             "notes": request.notes
         }
 
-        # Process feedback through enhanced predictor
-        result = await predictor.process_feedback(
-            document_id=request.document_id,
-            user_id="anonymous",  # TODO: Implement user management
-            feedback_data=feedback_data
-        )
+        # Process feedback through feedback loop
+        result = await feedback_loop.process_feedback(feedback_data)
 
-        if result["status"] == "error":
-            raise HTTPException(status_code=500, detail=result["error"])
+        if result.get("status") == "error":
+            raise HTTPException(status_code=500, detail=result.get("error", "Unknown error"))
 
         return schemas.FeedbackResponse(
-            feedback_id=result["feedback_id"],
-            status=result["status"],
-            quality_impact=result["quality_impact"],
-            should_retrain=result["should_retrain"],
-            golden_dataset_size=result["golden_dataset_size"]
+            feedback_id=result.get("feedback_id", "unknown"),
+            status=result.get("status", "processed"),
+            quality_impact=result.get("quality_impact", 0.0),
+            should_retrain=result.get("should_retrain", False),
+            golden_dataset_size=result.get("golden_dataset_size", 0)
         )
 
     except Exception as e:
@@ -70,24 +66,21 @@ async def provide_enhanced_feedback(
 
 @router.get("/system-stats", response_model=schemas.SystemStatsResponse)
 async def get_system_stats(
-    predictor: EnsemblePredictor = Depends(get_predictor),
+    feedback_loop: FeedbackLoop = Depends(get_feedback_loop),
     api_key: str = Depends(get_api_key)
 ):
     """
     Get comprehensive system statistics including feedback and golden dataset metrics.
     """
     try:
-        stats = await predictor.get_system_stats()
-
-        if stats["status"] == "error":
-            raise HTTPException(status_code=500, detail=stats["error"])
+        stats = feedback_loop.get_statistics()
 
         return schemas.SystemStatsResponse(
-            predictor_type=stats["predictor_type"],
-            feedback_stats=stats["feedback_stats"],
-            golden_dataset_size=stats["golden_dataset_size"],
-            system_accuracy=stats["system_accuracy"],
-            status=stats["status"]
+            predictor_type="specialized_pipeline",
+            feedback_stats=stats,
+            golden_dataset_size=stats.get("golden_dataset_size", 0),
+            system_accuracy=stats.get("system_accuracy", 0.0),
+            status="active"
         )
 
     except Exception as e:
@@ -96,7 +89,7 @@ async def get_system_stats(
 @router.get("/golden-dataset/export", response_model=schemas.GoldenDatasetExportResponse)
 async def export_golden_dataset(
     format: str = "json",
-    predictor: EnsemblePredictor = Depends(get_predictor),
+    feedback_loop: FeedbackLoop = Depends(get_feedback_loop),
     api_key: str = Depends(get_api_key)
 ):
     """
@@ -107,15 +100,15 @@ async def export_golden_dataset(
         if format not in ["json", "conll"]:
             raise HTTPException(status_code=400, detail="Supported formats: json, conll")
 
-        exported_data = await predictor.export_golden_dataset(format=format)
+        exported_data = await feedback_loop.export_golden_dataset(format=format)
 
         # Count entries based on format
         if format == "json":
             import json
-            data = json.loads(exported_data)
-            entry_count = len(data)
+            data = json.loads(exported_data) if isinstance(exported_data, str) else exported_data
+            entry_count = len(data) if isinstance(data, list) else 0
         else:  # conll
-            entry_count = exported_data.count("# ") // 2  # Rough estimate
+            entry_count = str(exported_data).count("# ") // 2 if exported_data else 0
 
         return schemas.GoldenDatasetExportResponse(
             format=format,
@@ -147,19 +140,20 @@ def build_dataset_endpoint(
 @router.get("/training-data")
 async def get_training_data(
     min_quality: float = 0.8,
-    predictor: EnsemblePredictor = Depends(get_predictor),
+    feedback_loop: FeedbackLoop = Depends(get_feedback_loop),
     api_key: str = Depends(get_api_key)
 ):
     """
     Get high-quality training data from golden dataset.
     """
     try:
-        training_data = await predictor.get_training_data(min_quality=min_quality)
+        # Get training data from feedback loop
+        training_data = await feedback_loop.get_training_data(min_quality=min_quality)
 
         return {
-            "training_entries": len(training_data),
+            "training_entries": len(training_data) if training_data else 0,
             "min_quality_threshold": min_quality,
-            "data": training_data
+            "data": training_data or []
         }
 
     except Exception as e:

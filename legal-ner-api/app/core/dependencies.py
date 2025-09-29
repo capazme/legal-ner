@@ -1,41 +1,24 @@
 from functools import lru_cache
 from fastapi import Header, HTTPException, status
 from app.core.config import settings
-from app.services.ensemble_predictor import EnsemblePredictor
-from app.services.legal_source_extractor import LegalSourceExtractor
-from app.services.semantic_validator import SemanticValidator
-from app.services.entity_merger import EntityMerger
-from app.services.confidence_calibrator import ConfidenceCalibrator
+from app.services.specialized_pipeline import LegalSourceExtractionPipeline
+from app.services.feedback_loop import FeedbackLoop
 from app.feedback.dataset_builder import DatasetBuilder
 
 @lru_cache(maxsize=1)
-def get_predictor() -> EnsemblePredictor:
+def get_legal_pipeline() -> LegalSourceExtractionPipeline:
     """
-    Returns a cached instance of the EnsemblePredictor.
-    The model is loaded only once.
+    Returns a cached instance of the Specialized Legal Source Extraction Pipeline.
+    This is the main NER system.
     """
-    return EnsemblePredictor()
+    return LegalSourceExtractionPipeline()
 
 @lru_cache(maxsize=1)
-def get_legal_source_extractor() -> LegalSourceExtractor:
+def get_feedback_loop() -> FeedbackLoop:
     """
-    Returns a cached instance of the LegalSourceExtractor.
+    Returns a cached instance of the FeedbackLoop for continuous learning.
     """
-    return LegalSourceExtractor()
-
-@lru_cache(maxsize=1)
-def get_semantic_validator() -> SemanticValidator:
-    """
-    Returns a cached instance of the SemanticValidator.
-    """
-    return SemanticValidator()
-
-@lru_cache(maxsize=1)
-def get_entity_merger() -> EntityMerger:
-    """
-    Returns a cached instance of the EntityMerger.
-    """
-    return EntityMerger()
+    return FeedbackLoop()
 
 @lru_cache(maxsize=1)
 def get_dataset_builder() -> DatasetBuilder:
@@ -43,13 +26,6 @@ def get_dataset_builder() -> DatasetBuilder:
     Returns a cached instance of the DatasetBuilder.
     """
     return DatasetBuilder()
-
-@lru_cache(maxsize=1)
-def get_confidence_calibrator() -> ConfidenceCalibrator:
-    """
-    Returns a cached instance of the ConfidenceCalibrator.
-    """
-    return ConfidenceCalibrator()
 
 async def get_api_key(x_api_key: str = Header(...)):
     if x_api_key == settings.API_KEY:

@@ -31,9 +31,15 @@ class DatasetBuilder:
         """Builds a new dataset from reviewed annotations and uploads it to MinIO."""
         log.info("Building dataset", version_name=version_name)
 
-        # Placeholder: In a real scenario, this would query for completed annotation tasks,
-        # retrieve associated documents and entities, and transform them into a training format (e.g., IOB2).
-        # For now, we'll create a dummy dataset.
+        # TODO: Implement a robust dataset building process.
+        # The current implementation is a placeholder that creates a dummy dataset.
+        # A complete implementation should:
+        # 1. Query the database for completed and validated annotation tasks.
+        # 2. Retrieve the associated documents and their corrected/validated entities.
+        # 3. Convert the data into a standard training format (e.g., IOB2, CoNLL, spaCy JSON).
+        #    - This involves tokenizing the text and assigning IOB tags to each token.
+        # 4. The generated dataset should be versioned and stored, and the version
+        #    should be recorded in the `dataset_versions` table.
 
         # Query for all correct annotations and their associated entities and documents
         correct_annotations = db.query(models.Annotation, models.Entity, models.Document)\

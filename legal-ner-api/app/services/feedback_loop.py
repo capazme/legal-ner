@@ -175,7 +175,12 @@ class FeedbackLoop:
         """
         Processa feedback per aggiornare il golden dataset.
         """
-        # Trova o crea entry per questo documento
+        # TODO: Implement robust document matching.
+        # This currently uses a simplified and incorrect matching of document_id against entry.text.
+        # A robust implementation should:
+        # 1. Fetch the document text from the database using feedback.document_id.
+        # 2. Find the corresponding entry in self.golden_dataset by matching the document text.
+        # 3. If no entry exists, one should be created with the full document text.
         existing_entry = None
         for entry in self.golden_dataset:
             if entry.text == feedback.document_id:  # Simplified - dovrebbe essere text matching
@@ -211,7 +216,10 @@ class FeedbackLoop:
         """
         corrected_entity = feedback.corrected_entity
 
-        # Crea nuova entry nel golden dataset se non esiste
+        # TODO: Use the actual document text instead of a placeholder.
+        # The `text` field is currently populated with a placeholder string.
+        # It should be populated with the full text of the document associated with `feedback.document_id`.
+        # This requires fetching the document from the database.
         new_entry = GoldenDatasetEntry(
             id=str(uuid.uuid4()),
             text=f"document_{feedback.document_id}",  # Simplified
@@ -232,6 +240,10 @@ class FeedbackLoop:
         """
         missing_entity = feedback.corrected_entity
 
+        # TODO: Use the actual document text instead of a placeholder.
+        # The `text` field is currently populated with a placeholder string.
+        # It should be populated with the full text of the document associated with `feedback.document_id`.
+        # This requires fetching the document from the database.
         new_entry = GoldenDatasetEntry(
             id=str(uuid.uuid4()),
             text=f"document_{feedback.document_id}",
@@ -250,6 +262,16 @@ class FeedbackLoop:
         """
         Calcola l'impatto del feedback sulla qualità del sistema.
         """
+        # TODO: Implement a more sophisticated quality impact calculation.
+        # The current implementation uses fixed placeholder values.
+        # A better approach would be to:
+        # 1. Maintain running metrics for precision, recall, and F1-score.
+        # 2. Update these metrics based on the type of feedback (TP, FP, FN).
+        #    - CORRECT = True Positive (if already detected)
+        #    - INCORRECT = False Positive
+        #    - MISSING = False Negative
+        #    - WRONG_LABEL = FP + FN
+        # 3. The impact should reflect the change in these metrics.
         impact = {
             "accuracy_impact": 0.0,
             "precision_impact": 0.0,
@@ -399,7 +421,14 @@ class FeedbackLoop:
             return json.dumps(export_data, indent=2, ensure_ascii=False)
 
         elif format == "conll":
-            # Export in formato CoNLL per training
+            # TODO: Implement a proper CoNLL-2003 format export.
+            # The current implementation is a simplified placeholder.
+            # A correct implementation should:
+            # 1. Tokenize the document text.
+            # 2. For each token, determine its IOB2 tag (B-LABEL, I-LABEL, O).
+            # 3. Format the output as "token IOB-tag" on each line.
+            # 4. Separate sentences with an empty line.
+            # 5. Separate documents with a "-DOCSTART-" line or similar.
             conll_lines = []
             for entry in self.golden_dataset:
                 # Simplified CoNLL export
