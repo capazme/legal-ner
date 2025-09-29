@@ -1,9 +1,9 @@
 """
-Specialized Legal Source Extraction Pipeline
-===========================================
+Specialized Legal Source Extraction Pipeline (CONFIGURABILE)
+==========================================================
 
 Pipeline specializzata dove ogni modello ha un ruolo specifico ottimizzato
-per le sue capacità uniche, invece di fare tutti NER generico.
+per le sue capacità uniche, usando configurazione esterna YAML.
 
 Architettura:
 - Stage 1: EntityDetector (Italian_NER_XXL_v2) → Trova candidati potenziali
@@ -23,6 +23,8 @@ from sentence_transformers import SentenceTransformer
 import re
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
+
+from app.core.config_loader import get_pipeline_config, PipelineConfig
 
 log = structlog.get_logger()
 
@@ -60,12 +62,12 @@ class LegalClassification:
     span: TextSpan
     act_type: ActType
     confidence: float
-    semantic_embedding: Optional[np.ndarray] # Reverted to Optional[np.ndarray]
+    semantic_embedding: Optional[np.ndarray] = None
 
 @dataclass
 class ParsedNormative:
     """Componenti strutturati di una norma."""
-    text: str # Added text field
+    text: str
     act_type: ActType
     act_number: Optional[str] = None
     date: Optional[str] = None
@@ -96,73 +98,66 @@ class EntityDetector:
     che potrebbero essere riferimenti normativi.
     """
 
-    # Mappatura completa delle abbreviazioni normative italiane
-    NORMATTIVA = {
-        "d.lgs.": "decreto.legislativo",
-        "dpr": "decreto.del.presidente.della.repubblica",
-        "rd": "regio.decreto",
-        "r.d.": "regio.decreto",
-        "regio decreto": "regio.decreto",
-        "d.p.r.": "decreto.del.presidente.della.repubblica",
-        "decreto legge": "decreto.legge",
-        "decreto legislativo": "decreto.legislativo",
-        "decreto.legge": "decreto.legge",
-        "decreto.legislativo": "decreto.legislativo",
-        "dl": "decreto.legge",
-        "dlgs": "decreto.legislativo",
-        "l": "legge",
-        "l.": "legge",
-        "legge": "legge",
-        "c.c.": "codice.civile",
-        "c.p.": "codice.penale",
-        "c.p.c": "codice.di.procedura.civile",
-        "c.p.p.": "codice.di.procedura.penale",
-        "c.c.p": "codice.dei.contratti.pubblici",
-        "cad": "codice.dell.amministrazione.digitale",
-        "cam": "codice.antimafia",
-        "camb": "norme.in.materia.ambientale",
-        "cap": "codice.delle.assicurazioni.private",
-        "cbc": "codice.dei.beni.culturali.e.del.paesaggio",
-        "cc": "codice.civile",
-        "cce": "codice.delle.comunicazioni.elettroniche",
-        "cci": "codice.della.crisi.d.impresa.e.dell.insolvenza",
-        "ccp": "codice.dei.contratti.pubblici",
-        "cdc": "codice.del.consumo",
-        "cdpc": "codice.della.protezione.civile",
-        "cds": "codice.della.strada",
-        "cgco": "codice.di.giustizia.contabile",
-        "cn": "codice.della.navigazione",
-        "cnd": "codice.della.nautica.da.diporto",
-        "cost": "costituzione",
-        "cost.": "costituzione",
-        "costituzione": "costituzione"
-    }
+    def __init__(self, config: PipelineConfig):
+        """Inizializza con configurazione esterna."""
+        self.config = config
+        log.info("Initializing EntityDetector with configuration")
 
-    def __init__(self):
-        log.info("Initializing EntityDetector with Italian_NER_XXL_v2")
         try:
             self.model = AutoModelForTokenClassification.from_pretrained(
-                "DeepMount00/Italian_NER_XXL_v2"
+                config.models.entity_detector_primary
             )
             self.tokenizer = AutoTokenizer.from_pretrained(
-                "DeepMount00/Italian_NER_XXL_v2"
+                config.models.entity_detector_primary
             )
-            log.info("EntityDetector initialized successfully")
+            log.info("EntityDetector initialized successfully",
+                    model=config.models.entity_detector_primary)
         except Exception as e:
-            log.warning("Failed to load Italian_NER_XXL_v2, using fallback", error=str(e))
+            log.warning("Failed to load primary model, using fallback",
+                       error=str(e),
+                       fallback=config.models.entity_detector_fallback)
             self.model = AutoModelForTokenClassification.from_pretrained(
-                "Babelscape/wikineural-multilingual-ner"
+                config.models.entity_detector_fallback
             )
             self.tokenizer = AutoTokenizer.from_pretrained(
-                "Babelscape/wikineural-multilingual-ner"
+                config.models.entity_detector_fallback
             )
+
+        # Carica mappatura NORMATTIVA dalla configurazione
+        self.normattiva_mapping = self._build_flat_normattiva_mapping(config.normattiva_mapping)
+        log.info("NORMATTIVA mapping loaded",
+                abbreviations_count=len(self.normattiva_mapping))
+
+    def _build_flat_normattiva_mapping(self, normattiva_config: Dict[str, List[str]]) -> Dict[str, str]:
+        """Costruisce mappatura piatta da configurazione."""
+        flat_mapping = {}
+        for act_type, abbreviations in normattiva_config.items():
+            normalized_type = act_type.replace("_", ".")
+            for abbrev in abbreviations:
+                flat_mapping[abbrev] = normalized_type
+        return flat_mapping
+
+    def _get_all_regex_patterns(self) -> List[str]:
+        """Restituisce tutti i pattern regex in una lista piatta."""
+        all_patterns = []
+        for pattern_group in self.config.regex_patterns.values():
+            all_patterns.extend(pattern_group)
+        return all_patterns
+
+    def _get_all_context_patterns(self) -> List[str]:
+        """Restituisce tutti i pattern contestuali in una lista piatta."""
+        all_patterns = []
+        for pattern_group in self.config.context_patterns.values():
+            all_patterns.extend(pattern_group)
+        return all_patterns
 
     def detect_candidates(self, text: str) -> List[TextSpan]:
         """
         Trova candidati che potrebbero essere riferimenti normativi.
         Focus su PRECISIONE della posizione, non sulla classificazione.
         """
-        log.debug("Detecting legal reference candidates", text_length=len(text))
+        if self.config.output.enable_debug_logging:
+            log.debug("Detecting legal reference candidates", text_length=len(text))
 
         # Tokenization con offset mapping per posizione precisa
         inputs = self.tokenizer(
@@ -170,7 +165,7 @@ class EntityDetector:
             return_tensors="pt",
             truncation=True,
             return_offsets_mapping=True,
-            max_length=512
+            max_length=self.config.models.entity_detector_max_length
         )
         offset_mapping = inputs.pop("offset_mapping")[0]
 
@@ -199,109 +194,54 @@ class EntityDetector:
         # Rimuovi duplicati e sovrapposizioni
         cleaned_candidates = self._remove_overlaps(legal_candidates)
 
-        log.debug("Legal candidates detected",
-                 raw_entities=len(raw_entities),
-                 legal_candidates=len(cleaned_candidates))
+        if self.config.output.enable_debug_logging:
+            log.debug("Legal candidates detected",
+                     raw_entities=len(raw_entities),
+                     legal_candidates=len(cleaned_candidates))
 
         return cleaned_candidates
 
     def _is_potential_legal_reference(self, entity_text: str, full_text: str) -> bool:
         """
         Determina se un'entità potrebbe essere un riferimento normativo.
-        Usa la mappatura NORMATTIVA completa + contesto specifico.
+        Usa la mappatura NORMATTIVA configurabile + contesto specifico.
         """
         entity_lower = entity_text.lower().strip()
 
         # 1. Verifica diretta nella mappatura NORMATTIVA
-        for abbrev in self.NORMATTIVA.keys():
+        for abbrev in self.normattiva_mapping.keys():
             if abbrev.lower() in entity_lower:
                 return True
 
-        # 2. Pattern specifici per riferimenti normativi italiani
-        legal_patterns = [
-            # Tipi di atti con numeri
-            r'\b(?:d\.?\s*lgs\.?|decreto\s+legislativo)\s+n?\.?\s*\d+',
-            r'\b(?:d\.?\s*p\.?\s*r\.?|dpr)\s+n?\.?\s*\d+',
-            r'\b(?:d\.?\s*l\.?|decreto\s+legge)\s+n?\.?\s*\d+',
-            r'\b(?:l\.?|legge)\s+n?\.?\s*\d+',
-            r'\b(?:r\.?\s*d\.?|regio\s+decreto)\s+n?\.?\s*\d+',
-
-            # Codici (molto specifici)
-            r'\bc\.?\s*c\.?\b',  # codice civile
-            r'\bc\.?\s*p\.?\b',  # codice penale
-            r'\bc\.?\s*p\.?\s*c\.?\b',  # codice procedura civile
-            r'\bc\.?\s*p\.?\s*p\.?\b',  # codice procedura penale
-
-            # Pattern numerici normativi
-            r'\bn\.?\s*\d+(?:/\d{4})?(?:\s+del\s+\d{4})?',
-            r'\b\d+/\d{4}\b',
-            r'\b\d+\s+del\s+\d{4}\b',
-
-            # Articoli e suddivisioni
-            r'\bart\.?\s*\d+(?:\s*[,-]\s*(?:co\.?|comma)\s*\d+)?',
-            r'\barticolo\s+\d+(?:\s*[,-]\s*comma\s*\d+)?',
-            r'\bco\.?\s*\d+', r'\bcomma\s+\d+',
-            r'\blett\.?\s*[a-z](?:\)|\b)', r'\blettera\s+[a-z]\b',
-
-            # Allegati e appendici
-            r'\ballegato\s+[a-z0-9]', r'\bappendice\s+[a-z0-9]',
-            r'\bannesso\s+[a-z0-9]', r'\btabella\s+[a-z0-9]',
-        ]
-
-        for pattern in legal_patterns:
+        # 2. Pattern specifici dalla configurazione
+        all_patterns = self._get_all_regex_patterns()
+        for pattern in all_patterns:
             if re.search(pattern, entity_lower, re.IGNORECASE):
                 return True
 
-        # 3. Verifica contesto semantico (finestra estesa)
+        # 3. Verifica contesto semantico
         entity_pos = full_text.lower().find(entity_lower)
         if entity_pos != -1:
-            # Finestra di contesto di 200 caratteri (100 prima, 100 dopo)
-            start_context = max(0, entity_pos - 100)
-            end_context = min(len(full_text), entity_pos + len(entity_text) + 100)
+            # Finestra di contesto esteso
+            start_context = max(0, entity_pos - self.config.context.extended_context)
+            end_context = min(len(full_text), entity_pos + len(entity_text) + self.config.context.extended_context)
             context = full_text[start_context:end_context].lower()
 
-            # Pattern contestuali molto specifici per documenti legali
-            legal_context_indicators = [
-                # Riferimenti normativi
-                r'(?:secondo|ai\s+sensi|in\s+base\s+a|previsto|stabilito)\s+(?:da|dal|dell?|nel)',
-                r'(?:disciplina|regola|prevede|stabilisce|dispone|determina)',
-                r'(?:modificato|integrato|sostituito|abrogato)\s+(?:da|dal|con)',
-                r'(?:entrat[oa]\s+in\s+vigore|vigente|applicabil[ei])',
-
-                # Procedure legali
-                r'(?:sentenza|decreto|ordinanza|delibera|risoluzione)\s+n?\.?\s*\d+',
-                r'(?:tribunale|corte|tar|consiglio\s+di\s+stato)',
-                r'(?:ricorso|appello|opposizione|istanza)',
-
-                # Contesto amministrativo
-                r'(?:gazzetta\s+ufficiale|g\.?\s*u\.?)',
-                r'(?:ministero|dipartimento|agenzia|ente)',
-                r'(?:autorizza\w*|approva\w*|emana\w*|promulga\w*)',
-
-                # Riferimenti a articoli/commi nel contesto
-                r'(?:di\s+cui\s+all?|previsto\s+dall?|secondo\s+l?)\s*art',
-                r'(?:comma|co\.)\s+precedente',
-                r'medesim[oa]\s+(?:articolo|comma|decreto|legge)',
-            ]
-
-            for pattern in legal_context_indicators:
+            # Pattern contestuali dalla configurazione
+            all_context_patterns = self._get_all_context_patterns()
+            for pattern in all_context_patterns:
                 if re.search(pattern, context, re.IGNORECASE):
                     return True
 
-        # 4. Pattern numerici isolati che potrebbero essere riferimenti
-        # Solo se nel contesto ci sono indicatori legali
+        # 4. Pattern numerici isolati con contesto legale
         if re.match(r'^\d+(?:/\d{4})?$', entity_text.strip()):
-            # Cerca indicatori nelle vicinanze immediate (50 caratteri)
             if entity_pos != -1:
-                immediate_context = full_text[max(0, entity_pos - 50):
-                                           min(len(full_text), entity_pos + len(entity_text) + 50)]
-
-                nearby_legal_words = [
-                    'decreto', 'legge', 'articolo', 'art', 'comma', 'co',
-                    'dlgs', 'dpr', 'norma', 'codice', 'costituzione'
+                immediate_context = full_text[
+                    max(0, entity_pos - self.config.context.immediate_context):
+                    min(len(full_text), entity_pos + len(entity_text) + self.config.context.immediate_context)
                 ]
 
-                for word in nearby_legal_words:
+                for word in self.config.legal_context_words:
                     if word in immediate_context.lower():
                         return True
 
@@ -310,50 +250,31 @@ class EntityDetector:
     def _expand_reference_boundaries(self, entity: TextSpan, full_text: str) -> TextSpan:
         """
         Espande i confini dell'entità per catturare il riferimento normativo completo.
-        Es: "231" → "decreto legislativo n. 231 del 2001"
+        Usa pattern configurabili per espansione.
         """
         start_char = entity.start_char
         end_char = entity.end_char
 
         # Espandi a sinistra per catturare tipo di atto
-        window_start = max(0, start_char - 100)
+        window_start = max(0, start_char - self.config.context.left_window)
         left_context = full_text[window_start:start_char]
 
-        # Pattern da cercare a sinistra (più precisi)
-        left_patterns = [
-            r'(decreto\s+legislativo\s+n?\.?\s?)$',
-            r'(d\.?\s*lgs\.?\s+n?\.?\s?)$',
-            r'(legge\s+n?\.?\s?)$',
-            r'(l\.?\s+n?\.?\s?)$',
-            r'(decreto\s+del\s+presidente\s+della\s+repubblica\s+n?\.?\s?)$',
-            r'(d\.?\s*p\.?\s*r\.?\s+n?\.?\s?)$',
-            r'(articolo\s+)$', r'(art\.?\s*)$'
-        ]
-
+        # Pattern da cercare a sinistra dalla configurazione
+        left_patterns = self.config.boundary_expansion["left_patterns"]
         for pattern in left_patterns:
             match = re.search(pattern, left_context, re.IGNORECASE)
             if match:
-                # Trova l'inizio della parola per evitare di includere caratteri spuri
                 word_start = match.start()
-                # Assicurati che sia effettivamente l'inizio di una parola
                 if word_start == 0 or left_context[word_start-1].isspace():
                     start_char = window_start + word_start
                     break
 
         # Espandi a destra per catturare data/anno
-        window_end = min(len(full_text), end_char + 100)
+        window_end = min(len(full_text), end_char + self.config.context.right_window)
         right_context = full_text[end_char:window_end]
 
-        # Pattern da cercare a destra
-        right_patterns = [
-            r'^(\s+del\s+\d{1,2}[/-]\d{1,2}[/-]\d{4})',  # del 23/05/2001
-            r'^(\s+del\s+\d{4})',                          # del 2001
-            r'^(/\d{4})',                                  # /2001
-            r'^(\s*,\s*articolo\s+\d+)',                  # , articolo 25
-            r'^(\s*,\s*art\.?\s*\d+)',                    # , art. 25
-            r'^(\s*,\s*comma\s+\d+)',                     # , comma 2
-        ]
-
+        # Pattern da cercare a destra dalla configurazione
+        right_patterns = self.config.boundary_expansion["right_patterns"]
         for pattern in right_patterns:
             match = re.search(pattern, right_context, re.IGNORECASE)
             if match:
@@ -364,13 +285,12 @@ class EntityDetector:
         expanded_text = full_text[start_char:end_char].strip()
 
         # Rimuovi caratteri spuri all'inizio e alla fine
-        expanded_text = re.sub(r'^[^\w\s]+', '', expanded_text)  # Rimuovi punctuation all'inizio
-        expanded_text = re.sub(r'[^\w\s.,:;)]+$', '', expanded_text)  # Rimuovi punctuation alla fine (tranne alcuni)
+        expanded_text = re.sub(r'^[^\w\s]+', '', expanded_text)
+        expanded_text = re.sub(r'[^\w\s.,:;)]+$', '', expanded_text)
         expanded_text = expanded_text.strip()
 
         # Aggiorna le posizioni dopo la pulizia
         if expanded_text != full_text[start_char:end_char].strip():
-            # Trova la posizione reale del testo pulito
             clean_start = full_text.find(expanded_text, start_char)
             if clean_start != -1:
                 start_char = clean_start
@@ -381,7 +301,10 @@ class EntityDetector:
             start_char=start_char,
             end_char=end_char,
             initial_confidence=entity.initial_confidence,
-            context_window=full_text[max(0, start_char-50):min(len(full_text), end_char+50)]
+            context_window=full_text[
+                max(0, start_char - self.config.context.context_window):
+                min(len(full_text), end_char + self.config.context.context_window)
+            ]
         )
 
     def _extract_entities_with_offsets(self, predicted_ids, predictions, offset_mapping, text):
@@ -464,14 +387,17 @@ class LegalClassifier:
     il tipo specifico di riferimento normativo.
     """
 
-    def __init__(self):
-        log.info("Initializing LegalClassifier with Italian-legal-bert")
-        try:
-            # Carica il modello per embeddings semantici (non per NER)
-            self.model = AutoModel.from_pretrained("dlicari/distil-ita-legal-bert")
-            self.tokenizer = AutoTokenizer.from_pretrained("dlicari/distil-ita-legal-bert")
+    def __init__(self, config: PipelineConfig):
+        """Inizializza con configurazione esterna."""
+        self.config = config
+        log.info("Initializing LegalClassifier with configuration")
 
-            # Prototipi semantici per ogni tipo di atto normativo
+        try:
+            # Carica il modello per embeddings semantici
+            self.model = AutoModel.from_pretrained(config.models.legal_classifier_primary)
+            self.tokenizer = AutoTokenizer.from_pretrained(config.models.legal_classifier_primary)
+
+            # Inizializza prototipi dalla configurazione
             self._initialize_prototypes()
             log.info("LegalClassifier initialized successfully")
         except Exception as e:
@@ -480,72 +406,33 @@ class LegalClassifier:
             self.tokenizer = None
 
     def _initialize_prototypes(self):
-        """Inizializza prototipi semantici per classificazione."""
-        # Template di esempio per ogni tipo di atto
-        # Questi verranno usati per generare embeddings di riferimento
-        self.prototype_texts = {
-            ActType.DECRETO_LEGISLATIVO: [
-                "decreto legislativo numero del anno",
-                "d.lgs. n. del",
-                "dlgs",
-                "decreto legislativo che disciplina"
-            ],
-            ActType.LEGGE: [
-                "legge numero del anno",
-                "l. n. del",
-                "legge che stabilisce",
-                "legge concernente"
-            ],
-            ActType.DPR: [
-                "decreto del presidente della repubblica numero del",
-                "d.p.r. n. del",
-                "dpr",
-                "decreto presidente repubblica"
-            ],
-            ActType.CODICE_CIVILE: [
-                "codice civile",
-                "c.c."
-            ],
-            ActType.CODICE_PENALE: [
-                "codice penale",
-                "c.p."
-            ],
-            ActType.CODICE_PROCEDURA_CIVILE: [
-                "codice di procedura civile",
-                "c.p.c."
-            ],
-            ActType.CODICE_PROCEDURA_PENALE: [
-                "codice di procedura penale",
-                "c.p.p."
-            ],
-            ActType.TESTO_UNICO: [
-                "testo unico",
-                "t.u.",
-                "tuf"
-            ],
-            ActType.COSTITUZIONE: [
-                "costituzione italiana",
-                "cost.",
-                "carta costituzionale",
-                "principi costituzionali"
-            ],
-            ActType.CONVENTION: [
-                "convenzione europea dei diritti dell'uomo",
-                "c.e.d.u.",
-                "protocollo addizionale"
-            ],
-            ActType.INSTITUTION: [
-                "corte costituzionale",
-                "corte europea dei diritti dell'uomo",
-                "tribunale",
-                "consiglio di stato"
-            ]
-        }
-
-        # Genera embeddings per i prototipi (se il modello è disponibile)
+        """Inizializza prototipi semantici dalla configurazione."""
         if self.model is not None:
             self.prototype_embeddings = {}
-            for act_type, texts in self.prototype_texts.items():
+
+            for act_type_str, texts in self.config.semantic_prototypes.items():
+                try:
+                    # Converti stringa in ActType enum
+                    act_type = ActType(act_type_str.replace("_", " "))
+                except ValueError:
+                    # Gestisci casi speciali di mapping
+                    act_type_mapping = {
+                        "decreto_legislativo": ActType.DECRETO_LEGISLATIVO,
+                        "legge": ActType.LEGGE,
+                        "dpr": ActType.DPR,
+                        "codice_civile": ActType.CODICE_CIVILE,
+                        "codice_penale": ActType.CODICE_PENALE,
+                        "codice_procedura_civile": ActType.CODICE_PROCEDURA_CIVILE,
+                        "codice_procedura_penale": ActType.CODICE_PROCEDURA_PENALE,
+                        "testo_unico": ActType.TESTO_UNICO,
+                        "costituzione": ActType.COSTITUZIONE,
+                        "convention": ActType.CONVENTION,
+                        "institution": ActType.INSTITUTION
+                    }
+                    act_type = act_type_mapping.get(act_type_str)
+                    if not act_type:
+                        continue
+
                 embeddings = []
                 for text in texts:
                     embedding = self._get_embedding(text)
@@ -556,7 +443,7 @@ class LegalClassifier:
                     # Media degli embeddings per creare il prototipo
                     self.prototype_embeddings[act_type] = np.mean(embeddings, axis=0)
 
-    def _get_embedding(self, text: str) -> Optional[np.ndarray]: # Reverted return type
+    def _get_embedding(self, text: str) -> Optional[np.ndarray]:
         """Genera embedding per un testo usando Italian-legal-bert."""
         if self.model is None:
             return None
@@ -567,7 +454,7 @@ class LegalClassifier:
                 text,
                 return_tensors="pt",
                 truncation=True,
-                max_length=256,
+                max_length=self.config.models.legal_classifier_max_length,
                 padding=True
             )
 
@@ -575,7 +462,7 @@ class LegalClassifier:
             with torch.no_grad():
                 outputs = self.model(**inputs)
                 # Usa il [CLS] token come rappresentazione della frase
-                embedding = outputs.last_hidden_state[:, 0, :].numpy()[0] # Reverted to np.ndarray
+                embedding = outputs.last_hidden_state[:, 0, :].numpy()[0]
 
             return embedding
         except Exception as e:
@@ -586,22 +473,19 @@ class LegalClassifier:
         """
         Classifica il tipo di atto normativo usando rule-based prioritario + semantica come supporto.
         """
-        # STRATEGIA: Prima regole deterministiche (più accurate), poi semantica come conferma
-
-        # Step 1: Prova classificazione rule-based (molto accurata per pattern chiari)
+        # Step 1: Prova classificazione rule-based
         rule_classification = self._classify_by_rules(text_span)
 
-        # If rule-based confidence is high (e.g., >= 0.8), prioritize it strongly.
-        # This threshold is chosen to protect ActType.CODICE (0.85) and other strong rules.
-        if rule_classification.confidence >= 0.8:
-            # If semantic is available and agrees, boost confidence.
+        # Se confidence rule-based è alta, priorità alle regole
+        if rule_classification.confidence >= self.config.confidence.rule_based_priority_threshold:
+            # Se semantica disponibile e concorda, boost confidence
             semantic_classification = None
             if self.model is not None:
                 semantic_classification = self._classify_by_semantics(text_span, context)
 
             if semantic_classification and semantic_classification.act_type == rule_classification.act_type:
                 combined_confidence = min(
-                    (rule_classification.confidence + semantic_classification.confidence) / 2 + 0.1,
+                    (rule_classification.confidence + semantic_classification.confidence) / 2 + self.config.confidence.semantic_boost_factor,
                     1.0
                 )
                 return LegalClassification(
@@ -611,26 +495,22 @@ class LegalClassifier:
                     semantic_embedding=semantic_classification.semantic_embedding
                 )
             else:
-                # If semantic is not available, or disagrees, or is less confident, stick with rule-based.
                 return rule_classification
-        
-        # If rule-based confidence is low (< 0.8), then consider semantic classification more openly.
         else:
+            # Se confidence rule-based è bassa, considera semantica
             semantic_classification = None
             if self.model is not None:
                 semantic_classification = self._classify_by_semantics(text_span, context)
 
             if semantic_classification and semantic_classification.confidence > rule_classification.confidence:
-                # If semantic is more confident, use it.
                 return semantic_classification
             else:
-                # Otherwise, stick with the (low confidence) rule-based.
                 return rule_classification
 
     def _classify_by_semantics(self, text_span: TextSpan, context: str) -> Optional[LegalClassification]:
         """Classificazione semantica come metodo di supporto."""
         # Crea una finestra di contesto per la classificazione
-        context_window = self._extract_context_window(text_span, context, window_size=200)
+        context_window = self._extract_context_window(text_span, context)
 
         # Genera embedding per il contesto
         context_embedding = self._get_embedding(context_window)
@@ -651,7 +531,7 @@ class LegalClassifier:
                 best_similarity = similarity
                 best_act_type = act_type
 
-        confidence = min(best_similarity * 1.2, 1.0)  # Scale similarity to confidence
+        confidence = min(best_similarity * self.config.confidence.semantic_similarity_scale, 1.0)
 
         return LegalClassification(
             span=text_span,
@@ -661,106 +541,104 @@ class LegalClassifier:
         )
 
     def _classify_by_rules(self, text_span: TextSpan) -> LegalClassification:
-        """Classificazione rule-based precisa con confidence variabili."""
+        """Classificazione rule-based precisa con confidence configurabili."""
         text_lower = text_span.text.lower()
-        original_text = text_span.text # Keep original text for specific checks
 
         act_type = ActType.LEGGE  # Default
-        confidence = 0.5  # Low confidence per default
+        confidence = self.config.confidence.default
 
-        # Specific Code Classifications (most specific first)
-        if re.search(r'\bc\.p\.c\.?\b', text_lower): # Made final dot optional
+        # Codici specifici (massima priorità)
+        if re.search(r'\bc\.p\.c\.?\b', text_lower):
             act_type = ActType.CODICE_PROCEDURA_CIVILE
-            confidence = 0.99
-        elif re.search(r'\bc\.p\.p\.?\b', text_lower): # Made final dot optional
+            confidence = self.config.confidence.specific_codes
+        elif re.search(r'\bc\.p\.p\.?\b', text_lower):
             act_type = ActType.CODICE_PROCEDURA_PENALE
-            confidence = 0.99
-        elif re.search(r'\bc\.c\.?\b', text_lower): # Made final dot optional
+            confidence = self.config.confidence.specific_codes
+        elif re.search(r'\bc\.c\.?\b', text_lower):
             act_type = ActType.CODICE_CIVILE
-            confidence = 0.99
+            confidence = self.config.confidence.specific_codes
         elif re.search(r'\bc\.p\.?\b', text_lower) and not re.search(r'\b(?:c\.p\.c\.?|c\.p\.p\.?)\b', text_lower):
-            # Match c.p. only if c.p.c. or c.p.p. are NOT present in the text (with optional dots)
             act_type = ActType.CODICE_PENALE
-            confidence = 0.99
+            confidence = self.config.confidence.specific_codes
         elif re.search(r'\b(?:testo unico|t\.u\.|tuf)\b', text_lower):
             act_type = ActType.TESTO_UNICO
-            confidence = 0.95
-        # Treat generic "codice" as CODICE if not more specific
+            confidence = self.config.confidence.testo_unico
         elif 'codice' in text_lower:
             act_type = ActType.CODICE
-            confidence = 0.85
+            confidence = self.config.confidence.generic_codes
 
         # Decreto Legislativo
         elif any(pattern in text_lower for pattern in ['decreto legislativo']):
             act_type = ActType.DECRETO_LEGISLATIVO
-            confidence = 0.98
+            confidence = self.config.confidence.decreto_legislativo_full
         elif any(pattern in text_lower for pattern in ['d.lgs.', 'd.lgs', 'dlgs']):
             act_type = ActType.DECRETO_LEGISLATIVO
-            confidence = 0.95
+            confidence = self.config.confidence.decreto_legislativo_abbrev
 
         # DPR
         elif any(pattern in text_lower for pattern in ['decreto del presidente della repubblica']):
             act_type = ActType.DPR
-            confidence = 0.98
+            confidence = self.config.confidence.dpr_full
         elif any(pattern in text_lower for pattern in ['d.p.r.', 'd.p.r', 'dpr']):
             act_type = ActType.DPR
-            confidence = 0.95
+            confidence = self.config.confidence.dpr_abbrev
 
         # Legge
         elif 'legge' in text_lower:
             act_type = ActType.LEGGE
-            confidence = 0.90
+            confidence = self.config.confidence.legge_full
         elif text_lower.strip() in ['l.', 'l'] or 'l.' in text_lower:
             act_type = ActType.LEGGE
-            confidence = 0.75
+            confidence = self.config.confidence.legge_abbrev
 
         # Costituzione
         elif 'costituzione' in text_lower:
             act_type = ActType.COSTITUZIONE
-            confidence = 0.98
+            confidence = self.config.confidence.costituzione_full
         elif 'cost.' in text_lower:
             act_type = ActType.COSTITUZIONE
-            confidence = 0.90
-        
-        # Conventions (e.g., CEDU)
+            confidence = self.config.confidence.costituzione_abbrev
+
+        # Altri tipi
         elif re.search(r'\b(?:c(?:venzione|edu)|protocollo)\b', text_lower):
             act_type = ActType.CONVENTION
-            confidence = 0.90
+            confidence = self.config.confidence.convention
 
-        # Institutions (e.g., Corte Costituzionale, Agenzia delle Entrate) - these are not legal sources, so lower confidence or specific handling
-        elif re.search(r'\b(?:corte|tribunale|consiglio di stato|agenzia delle entrate|banca d\'italia|consob|garante per la protezione dei dati personali|corte di giustizia dell\'ue)\b', text_lower, re.IGNORECASE):
+        elif re.search(r'\b(?:corte|tribunale|consiglio di stato|agenzia delle entrate)\b', text_lower, re.IGNORECASE):
             act_type = ActType.INSTITUTION
-            confidence = 0.99 # High confidence for identification, but might be filtered later
+            confidence = self.config.confidence.institution
 
-        # Direttiva UE
         elif re.search(r'\b(?:direttiva\s*\(ue\)|direttiva\s*europea)\b', text_lower):
             act_type = ActType.DIRETTIVA_UE
-            confidence = 0.99
+            confidence = self.config.confidence.direttiva_ue
 
-        # Trattato
-        elif re.search(r'\b(?:trattato\s+sul\s+funzionamento\s+dell\'unione\s+europea|tfue|trattato\s+dell\'unione\s+europea|tue)\b', text_lower):
+        elif re.search(r'\b(?:trattato\s+sul\s+funzionamento\s+dell\'unione\s+europea|tfue)\b', text_lower):
             act_type = ActType.TRATTATO
-            confidence = 0.99
+            confidence = self.config.confidence.trattato
 
-        # Generic articles (low confidence, as they need context)
+        # Articoli generici
         elif text_lower.startswith('art') or text_lower.startswith('articolo'):
-            confidence = 0.3
+            confidence = self.config.confidence.generic_article
 
-        log.debug("Rule-based classification",
-                 text=text_span.text[:50],
-                 act_type=act_type.value,
-                 confidence=confidence,
-                 patterns_matched=[p for p in ['decreto legislativo', 'd.lgs', 'legge', 'c.c.', 'costituzione'] if p in text_lower][:3])
+        if self.config.output.log_pattern_matches:
+            patterns_matched = [p for p in ['decreto legislativo', 'd.lgs', 'legge', 'c.c.', 'costituzione']
+                              if p in text_lower][:self.config.output.max_logged_patterns]
+            log.debug("Rule-based classification",
+                     text=text_span.text[:50],
+                     act_type=act_type.value,
+                     confidence=confidence,
+                     patterns_matched=patterns_matched)
 
         return LegalClassification(
             span=text_span,
             act_type=act_type,
             confidence=confidence,
-            semantic_embedding=None  # No semantic embedding for rule-based classification
+            semantic_embedding=None
         )
 
-    def _extract_context_window(self, text_span: TextSpan, full_text: str, window_size: int = 200) -> str:
+    def _extract_context_window(self, text_span: TextSpan, full_text: str) -> str:
         """Estrae una finestra di contesto attorno al text span."""
+        window_size = self.config.context.classification_context
         start_context = max(0, text_span.start_char - window_size // 2)
         end_context = min(len(full_text), text_span.end_char + window_size // 2)
 
@@ -771,91 +649,80 @@ class NormativeParser:
     """
     Stage 3: Estrae componenti strutturati da riferimenti normativi classificati.
     """
-    def __init__(self):
-        log.info("Initializing NormativeParser")
-        # Regex patterns for common legal components
-        self.patterns = {
-            "act_number": r"(?:n\.?|numero)\s*(\d+)",
-            "date": r"(?:del|in\s+data\s+del)\s*(\d{1,2}[/-]\d{1,2}[/-]\d{4}|\d{4})",
-            "article": r"(?:art\.?|articolo)\s*(\d+)",
-            "comma": r"(?:co\.?|comma)\s*(\d+)",
-            "letter": r"(?:lett\.?|lettera)\s*([a-z])",
-            "version": r"(?:versione|aggiornato\s+al)\s*(\d{1,2}[/-]\d{1,2}[/-]\d{4}|\d{4})",
-            "annex": r"(?:allegato|annesso)\s*([a-zA-Z0-9]+)"
-        }
+    def __init__(self, config: PipelineConfig):
+        """Inizializza con configurazione esterna."""
+        self.config = config
+        log.info("Initializing NormativeParser with configuration")
+
+        # Pattern dalla configurazione
+        self.patterns = config.parsing_patterns.copy()
+        # Rimuovi pattern speciali che gestiremo separatamente
+        self.patterns.pop("eu_directive", None)
+        self.patterns.pop("date_patterns", None)
 
     def parse(self, legal_classification: LegalClassification) -> ParsedNormative:
         """
         Parses the text of a legal classification to extract structured components.
         """
-        text = legal_classification.span.text # Use original case for storing, lower for parsing
+        text = legal_classification.span.text
         parsed_data = {
-            "text": text, # Pass the original text
+            "text": text,
             "act_type": legal_classification.act_type,
             "confidence": legal_classification.confidence,
             "start_char": legal_classification.span.start_char,
             "end_char": legal_classification.span.end_char
         }
 
-        # Use lowercased text for regex matching
         text_lower = text.lower()
 
-        # Specific pattern for EU Directives: Direttiva (UE) YYYY/NNNN
-        eu_directive_pattern = r"direttiva\s*\(ue\)\s*(\d{4})/(\d{1,4})"
+        # Pattern speciale per Direttive UE
+        eu_directive_pattern = self.config.parsing_patterns["eu_directive"]
         match_eu_directive = re.search(eu_directive_pattern, text_lower)
         if match_eu_directive:
             parsed_data["date"] = match_eu_directive.group(1)
             parsed_data["act_number"] = match_eu_directive.group(2)
         else:
-            # Extract act_number, article, comma, letter, version, annex using existing patterns
+            # Estrai componenti usando pattern configurabili
             for component, pattern in self.patterns.items():
-                if component == "date": # Skip date for now, handle separately
+                if component == "date":  # Skip, gestito separatamente
                     continue
                 match = re.search(pattern, text_lower)
                 if match:
                     parsed_data[component] = match.group(1)
 
-            # --- Date Extraction ---
-            # Pattern 1: "del DD/MM/YYYY" or "del YYYY"
-            date_pattern_1 = r"(?:del|in\s+data\s+del)\s*(\d{1,2}[/-]\d{1,2}[/-]\d{4}|\d{4})"
-            match_date_1 = re.search(date_pattern_1, text_lower)
+            # Estrazione date con priorità configurabile
+            date_patterns = self.config.parsing_patterns["date_patterns"]
+
+            # Pattern primario
+            match_date_1 = re.search(date_patterns["primary"], text_lower)
             if match_date_1:
                 parsed_data["date"] = match_date_1.group(1)
             else:
-                # Pattern 2: "n. XX/YYYY" or "XX/YYYY" (year after a slash)
-                # Match the full pattern and then extract the year
-                date_pattern_2_full = r"\d{1,4}/(\d{4})" # Captures the year after the slash
-                match_date_2 = re.search(date_pattern_2_full, text_lower)
+                # Pattern secondario
+                match_date_2 = re.search(date_patterns["secondary"], text_lower)
                 if match_date_2:
                     parsed_data["date"] = match_date_2.group(1)
                 else:
-                    # Pattern 3: YYYY at the end of the string (e.g., "Legge 1998")
-                    date_pattern_3 = r"(\d{4})$"
-                    match_date_3 = re.search(date_pattern_3, text_lower)
+                    # Pattern terziario
+                    match_date_3 = re.search(date_patterns["tertiary"], text_lower)
                     if match_date_3:
                         parsed_data["date"] = match_date_3.group(1)
-            # --- End Date Extraction ---
 
-        # Determine if it's a complete reference (basic check)
+        # Determina se è un riferimento completo
         is_complete = parsed_data.get("act_number") and (parsed_data.get("date") or parsed_data.get("article"))
         parsed_data["is_complete_reference"] = is_complete
 
         return ParsedNormative(**parsed_data)
 
+
 class ReferenceResolver:
     """
     Stage 4: Risolve riferimenti incompleti o ambigui.
     """
-    def __init__(self):
-        log.info("Initializing ReferenceResolver")
-        # TODO: Implement a knowledge base or a more sophisticated lookup for resolution.
-        # For now, a simple heuristic for common codes.
-        self.code_abbreviations = {
-            "c.c.": "civile",
-            "c.p.": "penale",
-            "c.p.c.": "procedura civile",
-            "c.p.p.": "procedura penale"
-        }
+    def __init__(self, config: PipelineConfig):
+        """Inizializza con configurazione esterna."""
+        self.config = config
+        log.info("Initializing ReferenceResolver with configuration")
 
     def resolve(self, parsed_normative: ParsedNormative, full_text: str) -> ResolvedNormative:
         """
@@ -865,35 +732,34 @@ class ReferenceResolver:
         resolved_data["resolution_method"] = "direct"
         resolved_data["resolution_confidence"] = 1.0
 
-        
-        
-        # TODO: Implement more advanced resolution strategies:
-        # - Semantic search against a database of legal acts to find the most likely match.
-        # - Handling relative references (e.g., "il precedente articolo" requires tracking previous entities).
-        # - Using document-level context to disambiguate.
-
+        # TODO: Implementazioni future configurabili
         return ResolvedNormative(**resolved_data)
+
 
 class StructureBuilder:
     """
     Stage 5: Costruisce l'output finale strutturato.
     """
-    def __init__(self):
-        log.info("Initializing StructureBuilder")
+    def __init__(self, config: PipelineConfig):
+        """Inizializza con configurazione esterna."""
+        self.config = config
+        log.info("Initializing StructureBuilder with configuration")
 
     def build(self, resolved_normative: ResolvedNormative) -> Dict[str, Any]:
         """
         Builds the final structured output from a ResolvedNormative object.
         """
-        # Handle INSTITUTION type: these are not legal sources for visualex
-        if resolved_normative.act_type == ActType.INSTITUTION:
-            log.debug(f"Filtering out institution: {resolved_normative.text}")
+        # Filtra istituzioni se configurato
+        if (self.config.output.filter_institutions and
+            resolved_normative.act_type == ActType.INSTITUTION):
+            if self.config.output.enable_debug_logging:
+                log.debug(f"Filtering out institution: {resolved_normative.text}")
             return {}
 
-        # Map ResolvedNormative fields to the schema.LegalSource format
+        # Map to schema format
         structured_output = {
             "source_type": resolved_normative.act_type.value if resolved_normative.act_type else None,
-            "text": resolved_normative.text, # Use the text field from ParsedNormative
+            "text": resolved_normative.text,
             "confidence": resolved_normative.confidence,
             "start_char": resolved_normative.start_char,
             "end_char": resolved_normative.end_char,
@@ -905,8 +771,12 @@ class StructureBuilder:
             "version_date": resolved_normative.version_date,
             "annex": resolved_normative.annex
         }
-        # Filter out None values for cleaner output if desired by schema
-        return {k: v for k, v in structured_output.items() if v is not None}
+
+        # Filtra valori null se configurato
+        if self.config.output.filter_null_values:
+            return {k: v for k, v in structured_output.items() if v is not None}
+
+        return structured_output
 
 
 class LegalSourceExtractionPipeline:
@@ -914,65 +784,56 @@ class LegalSourceExtractionPipeline:
     Pipeline principale che coordina tutti gli stage specializzati.
     """
 
-    def __init__(self):
+    def __init__(self, config_path: Optional[str] = None):
+        """Inizializza pipeline con configurazione esterna."""
         log.info("Initializing Specialized Legal Source Extraction Pipeline")
 
-        # Stage 1: Entity Detection
-        self.entity_detector = EntityDetector()
+        # Carica configurazione
+        self.config = get_pipeline_config()
+        log.info("Configuration loaded successfully")
 
-        # Stage 2: Legal Classification
-        self.legal_classifier = LegalClassifier()
-
-        # Stage 3: Normative Parser
-        self.normative_parser = NormativeParser()
-
-        # Stage 4: Reference Resolver
-        self.reference_resolver = ReferenceResolver()
-
-        # Stage 5: Structure Builder
-        self.structure_builder = StructureBuilder()
+        # Inizializza tutti gli stage con configurazione
+        self.entity_detector = EntityDetector(self.config)
+        self.legal_classifier = LegalClassifier(self.config)
+        self.normative_parser = NormativeParser(self.config)
+        self.reference_resolver = ReferenceResolver(self.config)
+        self.structure_builder = StructureBuilder(self.config)
 
         log.info("Specialized pipeline initialized successfully")
 
     def _is_spurious_entity(self, candidate: TextSpan) -> bool:
         """
-        Filtra entità spurie che non sono riferimenti normativi validi.
+        Filtra entità spurie usando configurazione.
         """
         text = candidate.text.strip()
 
-        # Filtra entità troppo brevi (1-2 caratteri) a meno che non siano abbreviazioni note
-        if len(text) <= 2:
-            # Eccezioni per abbreviazioni valide molto brevi
-            valid_short = ['l.', 'l', 'cc', 'cp']
-            if text.lower() not in valid_short:
+        # Filtra entità troppo brevi
+        if len(text) <= self.config.spurious_filters.min_length:
+            if text.lower() not in self.config.spurious_filters.valid_short_terms:
                 return True
 
-        # Filtra caratteri isolati che chiaramente non sono riferimenti
-        if len(text) == 1:
-            # Lettere singole isolate sono quasi sempre spurie
-            if text.isalpha():
-                return True
-
-        # Filtra articoli determinativi isolati
-        spurious_words = ["l'", "il", "la", "lo", "gli", "le", "del", "della", "dei", "delle"]
-        if text.lower() in spurious_words:
+        # Filtra caratteri isolati
+        if len(text) == 1 and text.isalpha() and self.config.spurious_filters.filter_single_alpha:
             return True
 
-        # Filtra se confidence della detection è troppo bassa
-        if candidate.initial_confidence < 0.5:
+        # Filtra parole spurie configurate
+        if text.lower() in self.config.spurious_filters.spurious_words:
+            return True
+
+        # Filtra usando pattern regex spurie
+        for pattern in self.config.spurious_filters.spurious_patterns:
+            if re.search(pattern, text.lower(), re.IGNORECASE):
+                return True
+
+        # Filtra se confidence troppo bassa
+        if candidate.initial_confidence < self.config.spurious_filters.min_detection_confidence:
             return True
 
         return False
 
     async def extract_legal_sources(self, text: str) -> List[Dict[str, Any]]:
         """
-        Estrae fonti normative usando la pipeline specializzata.
-
-        Args:
-            text: Testo da analizzare
-
-        Returns:
-            Lista di fonti normative strutturate
+        Estrae fonti normative usando la pipeline specializzata configurabile.
         """
         log.info("Starting specialized legal source extraction", text_length=len(text))
 
@@ -984,11 +845,11 @@ class LegalSourceExtractionPipeline:
             # Stage 2: Classify legal types + filter spurious entities
             classified_entities = []
             for candidate in candidates:
-                # Skip overly short or spurious entities
                 if self._is_spurious_entity(candidate):
-                    log.debug("Filtering spurious entity",
-                             text=candidate.text,
-                             length=len(candidate.text))
+                    if self.config.output.enable_debug_logging:
+                        log.debug("Filtering spurious entity",
+                                 text=candidate.text,
+                                 length=len(candidate.text))
                     continue
 
                 classification = self.legal_classifier.classify_legal_type(candidate, text)
@@ -1014,7 +875,7 @@ class LegalSourceExtractionPipeline:
             final_results = []
             for resolved in resolved_normatives:
                 structured_output = self.structure_builder.build(resolved)
-                if structured_output: # Only append if not empty (i.e., not an INSTITUTION)
+                if structured_output:  # Only append if not empty
                     final_results.append(structured_output)
             log.info("Stage 5 complete - Final structured output built", final_results_count=len(final_results))
 

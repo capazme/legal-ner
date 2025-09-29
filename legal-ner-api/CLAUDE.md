@@ -8,13 +8,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Legal-NER-API is a FastAPI-based system for Named Entity Recognition in Italian legal texts.
 
-**CURRENT STATUS**: The system has been completely redesigned with a specialized pipeline architecture that provides significantly better accuracy and performance than the previous implementation.
+**CURRENT STATUS**: The system has been completely redesigned with a configurable specialized pipeline architecture that provides significantly better accuracy and performance than the previous implementation.
 
 **ARCHITECTURE STATUS**:
 - ✅ API Layer: Fully operational
 - ✅ Database Layer: Fully operational
 - ✅ Core Infrastructure: Fully operational
-- ✅ **Specialized Pipeline**: New high-performance system operational
+- ✅ **Configurable Specialized Pipeline**: High-performance system with external YAML configuration
 
 ## Development Setup
 

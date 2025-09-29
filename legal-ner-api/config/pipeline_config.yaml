@@ -1,0 +1,400 @@
+# Configurazione Pipeline Specializzata Legal-NER
+# ================================================
+
+# Configurazione Modelli AI
+models:
+  entity_detector:
+    primary: "DeepMount00/Italian_NER_XXL_v2"
+    fallback: "Babelscape/wikineural-multilingual-ner"
+    max_length: 512
+
+  legal_classifier:
+    primary: "dlicari/Italian-Legal-BERT"
+    embedding_max_length: 256
+
+  semantic_correlator:
+    model: "all-MiniLM-L6-v2"
+
+# Soglie di Confidence
+confidence_thresholds:
+  # Stage 1: Entity Detection
+  minimum_detection_confidence: 0.5
+
+  # Stage 2: Legal Classification
+  rule_based_priority_threshold: 0.8  # Soglia per priorità rule-based
+  semantic_boost_factor: 0.1  # Boost quando rule+semantic concordano
+  semantic_similarity_scale: 1.2  # Moltiplicatore similarità→confidence
+
+  # Confidence per pattern rule-based
+  rule_based_confidence:
+    # Codici specifici (massima priorità)
+    specific_codes: 0.99  # c.c., c.p.c., c.p.p.
+    generic_codes: 0.85   # "codice" generico
+    testo_unico: 0.95
+
+    # Decreti
+    decreto_legislativo_full: 0.98    # "decreto legislativo"
+    decreto_legislativo_abbrev: 0.95  # "d.lgs.", "dlgs"
+    dpr_full: 0.98                    # "decreto del presidente della repubblica"
+    dpr_abbrev: 0.95                  # "d.p.r.", "dpr"
+
+    # Leggi
+    legge_full: 0.90      # "legge"
+    legge_abbrev: 0.75    # "l.", "l"
+
+    # Altri atti
+    costituzione_full: 0.98   # "costituzione"
+    costituzione_abbrev: 0.90 # "cost."
+    convention: 0.90
+    institution: 0.99
+    direttiva_ue: 0.99
+    trattato: 0.99
+
+    # Articoli generici (necessitano contesto)
+    generic_article: 0.3
+
+    # Default per pattern non riconosciuti
+    default: 0.5
+
+# Parametri di Finestra e Contesto
+context_windows:
+  # Stage 1: Entity Detection
+  entity_expansion:
+    left_window: 100    # Caratteri a sinistra per espansione
+    right_window: 100   # Caratteri a destra per espansione
+    context_window: 50  # Finestra contesto per span finale
+
+  # Contesto semantico per pattern matching
+  semantic_context:
+    immediate_context: 50   # Contesto immediato per numeri isolati
+    extended_context: 100   # Contesto esteso per indicatori legali
+    full_context: 200       # Finestra completa per verifica pattern
+
+  # Stage 2: Legal Classification
+  classification_context: 200  # Finestra per classificazione semantica
+
+# Mappatura NORMATTIVA (Abbreviazioni Normative Italiane)
+normattiva_mapping:
+  # Decreti Legislativi
+  decreto_legislativo:
+    - "d.lgs."
+    - "dpr"
+    - "rd"
+    - "r.d."
+    - "regio decreto"
+    - "d.p.r."
+    - "decreto legge"
+    - "decreto legislativo"
+    - "decreto.legge"
+    - "decreto.legislativo"
+    - "dl"
+    - "dlgs"
+
+  # Leggi
+  legge:
+    - "l"
+    - "l."
+    - "legge"
+
+  # Codici Specifici
+  codice_civile:
+    - "c.c."
+    - "cc"
+
+  codice_penale:
+    - "c.p."
+
+  codice_procedura_civile:
+    - "c.p.c"
+
+  codice_procedura_penale:
+    - "c.p.p."
+
+  # Altri Codici
+  codice_contratti_pubblici:
+    - "c.c.p"
+
+  codice_amministrazione_digitale:
+    - "cad"
+
+  codice_antimafia:
+    - "cam"
+
+  codice_ambiente:
+    - "camb"
+
+  codice_assicurazioni:
+    - "cap"
+
+  codice_beni_culturali:
+    - "cbc"
+
+  codice_comunicazioni:
+    - "cce"
+
+  codice_crisi_impresa:
+    - "cci"
+
+  codice_consumo:
+    - "cdc"
+
+  codice_protezione_civile:
+    - "cdpc"
+
+  codice_strada:
+    - "cds"
+
+  codice_giustizia_contabile:
+    - "cgco"
+
+  codice_navigazione:
+    - "cn"
+
+  codice_nautica:
+    - "cnd"
+
+  # Costituzione
+  costituzione:
+    - "cost"
+    - "cost."
+    - "costituzione"
+
+# Pattern Regex per Detection
+regex_patterns:
+  # Pattern per tipi di atti con numeri
+  legal_acts:
+    - r'\b(?:d\.?\s*lgs\.?|decreto\s+legislativo)\s+n?\.?\s*\d+'
+    - r'\b(?:d\.?\s*p\.?\s*r\.?|dpr)\s+n?\.?\s*\d+'
+    - r'\b(?:d\.?\s*l\.?|decreto\s+legge)\s+n?\.?\s*\d+'
+    - r'\b(?:l\.?|legge)\s+n?\.?\s*\d+'
+    - r'\b(?:r\.?\s*d\.?|regio\s+decreto)\s+n?\.?\s*\d+'
+
+  # Codici specifici
+  codes:
+    - r'\bc\.?\s*c\.?\b'     # codice civile
+    - r'\bc\.?\s*p\.?\b'     # codice penale
+    - r'\bc\.?\s*p\.?\s*c\.?\b'  # codice procedura civile
+    - r'\bc\.?\s*p\.?\s*p\.?\b'  # codice procedura penale
+
+  # Pattern numerici normativi
+  numeric:
+    - r'\bn\.?\s*\d+(?:/\d{4})?(?:\s+del\s+\d{4})?'
+    - r'\b\d+/\d{4}\b'
+    - r'\b\d+\s+del\s+\d{4}\b'
+
+  # Articoli e suddivisioni
+  articles:
+    - r'\bart\.?\s*\d+(?:\s*[,-]\s*(?:co\.?|comma)\s*\d+)?'
+    - r'\barticolo\s+\d+(?:\s*[,-]\s*comma\s*\d+)?'
+    - r'\bco\.?\s*\d+'
+    - r'\bcomma\s+\d+'
+    - r'\blett\.?\s*[a-z](?:\)|\b)'
+    - r'\blettera\s+[a-z]\b'
+
+  # Allegati e appendici
+  annexes:
+    - r'\ballegato\s+[a-z0-9]'
+    - r'\bappendice\s+[a-z0-9]'
+    - r'\bannesso\s+[a-z0-9]'
+    - r'\btabella\s+[a-z0-9]'
+
+# Pattern Contestuali per Verifica Semantica
+context_patterns:
+  # Riferimenti normativi
+  normative_references:
+    - r'(?:secondo|ai\s+sensi|in\s+base\s+a|previsto|stabilito)\s+(?:da|dal|dell?|nel)'
+    - r'(?:disciplina|regola|prevede|stabilisce|dispone|determina)'
+    - r'(?:modificato|integrato|sostituito|abrogato)\s+(?:da|dal|con)'
+    - r'(?:entrat[oa]\s+in\s+vigore|vigente|applicabil[ei])'
+
+  # Procedure legali
+  legal_procedures:
+    - r'(?:sentenza|decreto|ordinanza|delibera|risoluzione)\s+n?\.?\s*\d+'
+    - r'(?:tribunale|corte|tar|consiglio\s+di\s+stato)'
+    - r'(?:ricorso|appello|opposizione|istanza)'
+
+  # Contesto amministrativo
+  administrative:
+    - r'(?:gazzetta\s+ufficiale|g\.?\s*u\.?)'
+    - r'(?:ministero|dipartimento|agenzia|ente)'
+    - r'(?:autorizza\w*|approva\w*|emana\w*|promulga\w*)'
+
+  # Riferimenti interni
+  internal_references:
+    - r'(?:di\s+cui\s+all?|previsto\s+dall?|secondo\s+l?)\s*art'
+    - r'(?:comma|co\.)\s+precedente'
+    - r'medesim[oa]\s+(?:articolo|comma|decreto|legge)'
+
+# Pattern per Espansione Confini
+boundary_expansion:
+  # Pattern a sinistra (tipo di atto)
+  left_patterns:
+    - r'(decreto\s+legislativo\s+n?\.?\s?)$'
+    - r'(d\.?\s*lgs\.?\s+n?\.?\s?)$'
+    - r'(legge\s+n?\.?\s?)$'
+    - r'(l\.?\s+n?\.?\s?)$'
+    - r'(decreto\s+del\s+presidente\s+della\s+repubblica\s+n?\.?\s?)$'
+    - r'(d\.?\s*p\.?\s*r\.?\s+n?\.?\s?)$'
+    - r'(articolo\s+)$'
+    - r'(art\.?\s*)$'
+
+  # Pattern a destra (data/anno/articoli)
+  right_patterns:
+    - r'^(\s+del\s+\d{1,2}[/-]\d{1,2}[/-]\d{4})'  # del 23/05/2001
+    - r'^(\s+del\s+\d{4})'                          # del 2001
+    - r'^(/\d{4})'                                  # /2001
+    - r'^(\s*,\s*articolo\s+\d+)'                  # , articolo 25
+    - r'^(\s*,\s*art\.?\s*\d+)'                    # , art. 25
+    - r'^(\s*,\s*comma\s+\d+)'                     # , comma 2
+
+# Prototipo Semantici per Classificazione
+semantic_prototypes:
+  decreto_legislativo:
+    - "decreto legislativo numero del anno"
+    - "d.lgs. n. del"
+    - "dlgs"
+    - "decreto legislativo che disciplina"
+
+  legge:
+    - "legge numero del anno"
+    - "l. n. del"
+    - "legge che stabilisce"
+    - "legge concernente"
+
+  dpr:
+    - "decreto del presidente della repubblica numero del"
+    - "d.p.r. n. del"
+    - "dpr"
+    - "decreto presidente repubblica"
+
+  codice_civile:
+    - "codice civile"
+    - "c.c."
+
+  codice_penale:
+    - "codice penale"
+    - "c.p."
+
+  codice_procedura_civile:
+    - "codice di procedura civile"
+    - "c.p.c."
+
+  codice_procedura_penale:
+    - "codice di procedura penale"
+    - "c.p.p."
+
+  testo_unico:
+    - "testo unico"
+    - "t.u."
+    - "tuf"
+
+  costituzione:
+    - "costituzione italiana"
+    - "cost."
+    - "carta costituzionale"
+    - "principi costituzionali"
+
+  convention:
+    - "convenzione europea dei diritti dell'uomo"
+    - "c.e.d.u."
+    - "protocollo addizionale"
+
+  institution:
+    - "corte costituzionale"
+    - "corte europea dei diritti dell'uomo"
+    - "tribunale"
+    - "consiglio di stato"
+
+# Pattern per Parsing Componenti Normativi
+parsing_patterns:
+  act_number: r"(?:n\.?|numero)\s*(\d+)"
+  date: r"(?:del|in\s+data\s+del)\s*(\d{1,2}[/-]\d{1,2}[/-]\d{4}|\d{4})"
+  article: r"(?:art\.?|articolo)\s*(\d+)"
+  comma: r"(?:co\.?|comma)\s*(\d+)"
+  letter: r"(?:lett\.?|lettera)\s*([a-z])"
+  version: r"(?:versione|aggiornato\s+al)\s*(\d{1,2}[/-]\d{1,2}[/-]\d{4}|\d{4})"
+  annex: r"(?:allegato|annesso)\s*([a-zA-Z0-9]+)"
+
+  # Pattern speciali
+  eu_directive: r"direttiva\s*\(ue\)\s*(\d{4})/(\d{1,4})"
+
+  # Pattern per estrazione date (priorità)
+  date_patterns:
+    primary: r"(?:del|in\s+data\s+del)\s*(\d{1,2}[/-]\d{1,2}[/-]\d{4}|\d{4})"
+    secondary: r"\d{1,4}/(\d{4})"  # anno dopo slash
+    tertiary: r"(\d{4})$"          # anno alla fine
+
+# Filtri Anti-Spurio
+spurious_filters:
+  # Lunghezza minima (eccetto abbreviazioni valide)
+  min_length: 4
+  valid_short_terms:
+    - "l."
+    - "l"
+    - "cc"
+    - "cp"
+    - "c.c."
+    - "c.p."
+
+  # Parole spurie da filtrare
+  spurious_words:
+    - "l'"
+    - "il"
+    - "la"
+    - "lo"
+    - "gli"
+    - "le"
+    - "del"
+    - "della"
+    - "dei"
+    - "delle"
+    - "si"
+    - "s."
+    - "s. n."
+    - "n."
+    - "d'"
+    - "e"
+    - "di"
+    - "da"
+
+  # Pattern spurie da filtrare (regex)
+  spurious_patterns:
+    - r"^s\.\s*$"              # "s."
+    - r"^s\.\s*n\.\s*$"        # "s. n."
+    - r"^n\.\s*$"              # "n."
+    - r"^si\s+"                # "si ..." all'inizio
+    - r"^\w{1,2}\s+d'"         # "xx d'..."
+    - r"^\w{1,2}\s+dell'"      # "xx dell'..."
+
+  # Caratteri isolati da filtrare
+  filter_single_alpha: true
+
+  # Confidence minime
+  min_detection_confidence: 0.7
+
+# Parole Legali per Contesto Numerico
+legal_context_words:
+  - "decreto"
+  - "legge"
+  - "articolo"
+  - "art"
+  - "comma"
+  - "co"
+  - "dlgs"
+  - "dpr"
+  - "norma"
+  - "codice"
+  - "costituzione"
+
+# Configurazione Output
+output_settings:
+  # Filtro tipi di atti dall'output finale
+  filter_institutions: true  # Filtra INSTITUTION dall'output
+
+  # Pulizia output
+  filter_null_values: true   # Rimuove campi null dall'output
+
+  # Logging
+  enable_debug_logging: true
+  log_pattern_matches: true
+  max_logged_patterns: 3
