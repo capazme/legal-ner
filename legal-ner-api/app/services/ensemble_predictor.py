@@ -1,156 +1,251 @@
-from typing import List, Tuple, Dict, Any
-from app.core.config import settings
-from transformers import AutoTokenizer, AutoModelForTokenClassification
-import torch
+"""
+Enhanced Ensemble Predictor with Three-Stage Pipeline
+=====================================================
+
+Sistema NER avanzato che implementa la strategia a 3 stadi:
+1. Stage 1: Italian_NER_XXL_v2 per estrazione entità generiche
+2. Stage 2: Italian-legal-bert per strutturazione legal-specific
+3. Stage 3: Distil-bert per validation + correlazione semantica
+
+Include integrazione completa con feedback loop e golden dataset.
+"""
+
+from typing import List, Dict, Any, Tuple
 import structlog
-from app.services.semantic_validator import SemanticValidator
-from app.services.entity_merger import EntityMerger
-from app.services.confidence_calibrator import ConfidenceCalibrator
+from app.services.three_stage_predictor import ThreeStagePredictor
+from app.services.semantic_correlator import SemanticCorrelator
+from app.services.feedback_loop import FeedbackLoop
 
 log = structlog.get_logger()
 
 class EnsemblePredictor:
-    def __init__(self, validator: SemanticValidator = SemanticValidator(), merger: EntityMerger = EntityMerger(), calibrator: ConfidenceCalibrator = ConfidenceCalibrator()):
-        self.models = self._load_models()
-        self.validator = validator
-        self.merger = merger
-        self.calibrator = calibrator
+    """
+    Ensemble Predictor con pipeline a 3 stadi e correlazione semantica.
 
-    def _load_models(self) -> List[Tuple[AutoModelForTokenClassification, AutoTokenizer]]:
-        """Loads all models specified in the configuration."""
-        models = []
-        log.info("Loading models...", models=settings.ENSEMBLE_MODELS)
-        for model_name in settings.ENSEMBLE_MODELS:
-            try:
-                log.info(f"Loading model: {model_name}")
-                model = AutoModelForTokenClassification.from_pretrained(model_name)
-                tokenizer = AutoTokenizer.from_pretrained(model_name)
-                models.append((model, tokenizer))
-                log.info(f"Successfully loaded model: {model_name}")
-            except Exception as e:
-                log.error("Failed to load model", model_name=model_name, error=str(e))
-                raise
-        return models
+    Architettura:
+    - ThreeStagePredictor: Pipeline NER specializzata per dominio legale
+    - SemanticCorrelator: Correlazione riferimenti normativi distanti
+    - FeedbackLoop: Continuous learning con golden dataset
+
+    Questa implementazione sostituisce l'approccio ensemble tradizionale
+    con una pipeline specializzata per documenti legali italiani.
+    """
+
+    def __init__(self):
+        log.info("Inizializzazione Enhanced EnsemblePredictor con pipeline a 3 stadi")
+
+        try:
+            # Core pipeline a 3 stadi
+            self.three_stage_predictor = ThreeStagePredictor()
+
+            # Correlatore semantico per riferimenti distanti
+            self.semantic_correlator = SemanticCorrelator()
+
+            # Sistema feedback per continuous learning
+            self.feedback_loop = FeedbackLoop()
+
+            log.info("EnsemblePredictor inizializzato con successo")
+
+        except Exception as e:
+            log.error("Errore nell'inizializzazione EnsemblePredictor", error=str(e))
+            raise
 
     async def predict(self, text: str) -> Tuple[List[Dict[str, Any]], bool, float]:
         """
-        Performs NER prediction using the ensemble of models.
-        For now, it uses only the first model.
+        Esegue predizione completa con pipeline a 3 stadi + correlazione semantica.
+
+        Args:
+            text: Testo da analizzare
+
+        Returns:
+            Tuple[entities, requires_review, uncertainty]
+
+        Pipeline:
+        1. Three-stage NER extraction
+        2. Semantic correlation of distant references
+        3. Quality assessment e uncertainty calculation
         """
-        log.info("Starting prediction", input_text_length=len(text))
-        if not self.models:
-            log.warning("No models loaded, returning empty prediction.")
-            return [], False
+        log.info("Starting enhanced prediction", text_length=len(text))
 
-        model, tokenizer = self.models[0]
-        model_name = settings.ENSEMBLE_MODELS[0]
-        all_processed_entities = []
-        all_uncertainties = []
+        try:
+            # Stage 1-3: Estrazione NER con pipeline specializzata
+            stage_entities, stage_requires_review, stage_uncertainty = await self.three_stage_predictor.predict(text)
+            log.info("Three-stage prediction complete",
+                    entities_found=len(stage_entities),
+                    stage_uncertainty=stage_uncertainty)
 
-        for model_idx, (model, tokenizer) in enumerate(self.models):
-            model_name = settings.ENSEMBLE_MODELS[model_idx]
-            log.info("Running prediction for model", model_name=model_name)
+            # Stage 4: Correlazione semantica per riferimenti distanti
+            enhanced_entities, correlations = await self.semantic_correlator.correlate_legal_references(
+                text, stage_entities
+            )
+            log.info("Semantic correlation complete",
+                    enhanced_entities=len(enhanced_entities),
+                    correlations_found=len(correlations))
 
-            inputs = tokenizer(text, return_tensors="pt", truncation=True)
-            tokens = tokenizer.convert_ids_to_tokens(inputs["input_ids"][0])
+            # Stage 5: Quality assessment finale
+            final_entities, final_uncertainty, requires_review = await self._final_quality_assessment(
+                enhanced_entities, correlations, stage_uncertainty
+            )
 
-            with torch.no_grad():
-                outputs = model(**inputs)
-                logits = outputs.logits
-                probabilities = torch.softmax(logits, dim=2)
+            log.info("Enhanced prediction complete",
+                    final_entities=len(final_entities),
+                    final_uncertainty=final_uncertainty,
+                    requires_review=requires_review)
 
-            predictions = torch.argmax(logits, dim=2)
-            
-            entities = []
-            current_entity = None
+            return final_entities, requires_review, final_uncertainty
 
-            for i, token_id in enumerate(predictions[0]):
-                label = model.config.id2label[token_id.item()]
-                score = probabilities[0][i][token_id.item()].item()
+        except Exception as e:
+            log.error("Errore durante enhanced prediction", error=str(e))
+            # Fallback sicuro
+            return [], True, 1.0
 
-                if label.startswith("B-"):
-                    if current_entity:
-                        entities.append(current_entity)
-                    current_entity = {
-                        "label": label[2:],
-                        "tokens": [tokens[i]],
-                        "scores": [score],
-                        "start_token_index": i
-                    }
-                elif label.startswith("I-") and current_entity and label[2:] == current_entity["label"]:
-                    current_entity["tokens"].append(tokens[i])
-                    current_entity["scores"].append(score)
-                else:
-                    if current_entity:
-                        entities.append(current_entity)
-                    current_entity = None
-            
-            if current_entity:
-                entities.append(current_entity)
-
-            processed_entities_for_model = []
-            for entity in entities:
-                entity_text = tokenizer.convert_tokens_to_string(entity["tokens"])
-                start_char = text.find(entity_text)
-                end_char = start_char + len(entity_text)
-                avg_confidence = sum(entity["scores"]) / len(entity["scores"])
-
-                processed_entities_for_model.append({
-                    "text": entity_text,
-                    "label": entity["label"],
-                    "start_char": start_char,
-                    "end_char": end_char,
-                    "confidence": avg_confidence,
-                    "model": model_name
-                })
-
-            # Calculate uncertainty (entropy) for this model
-            entropy = -torch.sum(probabilities * torch.log(probabilities + 1e-9), dim=-1)
-            avg_entropy = torch.mean(entropy).item()
-
-            all_processed_entities.extend(processed_entities_for_model)
-
-            all_uncertainties.append(avg_entropy)
-            log.info("Model prediction complete", model_name=model_name, entities_count=len(processed_entities_for_model), average_entropy=avg_entropy)
-
-        # Simple ensemble uncertainty: average of all model uncertainties
-        overall_uncertainty = sum(all_uncertainties) / len(all_uncertainties) if all_uncertainties else 0.0
-        requires_review = overall_uncertainty > settings.UNCERTAINTY_THRESHOLD
-        log.info("Overall ensemble prediction complete", total_entities=len(all_processed_entities), overall_uncertainty=overall_uncertainty, requires_review=requires_review, threshold=settings.UNCERTAINTY_THRESHOLD)
-
-        # For now, we return all entities from all models. Semantic consensus will merge them later.
-        merged_entities = self._semantic_consensus(all_processed_entities)
-        calibrated_entities = self.calibrator.calibrate(merged_entities)
-
-        return calibrated_entities, requires_review, overall_uncertainty
-
-    def _semantic_consensus(self, entities: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Merges entities based on exact text and label matching, prioritizing higher confidence."""
-        log.info("Applying semantic consensus (exact match)", input_entities_count=len(entities))
-        
+    async def _final_quality_assessment(
+        self,
+        entities: List[Dict[str, Any]],
+        correlations: List[Any],
+        base_uncertainty: float
+    ) -> Tuple[List[Dict[str, Any]], float, bool]:
+        """
+        Assessment finale della qualità e calcolo uncertainty.
+        """
         if not entities:
-            return []
+            return [], 1.0, True
 
-        # First, apply the more complex merging logic from EntityMerger
-        pre_merged_entities = self.merger.merge_entities(entities)
+        # Calcola quality score per ogni entità
+        quality_enhanced_entities = []
+        total_quality_score = 0.0
 
-        # Then, apply exact match consensus on the pre-merged entities
-        unique_entities: Dict[Tuple[str, str], Dict[str, Any]] = {}
+        for entity in entities:
+            # Base quality dalla confidence
+            quality_score = entity.get("confidence", 0.5)
 
-        for entity in pre_merged_entities:
-            key = (entity["text"].lower(), entity["label"])
-            if key not in unique_entities:
-                unique_entities[key] = entity
-            else:
-                # If a duplicate is found, keep the one with higher confidence
-                if entity["confidence"] > unique_entities[key]["confidence"]:
-                    unique_entities[key] = entity
-        
-        merged_entities = list(unique_entities.values())
-        log.info("Semantic consensus complete", output_entities_count=len(merged_entities))
-        
-        # Validate entities semantically
-        validated_entities = self.validator.validate_entities(merged_entities)
-        return validated_entities
+            # Bonus per entità strutturate
+            if entity.get("structured_data"):
+                quality_score += 0.1
 
-    
+            # Bonus per entità correlate
+            if entity.get("has_correlations"):
+                correlation_count = len(entity.get("semantic_correlations", []))
+                quality_score += min(0.15, correlation_count * 0.05)
+
+            # Bonus per validation score alta
+            validation_score = entity.get("validation_score", 0.5)
+            if validation_score > 0.8:
+                quality_score += 0.05
+
+            # Assicura range [0.1, 0.99]
+            quality_score = max(0.1, min(0.99, quality_score))
+
+            # Aggiorna entità con quality score finale
+            entity["final_quality_score"] = quality_score
+            quality_enhanced_entities.append(entity)
+            total_quality_score += quality_score
+
+        # Calcola uncertainty finale
+        avg_quality = total_quality_score / len(entities) if entities else 0.0
+        final_uncertainty = 1.0 - avg_quality
+
+        # Factor in correlations per uncertainty
+        correlation_factor = min(0.2, len(correlations) * 0.02)
+        final_uncertainty = max(0.1, final_uncertainty - correlation_factor)
+
+        # Combina con base uncertainty dal three-stage
+        combined_uncertainty = (final_uncertainty * 0.6) + (base_uncertainty * 0.4)
+
+        # Determina se serve review
+        requires_review = (
+            combined_uncertainty > 0.6 or  # Alta incertezza
+            avg_quality < 0.7 or           # Bassa qualità media
+            len(entities) == 0             # Nessuna entità trovata
+        )
+
+        log.debug("Final quality assessment",
+                 avg_quality=avg_quality,
+                 final_uncertainty=combined_uncertainty,
+                 requires_review=requires_review,
+                 correlations_count=len(correlations))
+
+        return quality_enhanced_entities, combined_uncertainty, requires_review
+
+    async def process_feedback(
+        self,
+        document_id: str,
+        user_id: str,
+        feedback_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Processa feedback dell'utente per continuous learning.
+
+        Args:
+            document_id: ID del documento analizzato
+            user_id: ID dell'utente che fornisce feedback
+            feedback_data: Dati del feedback
+
+        Returns:
+            Risultato del processing feedback
+        """
+        log.info("Processing user feedback",
+                document_id=document_id,
+                user_id=user_id)
+
+        try:
+            result = await self.feedback_loop.process_feedback(
+                document_id=document_id,
+                user_id=user_id,
+                feedback_data=feedback_data
+            )
+
+            log.info("Feedback processed successfully", result=result)
+            return result
+
+        except Exception as e:
+            log.error("Error processing feedback", error=str(e))
+            return {"status": "error", "error": str(e)}
+
+    async def get_system_stats(self) -> Dict[str, Any]:
+        """
+        Ottiene statistiche complete del sistema per monitoring.
+        """
+        try:
+            # Stats dal feedback loop
+            feedback_stats = await self.feedback_loop.get_feedback_statistics()
+
+            # Stats dal correlatore semantico
+            # (Implementato se necessario)
+
+            # Combina tutto
+            system_stats = {
+                "predictor_type": "three_stage_with_correlation",
+                "feedback_stats": feedback_stats,
+                "golden_dataset_size": feedback_stats.get("golden_dataset_size", 0),
+                "system_accuracy": feedback_stats.get("accuracy_rate", 0.0),
+                "status": "operational"
+            }
+
+            return system_stats
+
+        except Exception as e:
+            log.error("Error getting system stats", error=str(e))
+            return {"status": "error", "error": str(e)}
+
+    async def export_golden_dataset(self, format: str = "json") -> str:
+        """
+        Esporta il golden dataset per analisi o training.
+        """
+        try:
+            return await self.feedback_loop.export_golden_dataset(format=format)
+        except Exception as e:
+            log.error("Error exporting golden dataset", error=str(e))
+            raise
+
+    async def get_training_data(self, min_quality: float = 0.8) -> List[Dict[str, Any]]:
+        """
+        Ottiene dati per training/retraining dei modelli.
+        """
+        try:
+            return await self.feedback_loop.get_golden_dataset_for_training(
+                min_quality_score=min_quality
+            )
+        except Exception as e:
+            log.error("Error getting training data", error=str(e))
+            raise

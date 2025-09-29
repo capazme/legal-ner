@@ -2,9 +2,19 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**⚠️ UPDATED POST-RESET (Sept 28, 2025)**
+
 ## Project Overview
 
-Legal-NER-API is a FastAPI-based system for Named Entity Recognition in Italian legal texts. It uses an ensemble of transformer models to extract legal entities with confidence calibration and human-in-the-loop feedback.
+Legal-NER-API is a FastAPI-based system for Named Entity Recognition in Italian legal texts.
+
+**CURRENT STATUS**: The system has undergone a complete reset of business logic while maintaining the core architecture. All ML/NER services are currently in placeholder mode pending redesign.
+
+**ARCHITECTURE STATUS**:
+- ✅ API Layer: Fully operational
+- ✅ Database Layer: Fully operational
+- ✅ Core Infrastructure: Fully operational
+- 🔄 Service Layer: Reset to placeholders (returns empty results)
 
 ## Development Setup
 
@@ -58,14 +68,21 @@ The application follows a multi-layer architecture:
 
 ## Current Development Status
 
-The project is in **Phase 2-3** according to ROADMAP.md:
-- ✅ Basic API structure and database models
-- ✅ Real model integration (two transformer models)
-- ✅ Ensemble prediction with semantic consensus
-- ✅ Legal source extraction and semantic validation
-- ✅ Basic feedback endpoint with API key authentication
-- ✅ Active learning pipeline with uncertainty calculation
-- 🔄 Human-in-the-loop and dataset building in progress
+**POST-RESET STATUS**:
+- ✅ API infrastructure and database models (fully operational)
+- ✅ Request/response pipeline (functional with empty results)
+- ✅ Database operations and CRUD (fully operational)
+- ✅ Feedback system and dataset building (operational)
+- ✅ Authentication and logging (operational)
+- 🔄 **ALL NER/ML SERVICES RESET TO PLACEHOLDERS**
+- 🚀 **Ready for complete redesign of business logic**
+
+**PLACEHOLDER SERVICES** (require redesign):
+- EnsemblePredictor → returns empty entities
+- LegalSourceExtractor → returns empty sources
+- SemanticValidator → pass-through validation
+- ConfidenceCalibrator → pass-through calibration
+- EntityMerger → pass-through merging
 
 ## Dependencies
 

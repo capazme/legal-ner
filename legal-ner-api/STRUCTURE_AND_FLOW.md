@@ -1,6 +1,10 @@
 # Architettura e Flusso Dati: Legal-NER-API
 
-Questo documento è la "source of truth" tecnica per l'architettura del sistema Legal-NER-API. Descrive la struttura del progetto, il flusso di una richiesta e le responsabilità di ogni componente core.
+**⚠️ DOCUMENTO AGGIORNATO POST-RESET (28 Sept 2025)**
+
+Questo documento è la "source of truth" tecnica per l'architettura del sistema Legal-NER-API dopo il reset completo della logica operativa. Descrive la struttura del progetto, il flusso di una richiesta e le responsabilità di ogni componente core.
+
+**STATO ATTUALE**: Sistema in modalità placeholder - architettura mantenuta, business logic resettata per riprogettazione.
 
 ---
 
@@ -80,17 +84,27 @@ Questo diagramma descrive il percorso di una richiesta `POST /api/v1/predict` at
 
 ## 4. Componenti Core
 
-- **`EnsemblePredictor`**: Il cuore della logica di predizione. Orchestra l'esecuzione di più modelli, fonde i risultati e ne calibra l'affidabilità. È progettato per essere stateless e facilmente scalabile. Attualmente implementa la predizione a singolo modello, il calcolo dell'incertezza, il consenso semantico di base e l'integrazione con `EntityMerger` e `SemanticValidator`.
+### ✅ Componenti OPERATIVI
 
-- **`LegalSourceExtractor`**: Servizio responsabile dell'estrazione di fonti giuridiche strutturate dal testo, utilizzando pattern (es. regex) per identificare elementi come tipo di atto, numero, data, ecc.
+- **`DatasetBuilder`**: ✅ **OPERATIVO** - Componente per la costruzione di dataset da annotazioni umane. Raccoglie le annotazioni verificate, le converte nel formato corretto (es. IOB2) e crea nuove versioni del dataset di addestramento.
 
-- **`SemanticValidator`**: Agisce come un "controllore di buon senso". Utilizza un set di concetti legali noti per validare che un'entità estratta (es. "D.Lgs. 23/2015") corrisponda semanticamente al suo tipo (es. `NORMATIVA`).
+### 🔄 Componenti RESETTATI (Solo Interfacce)
 
-- **`EntityMerger`**: Servizio responsabile della fusione di entità sovrapposte o duplicate, basandosi su criteri come la sovrapposizione testuale e la corrispondenza delle etichette.
+**⚠️ ATTENZIONE**: I seguenti componenti sono stati completamente resettati e contengono solo placeholder per mantenere la compatibilità architetturale.
 
-- **`ActiveLearningPipeline` (Futuro)**: Implementa la strategia di selezione dei campioni. Il suo scopo è identificare i dati più "interessanti" (quelli su cui i modelli sono più incerti o in disaccordo) da inviare agli annotatori umani, massimizzando l'efficacia del loro lavoro.
+- **`EnsemblePredictor`**: 🔄 **RESET** - Interfaccia base mantenuta. Precedentemente orchestrava l'esecuzione di più modelli. **STATO ATTUALE**: Ritorna sempre lista vuota e uncertainty=1.0.
 
-- **`DatasetBuilder` (Futuro)**: Componente offline che viene eseguito periodicamente. Raccoglie le annotazioni umane verificate, le converte nel formato corretto (es. IOB2) e crea una nuova versione del dataset di addestramento, garantendo riproducibilità e tracciabilità.
+- **`LegalSourceExtractor`**: 🔄 **RESET** - Interfaccia base mantenuta. Precedentemente estraeva fonti giuridiche con pattern regex. **STATO ATTUALE**: Ritorna sempre lista vuota.
+
+- **`SemanticValidator`**: 🔄 **RESET** - Interfaccia base mantenuta. Precedentemente validava entità con knowledge base legale. **STATO ATTUALE**: Pass-through senza validazione.
+
+- **`EntityMerger`**: 🔄 **RESET** - Interfaccia base mantenuta. Precedentemente gestiva fusione entità sovrapposte. **STATO ATTUALE**: Pass-through senza merge.
+
+- **`ConfidenceCalibrator`**: 🔄 **RESET** - Interfaccia base mantenuta. Precedentemente calibrava confidence score. **STATO ATTUALE**: Pass-through senza calibrazione.
+
+### 🚀 Componenti da RIPROGETTARE
+
+Tutti i componenti resettati sono pronti per una riprogettazione completa con approcci alternativi più efficaci.
 
 ---
 
