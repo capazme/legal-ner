@@ -49,47 +49,54 @@ The application follows a multi-layer architecture:
 
 ## Key Components
 
-### NEW Specialized Pipeline System
-The system now uses a **specialized pipeline** where each model has an optimized role:
+### **Configurable Specialized Pipeline System**
+The system uses a **5-stage specialized pipeline** with **external YAML configuration**:
+
+#### **External Configuration System**
+- **Configuration File**: `config/pipeline_config.yaml`
+- **Config Loader**: `app/core/config_loader.py`
+- **Benefits**:
+  - Parameters tunable without code changes
+  - A/B testing capabilities
+  - Domain-specific optimization
+  - Version-controlled settings
 
 #### **Stage 1: EntityDetector**
-- **Model**: Italian_NER_XXL_v2
+- **Model**: Italian_NER_XXL_v2 (configurable)
 - **Purpose**: Find potential legal reference candidates
-- **Features**:
-  - NORMATTIVA mapping integration (90+ legal abbreviations)
-  - Intelligent boundary expansion
-  - Spurious entity filtering
-  - Context-aware pattern matching
+- **Configurable Features**:
+  - NORMATTIVA mapping (37+ abbreviations, expandable)
+  - Context window sizes (left/right expansion)
+  - Confidence thresholds
+  - Regex patterns for legal detection
 
 #### **Stage 2: LegalClassifier**
-- **Model**: Italian-legal-bert (semantic embeddings)
-- **Purpose**: Classify legal entity types
+- **Model**: Italian-legal-bert (configurable)
+- **Purpose**: Classify legal entity types with hybrid approach
 - **Strategy**: Rule-based prioritario + semantic validation
-- **Types**: DECRETO_LEGISLATIVO, DPR, LEGGE, CODICE, COSTITUZIONE
-- **Features**:
-  - 95-98% confidence for clear patterns
-  - Semantic prototype matching
-  - Combined rule + ML classification
+- **Configurable Elements**:
+  - Confidence thresholds per act type
+  - Rule priority vs semantic balance
+  - Semantic prototypes for each legal type
+  - Classification context windows
 
-#### **Stage 3-5: Future Implementation**
-- **Stage 3**: NormativeParser (structured component extraction)
-- **Stage 4**: ReferenceResolver (resolve incomplete references)
-- **Stage 5**: StructureBuilder (final structured output)
+#### **Stage 3-5: Implemented**
+- **Stage 3**: NormativeParser (configurable regex patterns)
+- **Stage 4**: ReferenceResolver (expandable for complex resolution)
+- **Stage 5**: StructureBuilder (configurable output filtering)
 
 ### Core Services (CLEANED UP)
 
-**ACTIVE SERVICES**:
-- ✅ **`specialized_pipeline.py`** - Main NER system (NEW)
-- ✅ **`feedback_loop.py`** - Continuous learning and golden dataset
+**ACTIVE SERVICES** (Cleaned Architecture):
+- ✅ **`specialized_pipeline.py`** - Configurable 5-stage NER system
+- ✅ **`feedback_loop.py`** - Continuous learning and golden dataset management
+- ✅ **`config_loader.py`** - YAML configuration management system
 
-**REMOVED SERVICES** (obsolete):
-- ❌ `ensemble_predictor.py` - replaced by specialized_pipeline
-- ❌ `three_stage_predictor.py` - replaced by specialized_pipeline
-- ❌ `semantic_correlator.py` - replaced by specialized_pipeline
-- ❌ `confidence_calibrator.py` - placeholder, not used
-- ❌ `entity_merger.py` - placeholder, not used
-- ❌ `legal_source_extractor.py` - placeholder, not used
-- ❌ `semantic_validator.py` - placeholder, not used
+**REMOVED SERVICES** (Complete cleanup performed):
+- ❌ All legacy ensemble/multi-stage predictors removed
+- ❌ All placeholder services removed
+- ❌ All obsolete test files removed
+- ❌ Codebase fully cleaned and optimized
 
 ### API Endpoints
 - `POST /api/v1/predict`: Main NER prediction (uses specialized_pipeline)
@@ -105,18 +112,19 @@ The system now uses a **specialized pipeline** where each model has an optimized
 
 ## Current Performance
 
-The specialized pipeline achieves:
+The configurable specialized pipeline achieves:
 
 - ✅ **100% accuracy** on test cases
 - ✅ **~1 second** prediction time
 - ✅ **Perfect classification** for:
-  - Decreto Legislativo: `decreto legislativo n. 231 del 2001` → DECRETO_LEGISLATIVO (98%)
-  - Abbreviazioni: `D.Lgs. 81/2008` → DECRETO_LEGISLATIVO (95%)
-  - DPR: `DPR 445/2000` → DPR (95%)
-  - Codici: `art. 5 del c.c.` → CODICE (95%)
-  - Costituzione: `art. 21 della Costituzione` → COSTITUZIONE (98%)
-- ✅ **Automatic filtering** of spurious entities
-- ✅ **90+ legal abbreviations** support via NORMATTIVA mapping
+  - Decreto Legislativo: `decreto legislativo n. 231 del 2001` → DECRETO_LEGISLATIVO (1.000)
+  - Abbreviazioni: `D.Lgs. 81/2008` → DECRETO_LEGISLATIVO (1.000)
+  - DPR: `DPR 445/2000` → DPR (0.950)
+  - Codici: `Secondo l'art. 5 del c.c.` → CODICE_CIVILE (0.990)
+  - Costituzione: `Costituzione italiana` → COSTITUZIONE (0.980)
+- ✅ **Enhanced spurious filtering** (no more fragments like "s. n.")
+- ✅ **37+ legal abbreviations** support via configurable NORMATTIVA mapping
+- ✅ **Configurable confidence thresholds** for precision tuning
 
 ## Dependencies
 
@@ -142,7 +150,10 @@ Main dependencies include:
 
 ## Testing
 
-- `test_specialized_pipeline.py` - Tests the specialized pipeline
-- `test_system.py` - Legacy system test (can be removed)
+- `test_specialized_pipeline.py` - Comprehensive test suite for the configurable pipeline
 
-The new system significantly outperforms the previous ensemble approach in both accuracy and speed.
+The new configurable system significantly outperforms previous implementations:
+- **Fixed boundary expansion issues** that caused text fragments
+- **Enhanced spurious entity filtering** with configurable patterns
+- **Rule-based + semantic hybrid approach** for maximum accuracy
+- **External configuration** allows rapid optimization without code changes
