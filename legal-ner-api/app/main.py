@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, Response
-from app.api.v1.endpoints import predict, feedback, active_learning, documents, annotations, process, export, models
+from app.api.v1.endpoints import predict, feedback, active_learning, documents, annotations, process, export, models, labels
 from app.core.logging import configure_logging
 from app.core.model_manager import model_manager
 from app.database.database import SessionLocal
@@ -100,6 +100,7 @@ app.include_router(annotations.router, prefix="/api/v1", tags=["Annotations"])
 app.include_router(process.router, prefix="/api/v1", tags=["Processing"])
 app.include_router(export.router, prefix="/api/v1", tags=["Export"])
 app.include_router(models.router, prefix="/api/v1", tags=["Models"])
+app.include_router(labels.router, prefix="/api/v1", tags=["Labels"])
 
 @app.get("/health", tags=["Health"])
 async def health_check():

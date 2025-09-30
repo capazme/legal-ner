@@ -144,6 +144,10 @@ class ActiveLearningConfig:
             log.debug("Directory ensured", path=dir_path)
 
 
+# Define the default config path as a constant
+base_dir = Path(__file__).parent.parent.parent  # legal-ner-api/
+ACTIVE_LEARNING_CONFIG_PATH = base_dir / "config" / "active_learning_config.yaml"
+
 def load_active_learning_config(config_path: Optional[str] = None) -> ActiveLearningConfig:
     """
     Carica la configurazione active learning dal file YAML.
@@ -156,9 +160,7 @@ def load_active_learning_config(config_path: Optional[str] = None) -> ActiveLear
         ActiveLearningConfig: Configurazione caricata
     """
     if config_path is None:
-        # Usa il path di default
-        base_dir = Path(__file__).parent.parent.parent  # legal-ner-api/
-        config_path = base_dir / "config" / "active_learning_config.yaml"
+        config_path = ACTIVE_LEARNING_CONFIG_PATH
 
     log.info("Loading active learning configuration", config_path=str(config_path))
 

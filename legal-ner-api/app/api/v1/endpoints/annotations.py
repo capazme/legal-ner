@@ -275,6 +275,44 @@ async def update_annotation_task(
         raise HTTPException(status_code=500, detail=f"Failed to update task: {str(e)}")
 
 
+@router.get("/entities/{entity_id}", response_model=EntityResponse)
+async def get_entity(
+    entity_id: int,
+    db: Session = Depends(get_db),
+    api_key: str = Depends(get_api_key)
+):
+    """
+    Recupera una singola entità tramite il suo ID.
+    """
+    try:
+        log.info("Fetching entity", entity_id=entity_id)
+
+        entity = db.query(models.Entity).filter(models.Entity.id == entity_id).first()
+
+        if not entity:
+            log.warning("Entity not found", entity_id=entity_id)
+            raise HTTPException(status_code=404, detail=f"Entity {entity_id} not found")
+
+        log.info("Entity fetched successfully", entity_id=entity_id)
+
+        return EntityResponse(
+            id=entity.id,
+            document_id=entity.document_id,
+            text=entity.text,
+            label=entity.label,
+            start_char=entity.start_char,
+            end_char=entity.end_char,
+            confidence=entity.confidence,
+            model=entity.model
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("Error fetching entity", entity_id=entity_id, error=str(e))
+        raise HTTPException(status_code=500, detail=f"Failed to fetch entity: {str(e)}")
+
+
 @router.get("/entities")
 async def list_entities(
     document_id: Optional[int] = None,

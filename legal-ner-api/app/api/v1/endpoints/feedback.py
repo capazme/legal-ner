@@ -47,8 +47,15 @@ async def provide_enhanced_feedback(
             "notes": request.notes
         }
 
+        # A real implementation would get the user_id from an authentication dependency
+        user_id = "default_user" # Placeholder for now
+
         # Process feedback through feedback loop
-        result = await feedback_loop.process_feedback(feedback_data)
+        result = await feedback_loop.process_feedback(
+            document_id=str(request.document_id), # Ensure document_id is passed
+            user_id=user_id,
+            feedback_data=feedback_data
+        )
 
         if result.get("status") == "error":
             raise HTTPException(status_code=500, detail=result.get("error", "Unknown error"))

@@ -63,7 +63,7 @@ def index():
     # Get system stats
     try:
         stats_response = requests.get(
-            f"{API_BASE_URL}/feedback/system-stats",
+            f"{API_BASE_URL}/system-stats",
             headers={"X-API-Key": API_KEY}
         )
         stats = stats_response.json()
@@ -89,7 +89,7 @@ def index():
     # Get pending annotation tasks
     try:
         tasks_response = requests.get(
-            f"{API_BASE_URL}/annotations/tasks?status=pending",
+            f"{API_BASE_URL}/annotations/tasks", # Removed status filter to show all tasks
             headers={"X-API-Key": API_KEY}
         )
         tasks_data = tasks_response.json()
@@ -100,7 +100,7 @@ def index():
         else:
             tasks = []
 
-        app.logger.info(f"Fetched {len(tasks)} pending tasks")
+        app.logger.info(f"Fetched {len(tasks)} total tasks")
     except Exception as e:
         app.logger.error(f"Error fetching tasks: {str(e)}")
         tasks = []
@@ -181,11 +181,23 @@ def annotate(task_id):
 
         app.logger.info(f"Fetched {len(entities)} entities for document {document_id}")
 
+        # Get labels from the backend
+        try:
+            labels_response = requests.get(
+                f"{API_BASE_URL}/labels",
+                headers={"X-API-Key": API_KEY}
+            )
+            labels = labels_response.json() if labels_response.status_code == 200 else []
+        except Exception as e:
+            app.logger.error(f"Error fetching labels: {str(e)}")
+            labels = []
+
         return render_template(
             'annotate.html',
             task=task,
             document=document,
-            entities=entities
+            entities=entities,
+            labels=labels
         )
     except Exception as e:
         return f"Errore: {str(e)}"
@@ -208,7 +220,7 @@ def submit_annotation():
 
         # Submit to API
         response = requests.post(
-            f"{API_BASE_URL}/feedback/enhanced-feedback",
+            f"{API_BASE_URL}/enhanced-feedback",
             json=feedback,
             headers={"X-API-Key": API_KEY}
         )
@@ -255,7 +267,7 @@ def model_performance():
     try:
         # Get system stats for performance data
         stats_response = requests.get(
-            f"{API_BASE_URL}/feedback/system-stats",
+            f"{API_BASE_URL}/system-stats",
             headers={"X-API-Key": API_KEY}
         )
         stats = stats_response.json()
@@ -438,26 +450,17 @@ def api_submit_annotation():
 
         app.logger.info(f"Submitting annotation feedback | Entity: {entity_id}, Correct: {is_correct}")
 
-        # Get the original entity from backend
+        # Get the original entity from backend using the new efficient endpoint
         entity_response = requests.get(
-            f"{API_BASE_URL}/entities?document_id=",  # We'll get all and filter
+            f"{API_BASE_URL}/entities/{entity_id}",
             headers={"X-API-Key": API_KEY}
         )
 
         if entity_response.status_code != 200:
-            return jsonify({"status": "error", "message": "Failed to fetch entity"})
+            return jsonify({"status": "error", "message": f"Failed to fetch entity {entity_id}"})
 
-        entities_data = entity_response.json()
-        entities = entities_data.get("entities", [])
-
-        # Find the entity
-        original_entity = None
-        document_id = None
-        for entity in entities:
-            if str(entity.get("id")) == str(entity_id):
-                original_entity = entity
-                document_id = entity.get("document_id")
-                break
+        original_entity = entity_response.json()
+        document_id = original_entity.get("document_id")
 
         if not original_entity or not document_id:
             return jsonify({"status": "error", "message": f"Entity {entity_id} not found"})
@@ -474,7 +477,9 @@ def api_submit_annotation():
                     "text": data["corrected_entity"]["text"],
                     "label": data["corrected_entity"]["label"],
                     "start_char": data["corrected_entity"]["start_char"],
-                    "end_char": data["corrected_entity"]["end_char"]
+                    "end_char": data["corrected_entity"]["end_char"],
+                    "confidence": 1.0, # Add default confidence
+                    "model": "manual" # Add default model
                 }
             else:
                 corrected_entity = None
@@ -487,7 +492,9 @@ def api_submit_annotation():
                 "text": original_entity.get("text"),
                 "label": original_entity.get("label"),
                 "start_char": original_entity.get("start_char"),
-                "end_char": original_entity.get("end_char")
+                "end_char": original_entity.get("end_char"),
+                "confidence": original_entity.get("confidence"), # Add confidence
+                "model": original_entity.get("model") # Add model
             },
             "corrected_entity": corrected_entity,
             "confidence_score": 1.0,
@@ -498,7 +505,7 @@ def api_submit_annotation():
 
         # Submit to API
         response = requests.post(
-            f"{API_BASE_URL}/feedback/enhanced-feedback",
+            f"{API_BASE_URL}/enhanced-feedback",
             json=feedback,
             headers={"X-API-Key": API_KEY}
         )

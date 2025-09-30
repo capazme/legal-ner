@@ -128,11 +128,9 @@
                                     <div class="mb-3">
                                         <label for="corrected-label-{{ entity.id }}" class="form-label">Etichetta Corretta</label>
                                         <select class="form-control" id="corrected-label-{{ entity.id }}">
-                                            <option value="LEGGE" {% if entity.label == "LEGGE" %}selected{% endif %}>LEGGE</option>
-                                            <option value="DECRETO" {% if entity.label == "DECRETO" %}selected{% endif %}>DECRETO</option>
-                                            <option value="REGOLAMENTO" {% if entity.label == "REGOLAMENTO" %}selected{% endif %}>REGOLAMENTO</option>
-                                            <option value="DIRETTIVA" {% if entity.label == "DIRETTIVA" %}selected{% endif %}>DIRETTIVA</option>
-                                            <option value="ALTRO" {% if entity.label == "ALTRO" %}selected{% endif %}>ALTRO</option>
+                                            {% for label in labels %}
+                                            <option value="{{ label }}" {% if entity.label == label %}selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
                                         </select>
                                     </div>
                                     
@@ -173,17 +171,40 @@
         <div class="mb-3">
             <label class="form-label">Etichetta:</label>
             <div class="d-flex flex-wrap">
-                <button class="btn btn-sm btn-outline-primary entity-label-btn" data-label="LEGGE">LEGGE</button>
-                <button class="btn btn-sm btn-outline-primary entity-label-btn" data-label="DECRETO">DECRETO</button>
-                <button class="btn btn-sm btn-outline-primary entity-label-btn" data-label="REGOLAMENTO">REGOLAMENTO</button>
-                <button class="btn btn-sm btn-outline-primary entity-label-btn" data-label="DIRETTIVA">DIRETTIVA</button>
-                <button class="btn btn-sm btn-outline-primary entity-label-btn" data-label="ALTRO">ALTRO</button>
+                {% for label in labels %}
+                <button class="btn btn-sm btn-outline-primary entity-label-btn" data-label="{{ label }}">{{ label }}</button>
+                {% endfor %}
             </div>
         </div>
         
         <button class="btn btn-sm btn-secondary" id="cancel-selection">Annulla</button>
     </div>
     
+    <!-- Add New Label Modal -->
+    <div class="modal fade" id="add-label-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Aggiungi Nuova Etichetta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-label-form">
+                        <div class="mb-3">
+                            <label for="new-label-name" class="form-label">Nome Nuova Etichetta</label>
+                            <input type="text" class="form-control" id="new-label-name" placeholder="es. codice_della_strada" required>
+                            <div class="form-text">Usa lettere minuscole e underscore al posto degli spazi.</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-primary" id="save-new-label-btn">Salva Etichetta</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Add Entity Modal -->
     <div class="modal fade" id="add-entity-modal" tabindex="-1">
         <div class="modal-dialog">
@@ -201,13 +222,14 @@
                         
                         <div class="mb-3">
                             <label for="new-entity-label" class="form-label">Etichetta</label>
-                            <select class="form-control" id="new-entity-label">
-                                <option value="LEGGE">LEGGE</option>
-                                <option value="DECRETO">DECRETO</option>
-                                <option value="REGOLAMENTO">REGOLAMENTO</option>
-                                <option value="DIRETTIVA">DIRETTIVA</option>
-                                <option value="ALTRO">ALTRO</option>
-                            </select>
+                            <div class="input-group">
+                                <select class="form-control" id="new-entity-label">
+                                    {% for label in labels %}
+                                    <option value="{{ label }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button class="btn btn-outline-secondary" type="button" id="add-new-label-btn" data-bs-toggle="modal" data-bs-target="#add-label-modal">Nuova</button>
+                            </div>
                         </div>
                         
                         <div class="row">
@@ -232,7 +254,8 @@
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Variabili globali
+        // Global variables
+        const availableLabels = {{ labels|tojson|safe }};
         let selectionMode = false;
         let entityCounter = 1000; // Per le nuove entità create manualmente
         
@@ -249,6 +272,98 @@
                 addEntityModal.show();
             });
             
+            // Gestione del salvataggio della nuova etichetta
+            document.getElementById('save-new-label-btn').addEventListener('click', function() {
+                const newLabelName = document.getElementById('new-label-name').value;
+                if (!newLabelName) {
+                    alert('Il nome dell\'etichetta non può essere vuoto.');
+                    return;
+                }
+
+                fetch('/api/v1/labels', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': 'your-super-secret-api-key'
+                    },
+                    body: JSON.stringify({ name: newLabelName })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.detail || 'Failed to add label') });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Add to our JS array
+                        if (!availableLabels.includes(data.new_label)) {
+                            availableLabels.push(data.new_label);
+                            availableLabels.sort();
+                        }
+                        
+                        // Refresh all label dropdowns
+                        refreshLabelDropdowns();
+                        
+                        // Hide the modal
+                        const addLabelModal = bootstrap.Modal.getInstance(document.getElementById('add-label-modal'));
+                        addLabelModal.hide();
+                        document.getElementById('new-label-name').value = '';
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
+            });
+
+            // Gestione del salvataggio della nuova etichetta
+            document.getElementById('save-new-label-btn').addEventListener('click', function() {
+                const newLabelName = document.getElementById('new-label-name').value;
+                if (!newLabelName) {
+                    alert('Il nome dell\'etichetta non può essere vuoto.');
+                    return;
+                }
+
+                fetch('/api/v1/labels', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': 'your-super-secret-api-key'
+                    },
+                    body: JSON.stringify({ name: newLabelName })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.detail || 'Failed to add label') });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Add to our JS array
+                        if (!availableLabels.includes(data.new_label)) {
+                            availableLabels.push(data.new_label);
+                            availableLabels.sort();
+                        }
+                        
+                        // Refresh all label dropdowns
+                        refreshLabelDropdowns();
+                        
+                        // Hide the modal
+                        const addLabelModal = bootstrap.Modal.getInstance(document.getElementById('add-label-modal'));
+                        addLabelModal.hide();
+                        document.getElementById('new-label-name').value = '';
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
+            });
+
             // Salvataggio della nuova entità
             document.getElementById('save-new-entity').addEventListener('click', function() {
                 const text = document.getElementById('new-entity-text').value;
@@ -554,11 +669,9 @@
                             <div class="mb-3">
                                 <label for="corrected-label-${entity.id}" class="form-label">Etichetta Corretta</label>
                                 <select class="form-control" id="corrected-label-${entity.id}">
-                                    <option value="LEGGE" ${entity.label === 'LEGGE' ? 'selected' : ''}>LEGGE</option>
-                                    <option value="DECRETO" ${entity.label === 'DECRETO' ? 'selected' : ''}>DECRETO</option>
-                                    <option value="REGOLAMENTO" ${entity.label === 'REGOLAMENTO' ? 'selected' : ''}>REGOLAMENTO</option>
-                                    <option value="DIRETTIVA" ${entity.label === 'DIRETTIVA' ? 'selected' : ''}>DIRETTIVA</option>
-                                    <option value="ALTRO" ${entity.label === 'ALTRO' ? 'selected' : ''}>ALTRO</option>
+                                    ${availableLabels.map(label => `
+                                    <option value="${label}" ${entity.label === label ? 'selected' : ''}>${label}</option>
+                                    `).join('')}
                                 </select>
                             </div>
                             
@@ -596,6 +709,50 @@
             });
         }
         
+        function refreshLabelDropdowns() {
+            const allSelects = document.querySelectorAll('select[id^="corrected-label-"], select#new-entity-label');
+            allSelects.forEach(select => {
+                const currentValue = select.value;
+                let optionsHtml = '';
+                availableLabels.forEach(label => {
+                    const selected = (currentValue === label) ? 'selected' : '';
+                    optionsHtml += `<option value="${label}" ${selected}>${label}</option>`;
+                });
+                select.innerHTML = optionsHtml;
+            });
+
+            const buttonContainer = document.querySelector('.selection-info .d-flex.flex-wrap');
+            if (buttonContainer) {
+                let buttonsHtml = '';
+                availableLabels.forEach(label => {
+                    buttonsHtml += `<button class="btn btn-sm btn-outline-primary entity-label-btn" data-label="${label}">${label}</button>`;
+                });
+                buttonContainer.innerHTML = buttonsHtml;
+                // Re-add event listeners to the new buttons
+                document.querySelectorAll('.entity-label-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const label = this.getAttribute('data-label');
+                        const selection = window.getSelection();
+                        const selectionInfo = document.getElementById('selection-info');
+                        const startOffset = parseInt(selectionInfo.querySelector('#selected-position').textContent.split('-')[0]);
+                        const endOffset = parseInt(selectionInfo.querySelector('#selected-position').textContent.split('-')[1]);
+
+                        addNewEntity({
+                            id: `new-${entityCounter++}`,
+                            text: selection.toString(),
+                            label: label,
+                            start_char: startOffset,
+                            end_char: endOffset,
+                            confidence: 1.0
+                        });
+                        
+                        selectionInfo.style.display = 'none';
+                        window.getSelection().removeAllRanges();
+                    });
+                });
+            }
+        }
+
         function highlightNewEntity(entity) {
             const documentText = document.getElementById('document-text');
             const textContent = documentText.textContent;
@@ -622,6 +779,50 @@
             }
         }
         
+        function refreshLabelDropdowns() {
+            const allSelects = document.querySelectorAll('select[id^="corrected-label-"], select#new-entity-label');
+            allSelects.forEach(select => {
+                const currentValue = select.value;
+                let optionsHtml = '';
+                availableLabels.forEach(label => {
+                    const selected = (currentValue === label) ? 'selected' : '';
+                    optionsHtml += `<option value="${label}" ${selected}>${label}</option>`;
+                });
+                select.innerHTML = optionsHtml;
+            });
+
+            const buttonContainer = document.querySelector('.selection-info .d-flex.flex-wrap');
+            if (buttonContainer) {
+                let buttonsHtml = '';
+                availableLabels.forEach(label => {
+                    buttonsHtml += `<button class="btn btn-sm btn-outline-primary entity-label-btn" data-label="${label}">${label}</button>`;
+                });
+                buttonContainer.innerHTML = buttonsHtml;
+                // Re-add event listeners to the new buttons
+                document.querySelectorAll('.entity-label-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const label = this.getAttribute('data-label');
+                        const selection = window.getSelection();
+                        const selectionInfo = document.getElementById('selection-info');
+                        const startOffset = parseInt(selectionInfo.querySelector('#selected-position').textContent.split('-')[0]);
+                        const endOffset = parseInt(selectionInfo.querySelector('#selected-position').textContent.split('-')[1]);
+
+                        addNewEntity({
+                            id: `new-${entityCounter++}`,
+                            text: selection.toString(),
+                            label: label,
+                            start_char: startOffset,
+                            end_char: endOffset,
+                            confidence: 1.0
+                        });
+                        
+                        selectionInfo.style.display = 'none';
+                        window.getSelection().removeAllRanges();
+                    });
+                });
+            }
+        }
+
         function getTextOffset(container, node, offset) {
             // Calcola l'offset assoluto nel testo del documento
             let totalOffset = 0;
