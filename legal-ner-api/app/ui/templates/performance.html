@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Model Performance</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>Model Performance Metrics</h1>
+        
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">System Accuracy</div>
+                    <div class="card-body">
+                        <canvas id="accuracyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Golden Dataset Growth</div>
+                    <div class="card-body">
+                        <canvas id="datasetChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">Detailed Statistics</div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <!-- In the detailed statistics table -->
+                    <tbody>
+                        <tr>
+                            <td>System Accuracy</td>
+                            <td>{{ "%.2f"|format((stats.system_accuracy or 0.0) * 100) }}%</td>
+                        </tr>
+                        <tr>
+                            <td>Golden Dataset Size</td>
+                            <td>{{ stats.golden_dataset_size or 0 }}</td>
+                        </tr>
+                        <tr>
+                            <td>Total Feedback Count</td>
+                            <td>{{ stats.feedback_stats.total_feedback_count if stats.feedback_stats and 'total_feedback_count' in stats.feedback_stats else 0 }}</td>
+                        </tr>
+                        <tr>
+                            <td>Positive Feedback</td>
+                            <td>{{ stats.feedback_stats.positive_feedback_count if stats.feedback_stats and 'positive_feedback_count' in stats.feedback_stats else 0 }}</td>
+                        </tr>
+                        <tr>
+                            <td>Negative Feedback</td>
+                            <td>{{ stats.feedback_stats.negative_feedback_count if stats.feedback_stats and 'negative_feedback_count' in stats.feedback_stats else 0 }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <a href="/" class="btn btn-primary">Back to Dashboard</a>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Sample data - in a real implementation, this would come from your API
+        const accuracyData = {
+            labels: ['Initial', 'Iteration 1', 'Iteration 2', 'Iteration 3', 'Current'],
+            datasets: [{
+                label: 'System Accuracy',
+                data: [0.65, 0.72, 0.78, 0.82, {{ stats.system_accuracy }}],
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        };
+        
+        const datasetData = {
+            labels: ['Initial', 'Iteration 1', 'Iteration 2', 'Iteration 3', 'Current'],
+            datasets: [{
+                label: 'Golden Dataset Size',
+                data: [100, 150, 200, 250, {{ stats.golden_dataset_size }}],
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+        };
+        
+        // Create charts
+        const accuracyCtx = document.getElementById('accuracyChart').getContext('2d');
+        new Chart(accuracyCtx, {
+            type: 'line',
+            data: accuracyData,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 1
+                    }
+                }
+            }
+        });
+        
+        const datasetCtx = document.getElementById('datasetChart').getContext('2d');
+        new Chart(datasetCtx, {
+            type: 'bar',
+            data: datasetData,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

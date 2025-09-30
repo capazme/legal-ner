@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crea Nuova Task di Annotazione</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>Crea Nuova Task di Annotazione</h1>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                Inserisci Documento Manualmente
+            </div>
+            <div class="card-body">
+                <form id="create-task-form">
+                    <div class="mb-3">
+                        <label for="document-id" class="form-label">ID Documento (opzionale)</label>
+                        <input type="text" class="form-control" id="document-id" placeholder="Lascia vuoto per inserire un nuovo documento">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="document-text" class="form-label">Testo del Documento</label>
+                        <textarea class="form-control" id="document-text" rows="10"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="document-source" class="form-label">Fonte del Documento</label>
+                        <input type="text" class="form-control" id="document-source" value="manual">
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="pre-process" checked>
+                        <label class="form-check-label" for="pre-process">
+                            Pre-elabora con il modello attuale
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Crea Task</button>
+                    <a href="/" class="btn btn-secondary">Torna alla Dashboard</a>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                Carica Documento da File
+            </div>
+            <div class="card-body">
+                <form id="upload-document-form">
+                    <div class="mb-3">
+                        <label for="document-file" class="form-label">File del Documento</label>
+                        <input class="form-control" type="file" id="document-file">
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="pre-process-upload" checked>
+                        <label class="form-check-label" for="pre-process-upload">
+                            Pre-elabora con il modello attuale
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Carica e Crea Task</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gestione del form per la creazione manuale
+        document.getElementById('create-task-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const documentId = document.getElementById('document-id').value;
+            const documentText = document.getElementById('document-text').value;
+            const documentSource = document.getElementById('document-source').value;
+            const preProcess = document.getElementById('pre-process').checked;
+            
+            // Verifica che almeno uno tra ID e testo sia fornito
+            if (!documentId && (!documentText || documentText.trim() === '')) {
+                alert('Inserisci un ID documento esistente o il testo di un nuovo documento');
+                return;
+            }
+            
+            const formData = new FormData();
+            if (documentId) formData.append('document_id', documentId);
+            formData.append('document_text', documentText);
+            formData.append('document_source', documentSource);
+            formData.append('pre_process', preProcess);
+            
+            // Mostra un indicatore di caricamento
+            const submitBtn = document.querySelector('#create-task-form button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creazione in corso...';
+            
+            fetch('/api/create-task', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+                
+                if (data.status === 'success') {
+                    alert('Task creata con successo!');
+                    window.location.href = `/annotate/${data.task_id}`;
+                } else {
+                    alert('Errore: ' + data.message);
+                }
+            })
+            .catch(error => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+                console.error('Error:', error);
+                alert('Errore di rete: ' + error.message);
+            });
+        });
+        
+        // Gestione del form per l'upload del documento
+        document.getElementById('upload-document-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('document-file');
+            const preProcess = document.getElementById('pre-process-upload').checked;
+            
+            if (fileInput.files.length === 0) {
+                alert('Seleziona un file da caricare');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('document_file', fileInput.files[0]);
+            formData.append('pre_process', preProcess);
+            
+            // Mostra un indicatore di caricamento
+            const submitBtn = document.querySelector('#upload-document-form button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Caricamento in corso...';
+            
+            fetch('/api/upload-document', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+                
+                if (data.status === 'success') {
+                    alert('Task creata con successo!');
+                    window.location.href = `/annotate/${data.task_id}`;
+                } else {
+                    alert('Errore: ' + data.message);
+                }
+            })
+            .catch(error => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+                console.error('Error:', error);
+                alert('Errore di rete: ' + error.message);
+            });
+        });
+    </script>
+</body>
+</html>

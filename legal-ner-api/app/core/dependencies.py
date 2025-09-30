@@ -4,14 +4,13 @@ from app.core.config import settings
 from app.services.specialized_pipeline import LegalSourceExtractionPipeline
 from app.services.feedback_loop import FeedbackLoop
 from app.feedback.dataset_builder import DatasetBuilder
+from app.core.model_manager import model_manager
 
-@lru_cache(maxsize=1)
 def get_legal_pipeline() -> LegalSourceExtractionPipeline:
     """
-    Returns a cached instance of the Specialized Legal Source Extraction Pipeline.
-    This is the main NER system.
+    Returns the globally managed instance of the pipeline from the ModelManager.
     """
-    return LegalSourceExtractionPipeline()
+    return model_manager.get_pipeline()
 
 @lru_cache(maxsize=1)
 def get_feedback_loop() -> FeedbackLoop:

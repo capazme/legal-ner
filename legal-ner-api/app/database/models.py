@@ -59,3 +59,18 @@ class AnnotationTask(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     document = relationship("Document")
+
+class TrainedModel(Base):
+    __tablename__ = "trained_models"
+
+    id = Column(Integer, primary_key=True, index=True)
+    model_name = Column(String, nullable=False)
+    version = Column(String, unique=True, nullable=False)
+    path = Column(String, nullable=False)
+    description = Column(String, nullable=True)
+    accuracy = Column(Float, nullable=True)
+    f1_score = Column(Float, nullable=True)
+    precision = Column(Float, nullable=True)
+    recall = Column(Float, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    is_active = Column(Boolean, default=False, nullable=False)

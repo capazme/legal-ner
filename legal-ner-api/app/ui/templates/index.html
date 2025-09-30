@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Legal NER Active Learning Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .card { margin-bottom: 20px; }
+        .stats-card { height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>Legal NER Active Learning Dashboard</h1>
+        <p class="text-muted">Last updated: {{ current_time }}</p>
+        
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card stats-card">
+                    <div class="card-header">System Statistics</div>
+                    <!-- In the stats card section -->
+                    <div class="card-body">
+                        {% if stats.error %}
+                            <div class="alert alert-danger">{{ stats.error }}</div>
+                        {% else %}
+                            <p><strong>Golden Dataset Size:</strong> {{ stats.golden_dataset_size }}</p>
+                            <p><strong>System Accuracy:</strong> {{ "%.2f"|format(stats.system_accuracy * 100) }}%</p>
+                            <p><strong>Status:</strong> {{ stats.status }}</p>
+                            <p><strong>Predictor Type:</strong> {{ stats.predictor_type }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card stats-card">
+                    <div class="card-header">Active Learning Controls</div>
+                    <div class="card-body">
+                        <form id="active-learning-form">
+                            <div class="mb-3">
+                                <label for="batch-size" class="form-label">Batch Size</label>
+                                <input type="number" class="form-control" id="batch-size" name="batch_size" value="10">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Trigger Active Learning Iteration</button>
+                        </form>
+                        
+                        <hr>
+                        
+                        <form id="train-model-form">
+                            <div class="mb-3">
+                                <label for="model-name" class="form-label">Model Name</label>
+                                <input type="text" class="form-control" id="model-name" name="model_name" value="legal_ner_model">
+                            </div>
+                            <button type="submit" class="btn btn-success">Train Model with Feedback</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Pending Annotation Tasks</span>
+                <div>
+                    <button onclick="exportTasks()" class="btn btn-sm btn-info me-2">
+                        <i class="bi bi-download"></i> Esporta Tasks
+                    </button>
+                    <button onclick="document.getElementById('import-file').click()" class="btn btn-sm btn-secondary me-2">
+                        <i class="bi bi-upload"></i> Importa Tasks
+                    </button>
+                    <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importTasks(this)">
+                    <a href="/create-task" class="btn btn-sm btn-success">Crea Nuova Task</a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if tasks.error %}
+                    <div class="alert alert-danger">{{ tasks.error }}</div>
+                {% elif tasks|length == 0 %}
+                    <p>No pending annotation tasks. Trigger a new active learning iteration to create tasks.</p>
+                {% else %}
+                    <!-- Batch Operations Toolbar -->
+                    <div class="mb-3 d-flex justify-content-between align-items-center">
+                        <div>
+                            <button onclick="selectAllTasks()" class="btn btn-sm btn-outline-primary">Seleziona Tutto</button>
+                            <button onclick="deselectAllTasks()" class="btn btn-sm btn-outline-secondary">Deseleziona Tutto</button>
+                            <span class="ms-3 text-muted" id="selected-count">0 task selezionate</span>
+                        </div>
+                        <div class="btn-group" role="group">
+                            <button onclick="batchUpdateStatus('in_progress')" class="btn btn-sm btn-warning" id="batch-start-btn" disabled>
+                                Inizia Selezionate
+                            </button>
+                            <button onclick="batchUpdateStatus('completed')" class="btn btn-sm btn-success" id="batch-complete-btn" disabled>
+                                Completa Selezionate
+                            </button>
+                            <button onclick="batchDeleteTasks()" class="btn btn-sm btn-danger" id="batch-delete-btn" disabled>
+                                Elimina Selezionate
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th width="50">
+                                        <input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll(this)">
+                                    </th>
+                                    <th>Task ID</th>
+                                    <th>Document</th>
+                                    <th>Created</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in tasks %}
+                                <tr id="task-row-{{ task.id }}">
+                                    <td>
+                                        <input type="checkbox" class="task-checkbox" value="{{ task.id }}" onchange="updateBatchControls()">
+                                    </td>
+                                    <td>{{ task.id }}</td>
+                                    <td>{{ task.document_id }}</td>
+                                    <td>{{ task.created_at }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if task.status == 'completed' %}success{% elif task.status == 'in_progress' %}warning{% else %}secondary{% endif %}">
+                                            {{ task.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="/annotate/{{ task.id }}" class="btn btn-sm btn-primary">Annota</a>
+                                            {% if task.status == 'pending' %}
+                                            <button onclick="updateTaskStatus({{ task.id }}, 'in_progress')" class="btn btn-sm btn-warning">Inizia</button>
+                                            {% elif task.status == 'in_progress' %}
+                                            <button onclick="updateTaskStatus({{ task.id }}, 'completed')" class="btn btn-sm btn-success">Completa</button>
+                                            {% endif %}
+                                            <button onclick="deleteTask({{ task.id }})" class="btn btn-sm btn-danger">Elimina</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <a href="/performance" class="btn btn-info">View Model Performance</a>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('active-learning-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const batchSize = document.getElementById('batch-size').value;
+            
+            fetch('/trigger-active-learning', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `batch_size=${batchSize}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Active learning iteration triggered successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            });
+        });
+        
+        document.getElementById('train-model-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const modelName = document.getElementById('model-name').value;
+
+            fetch('/train-model', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `model_name=${modelName}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Model training started successfully!');
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            });
+        });
+
+        // Update task status
+        function updateTaskStatus(taskId, newStatus) {
+            fetch('/api/update-task', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    task_id: taskId,
+                    status: newStatus
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Task aggiornata con successo!');
+                    location.reload();
+                } else {
+                    alert('Errore: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Errore durante l\'aggiornamento: ' + error);
+            });
+        }
+
+        // Delete task
+        function deleteTask(taskId) {
+            if (!confirm('Sei sicuro di voler eliminare questa task?')) {
+                return;
+            }
+
+            fetch('/api/delete-task', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    task_id: taskId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Remove row from table
+                    const row = document.getElementById('task-row-' + taskId);
+                    if (row) {
+                        row.remove();
+                    }
+                    alert('Task eliminata con successo!');
+                } else {
+                    alert('Errore: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Errore durante l\'eliminazione: ' + error);
+            });
+        }
+
+        // === BATCH OPERATIONS ===
+
+        // Get selected task IDs
+        function getSelectedTaskIds() {
+            const checkboxes = document.querySelectorAll('.task-checkbox:checked');
+            return Array.from(checkboxes).map(cb => parseInt(cb.value));
+        }
+
+        // Update batch control buttons state
+        function updateBatchControls() {
+            const selectedIds = getSelectedTaskIds();
+            const count = selectedIds.length;
+
+            // Update counter
+            document.getElementById('selected-count').textContent = count + ' task selezionate';
+
+            // Enable/disable batch buttons
+            const batchStartBtn = document.getElementById('batch-start-btn');
+            const batchCompleteBtn = document.getElementById('batch-complete-btn');
+            const batchDeleteBtn = document.getElementById('batch-delete-btn');
+
+            const hasSelection = count > 0;
+            batchStartBtn.disabled = !hasSelection;
+            batchCompleteBtn.disabled = !hasSelection;
+            batchDeleteBtn.disabled = !hasSelection;
+        }
+
+        // Toggle select all checkbox
+        function toggleSelectAll(checkbox) {
+            const checkboxes = document.querySelectorAll('.task-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = checkbox.checked;
+            });
+            updateBatchControls();
+        }
+
+        // Select all tasks
+        function selectAllTasks() {
+            const checkboxes = document.querySelectorAll('.task-checkbox');
+            checkboxes.forEach(cb => cb.checked = true);
+            document.getElementById('select-all-checkbox').checked = true;
+            updateBatchControls();
+        }
+
+        // Deselect all tasks
+        function deselectAllTasks() {
+            const checkboxes = document.querySelectorAll('.task-checkbox');
+            checkboxes.forEach(cb => cb.checked = false);
+            document.getElementById('select-all-checkbox').checked = false;
+            updateBatchControls();
+        }
+
+        // Batch update task status
+        function batchUpdateStatus(newStatus) {
+            const selectedIds = getSelectedTaskIds();
+
+            if (selectedIds.length === 0) {
+                alert('Nessuna task selezionata');
+                return;
+            }
+
+            const statusLabel = newStatus === 'in_progress' ? 'in corso' : 'completate';
+            if (!confirm(`Vuoi impostare ${selectedIds.length} task come ${statusLabel}?`)) {
+                return;
+            }
+
+            fetch('/api/batch-update-tasks', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    task_ids: selectedIds,
+                    status: newStatus
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(`${data.updated_count} task aggiornate con successo!`);
+                    location.reload();
+                } else {
+                    alert('Errore: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Errore durante l\'aggiornamento: ' + error);
+            });
+        }
+
+        // Batch delete tasks
+        function batchDeleteTasks() {
+            const selectedIds = getSelectedTaskIds();
+
+            if (selectedIds.length === 0) {
+                alert('Nessuna task selezionata');
+                return;
+            }
+
+            if (!confirm(`Sei sicuro di voler eliminare ${selectedIds.length} task?`)) {
+                return;
+            }
+
+            fetch('/api/batch-delete-tasks', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    task_ids: selectedIds
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Remove rows from table
+                    selectedIds.forEach(taskId => {
+                        const row = document.getElementById('task-row-' + taskId);
+                        if (row) {
+                            row.remove();
+                        }
+                    });
+                    alert(`${data.deleted_count} task eliminate con successo!`);
+                    deselectAllTasks();
+                } else {
+                    alert('Errore: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Errore durante l\'eliminazione: ' + error);
+            });
+        }
+
+        // === EXPORT/IMPORT OPERATIONS ===
+
+        // Export tasks to JSON
+        function exportTasks() {
+            const selectedIds = getSelectedTaskIds();
+            let exportUrl = '/api/export-tasks';
+
+            // If specific tasks are selected, export only those
+            if (selectedIds.length > 0) {
+                if (!confirm(`Vuoi esportare solo le ${selectedIds.length} task selezionate? (Annulla per esportare tutte)`)) {
+                    // Export all tasks
+                    window.location.href = exportUrl;
+                    return;
+                }
+                // Note: For selected tasks, we'd need to modify the backend to accept task_ids
+                // For now, export all and user can filter manually
+                alert('Esportazione di tutte le task. Il filtro per selezione sarà disponibile in futuro.');
+            }
+
+            // Trigger download
+            window.location.href = exportUrl;
+        }
+
+        // Import tasks from JSON
+        function importTasks(input) {
+            const file = input.files[0];
+            if (!file) {
+                return;
+            }
+
+            if (!file.name.endsWith('.json')) {
+                alert('Per favore seleziona un file JSON');
+                input.value = '';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Show loading indicator
+            const originalText = 'Importazione in corso...';
+            alert(originalText);
+
+            fetch('/api/import-tasks', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(`Import completato!\n\nImportate: ${data.imported_count}\nFallite: ${data.failed_count}`);
+                    location.reload();
+                } else {
+                    alert('Errore durante l\'import: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Errore durante l\'import: ' + error);
+            })
+            .finally(() => {
+                // Reset file input
+                input.value = '';
+            });
+        }
+
+        // Export selected tasks to JSON (future enhancement)
+        function exportSelectedTasks() {
+            const selectedIds = getSelectedTaskIds();
+
+            if (selectedIds.length === 0) {
+                alert('Nessuna task selezionata');
+                return;
+            }
+
+            // TODO: Implement backend endpoint for selective export
+            alert('Funzionalità in sviluppo. Per ora usa "Esporta Tasks" per esportare tutte.');
+        }
+    </script>
+</body>
+</html>

@@ -417,25 +417,73 @@ class LegalClassifier:
     (Refactored to be config-driven)
     """
 
-    def __init__(self, config: PipelineConfig):
-        """Inizializza con configurazione esterna e costruisce il set di regole."""
-        self.config = config
-        log.info("Initializing LegalClassifier with configuration")
+    def __init__(self, config: PipelineConfig, fine_tuned_model_path: Optional[str] = None):
+        """
+        Inizializza con configurazione esterna e costruisce il set di regole.
 
+        Args:
+            config: Configurazione della pipeline
+            fine_tuned_model_path: Path al modello fine-tunato (opzionale)
+                                  Se fornito, usa il modello fine-tunato invece dei regex
+        """
+        self.config = config
+        self.fine_tuned_model_path = fine_tuned_model_path
+        self.use_fine_tuned = fine_tuned_model_path is not None
+
+        log.info("Initializing LegalClassifier",
+                use_fine_tuned=self.use_fine_tuned,
+                model_path=fine_tuned_model_path)
+
+        # Carica modello per embeddings semantici (sempre necessario)
         try:
-            # Carica il modello per embeddings semantici
             self.model = AutoModel.from_pretrained(config.models.legal_classifier_primary)
             self.tokenizer = AutoTokenizer.from_pretrained(config.models.legal_classifier_primary)
             self._initialize_prototypes()
-            log.info("LegalClassifier models initialized successfully")
+            log.info("Semantic model (Italian-legal-bert) initialized successfully")
         except Exception as e:
             log.warning("Failed to load Italian-legal-bert for classification", error=str(e))
             self.model = None
             self.tokenizer = None
-        
-        # Costruisci il set di regole dinamicamente dalla configurazione
+
+        # Carica modello fine-tunato se fornito
+        self.fine_tuned_model = None
+        self.fine_tuned_tokenizer = None
+        self.label_config = None
+
+        if self.use_fine_tuned:
+            try:
+                self.fine_tuned_model = AutoModelForTokenClassification.from_pretrained(fine_tuned_model_path)
+                self.fine_tuned_tokenizer = AutoTokenizer.from_pretrained(fine_tuned_model_path)
+
+                # Carica label config
+                label_config_path = os.path.join(fine_tuned_model_path, "label_config.json")
+                if os.path.exists(label_config_path):
+                    with open(label_config_path, 'r') as f:
+                        self.label_config = json.load(f)
+                    log.info("Fine-tuned model loaded successfully",
+                            model_path=fine_tuned_model_path,
+                            num_labels=len(self.label_config.get("label_list", [])))
+                else:
+                    log.warning("Label config not found, using model's built-in labels")
+                    self.label_config = {
+                        "id2label": self.fine_tuned_model.config.id2label,
+                        "label2id": self.fine_tuned_model.config.label2id
+                    }
+            except Exception as e:
+                log.error("Failed to load fine-tuned model, falling back to rules", error=str(e))
+                self.use_fine_tuned = False
+                self.fine_tuned_model = None
+                self.fine_tuned_tokenizer = None
+
+        # Costruisci il set di regole (usato come fallback o approccio principale)
         self._build_ruleset()
-        log.info("LegalClassifier initialized successfully with config-driven ruleset.", rules_count=len(self.rules))
+
+        if self.use_fine_tuned:
+            log.info("LegalClassifier initialized with FINE-TUNED model + rule-based fallback",
+                    rules_count=len(self.rules))
+        else:
+            log.info("LegalClassifier initialized with RULE-BASED only",
+                    rules_count=len(self.rules))
 
     def _log(self, log_file_path: Optional[str], event: str, **kwargs):
         """Log eventi in formato JSON, gestendo tipi non serializzabili."""
@@ -545,6 +593,72 @@ class LegalClassifier:
         self._log(log_file_path, "no_rule_match", fallback_result=default_result)
         return default_result
 
+    def _classify_by_fine_tuned_model(self, text_span: TextSpan, log_file_path: Optional[str] = None) -> Optional[LegalClassification]:
+        """
+        Classificazione con modello fine-tunato.
+
+        Returns:
+            LegalClassification se il modello è disponibile, None altrimenti
+        """
+        if not self.use_fine_tuned or self.fine_tuned_model is None:
+            return None
+
+        try:
+            # Tokenizza il testo
+            inputs = self.fine_tuned_tokenizer(
+                text_span.text,
+                return_tensors="pt",
+                truncation=True,
+                max_length=512,
+                padding=True
+            )
+
+            # Inferenza
+            with torch.no_grad():
+                outputs = self.fine_tuned_model(**inputs)
+                predictions = torch.nn.functional.softmax(outputs.logits, dim=-1)
+                predicted_ids = predictions.argmax(dim=-1)[0]
+
+            # Estrai le entità predette
+            id2label = self.label_config["id2label"]
+            tokens = self.fine_tuned_tokenizer.convert_ids_to_tokens(inputs["input_ids"][0])
+
+            # Trova l'entità con confidenza più alta
+            best_label = None
+            best_confidence = 0.0
+
+            for i, (token_id, token) in enumerate(zip(predicted_ids, tokens)):
+                label = id2label.get(str(token_id.item()), "O")
+
+                if label.startswith("B-"):
+                    # Inizio di una nuova entità
+                    act_type = label[2:]  # Rimuovi "B-"
+                    confidence = predictions[0][i][token_id].item()
+
+                    if confidence > best_confidence:
+                        best_label = act_type
+                        best_confidence = confidence
+
+            if best_label and best_confidence > 0.5:
+                result = LegalClassification(
+                    span=text_span,
+                    act_type=best_label,
+                    confidence=best_confidence,
+                    semantic_embedding=None
+                )
+                self._log(log_file_path, "fine_tuned_classification", result=result)
+                return result
+            else:
+                self._log(log_file_path, "fine_tuned_low_confidence",
+                         best_label=best_label,
+                         confidence=best_confidence)
+                return None
+
+        except Exception as e:
+            log.error("Error in fine-tuned classification", error=str(e))
+            self._log(log_file_path, "fine_tuned_error", error=str(e))
+            return None
+
     def _initialize_prototypes(self):
         """Inizializza prototipi semantici dalla configurazione."""
         if self.model is not None:
@@ -573,15 +687,34 @@ class LegalClassifier:
 
     def classify_legal_type(self, text_span: TextSpan, context: str, log_file_path: Optional[str] = None) -> LegalClassification:
         """
-        Classifica il tipo di atto normativo usando rule-based prioritario + validazione semantica.
+        Classifica il tipo di atto normativo.
 
-        Strategia:
+        Strategia con modello fine-tunato:
+        1. Se disponibile modello fine-tunato: usa quello (con fallback a rule-based)
+        2. Altrimenti: usa rule-based + validazione semantica (logica attuale)
+
+        Strategia senza modello fine-tunato:
         1. Classificazione rule-based (sempre)
         2. Validazione semantica (opzionale, configurabile)
         3. Discrepancy check: se rule-based e semantic danno tipi DIVERSI e semantic ha confidence bassa → UNKNOWN
         4. Se confidence finale < soglia minima → UNKNOWN
         """
         self._log(log_file_path, "start_classification", text_span=text_span)
+
+        # STRATEGIA 1: Prova con modello fine-tunato se disponibile
+        if self.use_fine_tuned:
+            fine_tuned_classification = self._classify_by_fine_tuned_model(text_span, log_file_path)
+
+            if fine_tuned_classification and fine_tuned_classification.confidence >= 0.7:
+                # Modello fine-tunato ha alta confidence → usa quello
+                self._log(log_file_path, "using_fine_tuned_classification",
+                         result=fine_tuned_classification)
+                return fine_tuned_classification
+            else:
+                # Modello fine-tunato incerto → fallback a rule-based
+                self._log(log_file_path, "fine_tuned_uncertain_fallback_to_rules")
+
+        # STRATEGIA 2: Rule-based + semantic validation (logica attuale)
         rule_classification = self._classify_by_rules(text_span, log_file_path)
         final_classification = rule_classification
 
@@ -802,19 +935,39 @@ class StructureBuilder:
 class LegalSourceExtractionPipeline:
     """
     Pipeline principale che coordina tutti gli stage specializzati.
+
+    Supporta sia approccio rule-based che fine-tuned model.
     """
 
-    def __init__(self, config_path: Optional[str] = None):
-        """Inizializza pipeline con configurazione esterna."""
-        log.info("Initializing Specialized Legal Source Extraction Pipeline")
+    def __init__(self, config_path: Optional[str] = None, fine_tuned_model_path: Optional[str] = None):
+        """
+        Inizializza pipeline con configurazione esterna.
+
+        Args:
+            config_path: Path al file di configurazione YAML (opzionale)
+            fine_tuned_model_path: Path al modello fine-tunato (opzionale)
+                                  Se fornito, la pipeline userà il modello fine-tunato
+                                  invece delle regole regex
+        """
+        log.info("Initializing Specialized Legal Source Extraction Pipeline",
+                use_fine_tuned=fine_tuned_model_path is not None)
+
         self.config = get_pipeline_config()
+        self.fine_tuned_model_path = fine_tuned_model_path
+
         log.info("Configuration loaded successfully")
+
+        # Inizializza i componenti della pipeline
         self.entity_detector = EntityDetector(self.config)
-        self.legal_classifier = LegalClassifier(self.config)
+        self.legal_classifier = LegalClassifier(self.config, fine_tuned_model_path=fine_tuned_model_path)
         self.normative_parser = NormativeParser(self.config)
         self.reference_resolver = ReferenceResolver(self.config)
         self.structure_builder = StructureBuilder(self.config)
-        log.info("Specialized pipeline initialized successfully")
+
+        if fine_tuned_model_path:
+            log.info("Specialized pipeline initialized successfully with FINE-TUNED model")
+        else:
+            log.info("Specialized pipeline initialized successfully with RULE-BASED approach")
 
     def _is_spurious_entity(self, candidate: TextSpan) -> bool:
         """Filtra entità spurie usando configurazione."""
