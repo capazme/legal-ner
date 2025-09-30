@@ -30,7 +30,7 @@ class ActiveLearningManager:
         # Initialize the pipeline once to be reused
         self.pipeline = LegalSourceExtractionPipeline()
 
-    def create_tasks_for_uncertain_documents(self, db: Session, batch_size: int = 10) -> Dict[str, Any]:
+    async def create_tasks_for_uncertain_documents(self, db: Session, batch_size: int = 10) -> Dict[str, Any]:
         """
         Efficiently identifies uncertain documents, creates annotation tasks with a priority score,
         and saves the pre-computed entities in a single pass.
@@ -55,7 +55,7 @@ class ActiveLearningManager:
         for doc in candidate_docs:
             try:
                 # Run the pipeline only once
-                entities = self.pipeline.extract_legal_sources(doc.text)
+                entities = await self.pipeline.extract_legal_sources(doc.text)
 
                 if not entities:
                     continue
@@ -127,13 +127,13 @@ class ActiveLearningManager:
             "message": f"Successfully created {created_tasks_count} annotation tasks for the most uncertain documents."
         }
 
-    def run_active_learning_iteration(self, db: Session, batch_size: int = 10) -> Dict[str, Any]:
+    async def run_active_learning_iteration(self, db: Session, batch_size: int = 10) -> Dict[str, Any]:
         """
         Runs one complete iteration of the active learning process by calling the
         refactored and efficient task creation method.
         """
         log.info("Starting active learning iteration", batch_size=batch_size)
-        return self.create_tasks_for_uncertain_documents(db, batch_size)
+        return await self.create_tasks_for_uncertain_documents(db, batch_size)
 
     def train_model_with_feedback(self, db: Session, model_name: str) -> str:
         """
@@ -152,6 +152,8 @@ class ActiveLearningManager:
 
         try:
             trained_model_path = model_trainer.train_model(
+                db=db, # Add db
+                version=dataset_version, # Add version
                 dataset_path=dataset_path_iob,
                 model_name=model_name,
                 output_dir=output_dir

@@ -8,19 +8,18 @@
 
 ```
 config/
-└── pipeline_config.yaml     # Configurazione principale
+└── active_learning_config.yaml     # Configurazione principale
 
 app/core/
-└── config_loader.py         # Sistema di caricamento configurazione
+└── config_loader.py                # Sistema di caricamento configurazione
 
 app/services/
-├── specialized_pipeline_refactored.py  # Pipeline configurabile
-└── specialized_pipeline.py             # Pipeline originale (backup)
+└── specialized_pipeline.py         # Pipeline configurabile
 ```
 
 ## File di Configurazione
 
-### Struttura YAML (`config/pipeline_config.yaml`)
+### Struttura YAML (`config/active_learning_config.yaml`)
 
 La configurazione è organizzata in sezioni logiche:
 
@@ -91,6 +90,15 @@ regex_patterns:
 ```
 
 #### 6. **Filtri Anti-Spurio**
+
+#### 7. **Feedback Loop**
+```yaml
+feedback_loop:
+  enabled: true
+  auto_training_threshold: 100
+  check_interval_seconds: 3600
+  primary_evaluation_metric: "f1_score"
+```
 ```yaml
 spurious_filters:
   min_length: 3
@@ -104,13 +112,14 @@ spurious_filters:
 
 ### 1. **Caricamento Automatico**
 
-La configurazione viene caricata automaticamente all'avvio della pipeline:
+La configurazione viene caricata automaticamente all'avvio della pipeline tramite il `ModelManager`:
 
 ```python
-from app.services.specialized_pipeline_refactored import LegalSourceExtractionPipeline
+from app.core.model_manager import model_manager
+from app.services.specialized_pipeline import LegalSourceExtractionPipeline
 
-# Carica automaticamente config/pipeline_config.yaml
-pipeline = LegalSourceExtractionPipeline()
+# La pipeline viene caricata e gestita dal ModelManager
+pipeline = model_manager.get_pipeline()
 ```
 
 ### 2. **Accesso alla Configurazione**
@@ -244,14 +253,14 @@ Questo esegue una suite completa di test che verifica:
 
 ## Migrazione da Sistema Hardcodato
 
-Il sistema precedente (`specialized_pipeline.py`) è mantenuto come backup. La nuova pipeline configurabile (`specialized_pipeline_refactored.py`) è completamente compatibile a livello API.
+Il sistema è stato completamente migrato a una pipeline configurabile. Il file `specialized_pipeline.py` è ora la pipeline principale e configurabile.
 
 ### Passaggi per Migration
 
 1. ✅ **Backup automatico** - file originale preservato
 2. ✅ **Configurazione YAML** - parametri esternalizzati
 3. ✅ **Sistema caricamento** - loader con validazione
-4. ✅ **Pipeline refactored** - usa configurazione esterna
+4. ✅ **Pipeline configurabile** - usa configurazione esterna
 5. ✅ **Test completi** - verifica funzionamento
 6. ✅ **Aggiornamento dipendenze** - punta alla nuova pipeline
 
@@ -263,7 +272,7 @@ Il sistema precedente (`specialized_pipeline.py`) è mantenuto come backup. La n
 - Ottimizzazione finestre di contesto
 
 ### 2. **Estensione Configurazione**
-- Aggiunta nuovi tipi di atto normativo
+- Aggiunta nuovi tipi di atto normativo (già implementato tramite UI)
 - Pattern per normative europee
 - Supporto multi-lingua configurabile
 

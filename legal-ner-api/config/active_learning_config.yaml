@@ -25,7 +25,11 @@ minio:
 # --- Training Hyperparameters ---
 training:
   # Base model per fine-tuning
-  base_model: "DeepMount00/Italian_NER_XXL_v2"
+  # Options:
+  # - "dlicari/Italian-Legal-BERT" - Specialized for Italian legal texts (RECOMMENDED for legal NER)
+  # - "DeepMount00/Italian_NER_XXL_v2" - Pre-trained Italian NER (general purpose)
+  # - "dbmdz/bert-base-italian-xxl-cased" - General purpose Italian BERT
+  base_model: "dlicari/Italian-Legal-BERT"
 
   # Training parameters
   num_train_epochs: 5

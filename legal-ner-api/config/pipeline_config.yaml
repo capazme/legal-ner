@@ -10,7 +10,8 @@
 # ===================================
 models:
   entity_detector:
-    primary: "DeepMount00/Italian_NER_XXL_v2"
+    # Using Italian-Legal-BERT for better legal domain understanding
+    primary: "dlicari/Italian-Legal-BERT"
     fallback: "Babelscape/wikineural-multilingual-ner"
     max_length: 256
 

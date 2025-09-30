@@ -1,0 +1,695 @@
+"""
+Admin API Endpoints
+
+Gestisce operazioni amministrative per database, modelli, label e sistema.
+"""
+
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from sqlalchemy.orm import Session
+from sqlalchemy import func, text
+from app.database.database import get_db
+from app.database import models
+from app.core.dependencies import get_api_key
+from app.core.config import settings
+from app.core.active_learning_config import get_active_learning_config, load_active_learning_config
+from app.core.model_manager import ModelManager
+import structlog
+from pydantic import BaseModel
+from typing import Dict, Any, List, Optional
+import json
+import os
+import shutil
+from datetime import datetime
+import psutil
+from minio import Minio
+from minio.error import S3Error
+import yaml
+
+log = structlog.get_logger()
+
+router = APIRouter()
+
+# ============================================================================
+# REQUEST/RESPONSE MODELS
+# ============================================================================
+
+class DatabaseStatsResponse(BaseModel):
+    documents: int
+    entities: int
+    annotations: int
+    tasks_pending: int
+    tasks_completed: int
+    trained_models: int
+    dataset_versions: int
+    db_size_mb: float
+
+class LabelInfo(BaseModel):
+    label: str
+    count: int
+    accuracy: Optional[float] = None
+
+class ConfigUpdateRequest(BaseModel):
+    config_section: str  # "training", "active_learning", etc.
+    updates: Dict[str, Any]
+
+class BackupRequest(BaseModel):
+    include_minio: bool = True
+    include_models: bool = True
+
+class SystemHealthResponse(BaseModel):
+    database: str
+    minio: str
+    disk_usage_percent: float
+    memory_usage_percent: float
+    cpu_usage_percent: float
+
+# ============================================================================
+# DATABASE MANAGEMENT
+# ============================================================================
+
+@router.get("/database/stats", response_model=DatabaseStatsResponse)
+async def get_database_stats(
+    db: Session = Depends(get_db),
+    api_key: str = Depends(get_api_key)
+):
+    """Get comprehensive database statistics."""
+    try:
+        log.info("Fetching database statistics")
+
+        stats = {
+            "documents": db.query(models.Document).count(),
+            "entities": db.query(models.Entity).count(),
+            "annotations": db.query(models.Annotation).count(),
+            "tasks_pending": db.query(models.AnnotationTask).filter(
+                models.AnnotationTask.status == "pending"
+            ).count(),
+            "tasks_completed": db.query(models.AnnotationTask).filter(
+                models.AnnotationTask.status == "completed"
+            ).count(),
+            "trained_models": db.query(models.TrainedModel).count(),
+            "dataset_versions": db.query(models.DatasetVersion).count(),
+            "db_size_mb": 0.0  # Will be calculated below
+        }
+
+        # Get database size
+        try:
+            result = db.execute(text("SELECT pg_database_size(current_database())")).scalar()
+            stats["db_size_mb"] = round(result / (1024 * 1024), 2)
+        except Exception as e:
+            log.warning("Could not fetch database size", error=str(e))
+
+        log.info("Database statistics fetched", **stats)
+        return DatabaseStatsResponse(**stats)
+
+    except Exception as e:
+        log.error("Error fetching database stats", error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/database/export")
+async def export_database(
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    api_key: str = Depends(get_api_key)
+):
+    """Export complete database backup."""
+    try:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_dir = f"backups/db_backup_{timestamp}"
+        os.makedirs(backup_dir, exist_ok=True)
+
+        log.info("Starting database export", backup_dir=backup_dir)
+
+        # Export all tables to JSON
+        tables_data = {}
+
+        # Documents
+        documents = db.query(models.Document).all()
+        tables_data["documents"] = [
+            {"id": d.id, "text": d.text, "source": d.source, "created_at": d.created_at.isoformat() if d.created_at else None}
+            for d in documents
+        ]
+
+        # Entities
+        entities = db.query(models.Entity).all()
+        tables_data["entities"] = [
+            {
+                "id": e.id, "document_id": e.document_id, "text": e.text,
+                "label": e.label, "start_char": e.start_char, "end_char": e.end_char,
+                "confidence": e.confidence, "model": e.model
+            }
+            for e in entities
+        ]
+
+        # Annotations
+        annotations = db.query(models.Annotation).all()
+        tables_data["annotations"] = [
+            {
+                "id": a.id, "entity_id": a.entity_id, "is_correct": a.is_correct,
+                "user_id": a.user_id, "corrected_label": a.corrected_label,
+                "corrected_text": a.corrected_text, "notes": a.notes,
+                "created_at": a.created_at.isoformat() if a.created_at else None
+            }
+            for a in annotations
+        ]
+
+        # Tasks
+        tasks = db.query(models.AnnotationTask).all()
+        tables_data["tasks"] = [
+            {
+                "id": t.id, "document_id": t.document_id, "status": t.status,
+                "priority": t.priority, "created_at": t.created_at.isoformat() if t.created_at else None
+            }
+            for t in tasks
+        ]
+
+        # Models
+        trained_models = db.query(models.TrainedModel).all()
+        tables_data["trained_models"] = [
+            {
+                "id": m.id, "version": m.version, "model_name": m.model_name,
+                "path": m.path, "accuracy": m.accuracy, "f1_score": m.f1_score,
+                "precision": m.precision, "recall": m.recall, "is_active": m.is_active,
+                "created_at": m.created_at.isoformat() if m.created_at else None
+            }
+            for m in trained_models
+        ]
+
+        # Save to file
+        backup_file = os.path.join(backup_dir, "database_backup.json")
+        with open(backup_file, 'w', encoding='utf-8') as f:
+            json.dump(tables_data, f, indent=2, ensure_ascii=False)
+
+        log.info("Database exported successfully", backup_file=backup_file)
+
+        return {
+            "status": "success",
+            "backup_dir": backup_dir,
+            "backup_file": backup_file,
+            "total_records": sum(len(v) for v in tables_data.values())
+        }
+
+    except Exception as e:
+        log.error("Error exporting database", error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/database/clear-annotations")
+async def clear_annotations(
+    db: Session = Depends(get_db),
+    api_key: str = Depends(get_api_key)
+):
+    """Clear all annotations (keep documents and entities)."""
+    try:
+        log.warning("Clearing all annotations from database")
+
+        count = db.query(models.Annotation).count()
+        db.query(models.Annotation).delete()
+        db.commit()
+
+        log.info("Annotations cleared", count=count)
+
+        return {
+            "status": "success",
+            "message": f"Deleted {count} annotations",
+            "deleted_count": count
+        }
+
+    except Exception as e:
+        db.rollback()
+        log.error("Error clearing annotations", error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/database/clear-all")
+async def clear_all_data(
+    confirm: bool = False,
+    db: Session = Depends(get_db),
+    api_key: str = Depends(get_api_key)
+):
+    """⚠️ DANGER: Clear ALL data from database."""
+    if not confirm:
+        raise HTTPException(
+            status_code=400,
+            detail="Must set confirm=true to clear all data"
+        )
+
+    try:
+        log.warning("⚠️ CLEARING ALL DATABASE DATA")
+
+        # Count before deletion
+        stats = {
+            "annotations": db.query(models.Annotation).count(),
+            "entities": db.query(models.Entity).count(),
+            "tasks": db.query(models.AnnotationTask).count(),
+            "documents": db.query(models.Document).count(),
+            "models": db.query(models.TrainedModel).count(),
+            "datasets": db.query(models.DatasetVersion).count()
+        }
+
+        # Delete in correct order (respecting foreign keys)
+        db.query(models.Annotation).delete()
+        db.query(models.Entity).delete()
+        db.query(models.AnnotationTask).delete()
+        db.query(models.Document).delete()
+        db.query(models.TrainedModel).delete()
+        db.query(models.DatasetVersion).delete()
+        db.commit()
+
+        log.info("All data cleared", stats=stats)
+
+        return {
+            "status": "success",
+            "message": "All data cleared",
+            "deleted": stats
+        }
+
+    except Exception as e:
+        db.rollback()
+        log.error("Error clearing all data", error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/database/vacuum")
+async def vacuum_database(
+    db: Session = Depends(get_db),
+    api_key: str = Depends(get_api_key)
+):
+    """Optimize and compact database."""
+    try:
+        log.info("Running database vacuum")
+
+        db.execute(text("VACUUM ANALYZE"))
+        db.commit()
+
+        log.info("Database vacuum completed")
+
+        return {
+            "status": "success",
+            "message": "Database optimized"
+        }
+
+    except Exception as e:
+        log.error("Error running vacuum", error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# LABEL MANAGEMENT
+# ============================================================================
+
+@router.get("/labels/list", response_model=List[LabelInfo])
+async def list_labels(
+    db: Session = Depends(get_db),
+    api_key: str = Depends(get_api_key)
+):
+    """List all labels with usage statistics."""
+    try:
+        log.info("Fetching label statistics")
+
+        config = get_active_learning_config()
+        label_stats = []
+
+        for label in config.labels.label_list:
+            if label == "O":
+                continue  # Skip Outside tag
+
+            # Count entities with this label
+            count = db.query(models.Entity).filter(models.Entity.label == label).count()
+
+            # Calculate accuracy (entities marked as correct)
+            entities_with_label = db.query(models.Entity).filter(
+                models.Entity.label == label
+            ).all()
+
+            correct = 0
+            total = 0
+            for entity in entities_with_label:
+                annotations = db.query(models.Annotation).filter(
+                    models.Annotation.entity_id == entity.id
+                ).all()
+                if annotations:
+                    total += len(annotations)
+                    correct += sum(1 for a in annotations if a.is_correct)
+
+            accuracy = correct / total if total > 0 else None
+
+            label_stats.append(LabelInfo(
+                label=label,
+                count=count,
+                accuracy=accuracy
+            ))
+
+        # Sort by count descending
+        label_stats.sort(key=lambda x: x.count, reverse=True)
+
+        log.info("Label statistics fetched", total_labels=len(label_stats))
+
+        return label_stats
+
+    except Exception as e:
+        log.error("Error fetching label statistics", error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/labels/add")
+async def add_label(
+    label: str,
+    api_key: str = Depends(get_api_key)
+):
+    """Add new label to configuration."""
+    try:
+        log.info("Adding new label", label=label)
+
+        # Validate IOB format
+        if not (label.startswith("B-") or label.startswith("I-") or label == "O"):
+            raise HTTPException(
+                status_code=400,
+                detail="Label must follow IOB format (B-*, I-*, or O)"
+            )
+
+        # Load config
+        config_path = get_active_learning_config().__dict__
+        config_file = "config/active_learning_config.yaml"
+
+        with open(config_file, 'r', encoding='utf-8') as f:
+            config_data = yaml.safe_load(f)
+
+        # Check if label already exists
+        if label in config_data['labels']['label_list']:
+            raise HTTPException(status_code=400, detail=f"Label {label} already exists")
+
+        # Add label
+        config_data['labels']['label_list'].append(label)
+
+        # Save config
+        with open(config_file, 'w', encoding='utf-8') as f:
+            yaml.dump(config_data, f, default_flow_style=False, allow_unicode=True)
+
+        log.info("Label added successfully", label=label)
+
+        return {
+            "status": "success",
+            "message": f"Label {label} added",
+            "label": label
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("Error adding label", error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# MODEL MANAGEMENT
+# ============================================================================
+
+@router.get("/models/list")
+async def list_models_admin(
+    db: Session = Depends(get_db),
+    api_key: str = Depends(get_api_key)
+):
+    """List all trained models with detailed metrics."""
+    try:
+        models_list = ModelManager.list_available_models(db)
+        return {"models": models_list, "total": len(models_list)}
+    except Exception as e:
+        log.error("Error listing models", error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/models/{version}")
+async def delete_model(
+    version: str,
+    delete_files: bool = True,
+    db: Session = Depends(get_db),
+    api_key: str = Depends(get_api_key)
+):
+    """Delete a trained model."""
+    try:
+        log.warning("Deleting model", version=version, delete_files=delete_files)
+
+        model = db.query(models.TrainedModel).filter(
+            models.TrainedModel.version == version
+        ).first()
+
+        if not model:
+            raise HTTPException(status_code=404, detail=f"Model {version} not found")
+
+        # Delete files
+        if delete_files and model.path and os.path.exists(model.path):
+            shutil.rmtree(model.path)
+            log.info("Model files deleted", path=model.path)
+
+        # Delete from DB
+        db.delete(model)
+        db.commit()
+
+        log.info("Model deleted successfully", version=version)
+
+        return {
+            "status": "success",
+            "message": f"Model {version} deleted",
+            "deleted_files": delete_files
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        log.error("Error deleting model", error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# CONFIGURATION MANAGEMENT
+# ============================================================================
+
+@router.get("/config/training")
+async def get_training_config(api_key: str = Depends(get_api_key)):
+    """Get current training configuration."""
+    try:
+        config = get_active_learning_config()
+        return {
+            "base_model": config.training.base_model,
+            "num_train_epochs": config.training.num_train_epochs,
+            "per_device_train_batch_size": config.training.per_device_train_batch_size,
+            "learning_rate": config.training.learning_rate,
+            "eval_split": config.training.eval_split,
+            "min_training_samples": config.training.min_training_samples
+        }
+    except Exception as e:
+        log.error("Error fetching training config", error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.put("/config/update")
+async def update_config(
+    request: ConfigUpdateRequest,
+    api_key: str = Depends(get_api_key)
+):
+    """Update configuration parameters."""
+    try:
+        log.info("Updating configuration", section=request.config_section)
+
+        config_file = "config/active_learning_config.yaml"
+
+        with open(config_file, 'r', encoding='utf-8') as f:
+            config_data = yaml.safe_load(f)
+
+        # Update the specified section
+        if request.config_section not in config_data:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid config section: {request.config_section}"
+            )
+
+        config_data[request.config_section].update(request.updates)
+
+        # Save config
+        with open(config_file, 'w', encoding='utf-8') as f:
+            yaml.dump(config_data, f, default_flow_style=False, allow_unicode=True)
+
+        # Clear cache to reload config
+        from app.core.active_learning_config import _active_learning_config_cache
+        global _active_learning_config_cache
+        _active_learning_config_cache = None
+
+        log.info("Configuration updated successfully", section=request.config_section)
+
+        return {
+            "status": "success",
+            "message": f"Configuration section '{request.config_section}' updated",
+            "updates": request.updates
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("Error updating configuration", error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# SYSTEM OPERATIONS
+# ============================================================================
+
+@router.get("/system/health", response_model=SystemHealthResponse)
+async def system_health(
+    db: Session = Depends(get_db),
+    api_key: str = Depends(get_api_key)
+):
+    """Check system health status."""
+    try:
+        # Database check
+        try:
+            db.execute(text("SELECT 1"))
+            db_status = "healthy"
+        except:
+            db_status = "unhealthy"
+
+        # MinIO check
+        try:
+            config = get_active_learning_config()
+            minio_client = Minio(
+                config.minio.endpoint,
+                access_key=config.minio.access_key,
+                secret_key=config.minio.secret_key,
+                secure=config.minio.secure
+            )
+            minio_client.bucket_exists(config.minio.bucket)
+            minio_status = "healthy"
+        except:
+            minio_status = "unhealthy"
+
+        # System resources
+        disk = psutil.disk_usage('/')
+        memory = psutil.virtual_memory()
+        cpu = psutil.cpu_percent(interval=1)
+
+        return SystemHealthResponse(
+            database=db_status,
+            minio=minio_status,
+            disk_usage_percent=disk.percent,
+            memory_usage_percent=memory.percent,
+            cpu_usage_percent=cpu
+        )
+
+    except Exception as e:
+        log.error("Error checking system health", error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/system/clear-cache")
+async def clear_cache(api_key: str = Depends(get_api_key)):
+    """Clear application cache."""
+    try:
+        log.info("Clearing application cache")
+
+        # Clear config cache
+        from app.core.active_learning_config import _active_learning_config_cache
+        global _active_learning_config_cache
+        _active_learning_config_cache = None
+
+        log.info("Cache cleared successfully")
+
+        return {
+            "status": "success",
+            "message": "Cache cleared"
+        }
+
+    except Exception as e:
+        log.error("Error clearing cache", error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# DATASET MANAGEMENT
+# ============================================================================
+
+@router.get("/datasets/list")
+async def list_datasets(
+    db: Session = Depends(get_db),
+    api_key: str = Depends(get_api_key)
+):
+    """List all dataset versions."""
+    try:
+        datasets = db.query(models.DatasetVersion).order_by(
+            models.DatasetVersion.created_at.desc()
+        ).all()
+
+        return {
+            "datasets": [
+                {
+                    "id": d.id,
+                    "version_name": d.version_name,
+                    "description": d.description,
+                    "created_at": d.created_at.isoformat() if d.created_at else None
+                }
+                for d in datasets
+            ],
+            "total": len(datasets)
+        }
+
+    except Exception as e:
+        log.error("Error listing datasets", error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/datasets/{version_name}")
+async def delete_dataset(
+    version_name: str,
+    db: Session = Depends(get_db),
+    api_key: str = Depends(get_api_key)
+):
+    """Delete a dataset version."""
+    try:
+        log.warning("Deleting dataset", version_name=version_name)
+
+        dataset = db.query(models.DatasetVersion).filter(
+            models.DatasetVersion.version_name == version_name
+        ).first()
+
+        if not dataset:
+            raise HTTPException(status_code=404, detail=f"Dataset {version_name} not found")
+
+        # Delete from MinIO
+        try:
+            config = get_active_learning_config()
+            minio_client = Minio(
+                config.minio.endpoint,
+                access_key=config.minio.access_key,
+                secret_key=config.minio.secret_key,
+                secure=config.minio.secure
+            )
+
+            # Delete both JSON and IOB versions
+            for suffix in ["", "_iob"]:
+                object_name = f"datasets/{version_name}{suffix}.json"
+                try:
+                    minio_client.remove_object(config.minio.bucket, object_name)
+                    log.info("Dataset file deleted from MinIO", object_name=object_name)
+                except S3Error as e:
+                    log.warning("Could not delete dataset file", object_name=object_name, error=str(e))
+
+        except Exception as e:
+            log.warning("Error deleting dataset from MinIO", error=str(e))
+
+        # Delete from DB
+        db.delete(dataset)
+        db.commit()
+
+        log.info("Dataset deleted successfully", version_name=version_name)
+
+        return {
+            "status": "success",
+            "message": f"Dataset {version_name} deleted"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        log.error("Error deleting dataset", error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))

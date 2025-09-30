@@ -1,5 +1,5 @@
 from functools import lru_cache
-from fastapi import Header, HTTPException, status
+from fastapi import Depends, Header, HTTPException, status
 from app.core.config import settings
 from app.services.specialized_pipeline import LegalSourceExtractionPipeline
 from app.services.feedback_loop import FeedbackLoop
@@ -12,17 +12,17 @@ def get_legal_pipeline() -> LegalSourceExtractionPipeline:
     """
     return model_manager.get_pipeline()
 
-@lru_cache(maxsize=1)
 def get_feedback_loop() -> FeedbackLoop:
     """
-    Returns a cached instance of the FeedbackLoop for continuous learning.
+    Returns a new instance of the FeedbackLoop (lightweight, database-backed).
+    Non serve più caching perché non ha stato interno.
     """
     return FeedbackLoop()
 
-@lru_cache(maxsize=1)
 def get_dataset_builder() -> DatasetBuilder:
     """
-    Returns a cached instance of the DatasetBuilder.
+    Returns a new instance of the DatasetBuilder.
+    Non dipende più da FeedbackLoop, quindi non serve caching.
     """
     return DatasetBuilder()
 

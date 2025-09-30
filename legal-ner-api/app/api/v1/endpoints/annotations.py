@@ -65,6 +65,28 @@ class UpdateTaskRequest(BaseModel):
     status: str
 
 
+class CorrectedEntityRequest(BaseModel):
+    text: str
+    label: str
+    start_char: int
+    end_char: int
+
+
+class SubmitAnnotationRequest(BaseModel):
+    entity_id: int
+    is_correct: bool
+    task_id: Optional[int] = None
+    user_id: Optional[str] = None
+    corrected_entity: Optional[CorrectedEntityRequest] = None
+    notes: Optional[str] = None
+
+
+class SubmitAnnotationResponse(BaseModel):
+    status: str
+    annotation_id: int
+    message: str
+
+
 @router.post("/annotations/tasks", response_model=TaskResponse, status_code=201)
 async def create_annotation_task(
     request: CreateTaskRequest,
@@ -479,3 +501,73 @@ async def delete_annotation_task(
         db.rollback()
         log.error("Error deleting annotation task", task_id=task_id, error=str(e))
         raise HTTPException(status_code=500, detail=f"Failed to delete task: {str(e)}")
+
+
+@router.post("/annotations/submit", response_model=SubmitAnnotationResponse, status_code=201)
+async def submit_annotation(
+    request: SubmitAnnotationRequest,
+    db: Session = Depends(get_db),
+    api_key: str = Depends(get_api_key)
+):
+    """
+    Salva un'annotazione di feedback per un'entità.
+    Questo è il nuovo endpoint che sostituisce /enhanced-feedback.
+    """
+    try:
+        log.info("Submitting annotation", entity_id=request.entity_id, is_correct=request.is_correct)
+
+        # Verify entity exists
+        entity = db.query(models.Entity).filter(models.Entity.id == request.entity_id).first()
+        if not entity:
+            log.warning("Entity not found for annotation", entity_id=request.entity_id)
+            raise HTTPException(status_code=404, detail=f"Entity {request.entity_id} not found")
+
+        # Create annotation
+        annotation = models.Annotation(
+            entity_id=request.entity_id,
+            is_correct=request.is_correct,
+            user_id=request.user_id or "anonymous",
+            created_at=datetime.now()
+        )
+
+        # If entity is marked as incorrect and correction is provided
+        if not request.is_correct and request.corrected_entity:
+            annotation.corrected_label = request.corrected_entity.label
+            annotation.corrected_text = request.corrected_entity.text
+            annotation.corrected_start_char = request.corrected_entity.start_char
+            annotation.corrected_end_char = request.corrected_entity.end_char
+
+        if request.notes:
+            annotation.notes = request.notes
+
+        db.add(annotation)
+        db.commit()
+        db.refresh(annotation)
+
+        # Update task status if task_id provided
+        if request.task_id:
+            task = db.query(models.AnnotationTask).filter(
+                models.AnnotationTask.id == request.task_id
+            ).first()
+            if task:
+                task.status = "completed"
+                db.commit()
+                log.info("Updated task status", task_id=request.task_id, status="completed")
+
+        log.info("Annotation submitted successfully",
+                 annotation_id=annotation.id,
+                 entity_id=request.entity_id,
+                 is_correct=request.is_correct)
+
+        return SubmitAnnotationResponse(
+            status="success",
+            annotation_id=annotation.id,
+            message=f"Annotation saved for entity {request.entity_id}"
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        log.error("Error submitting annotation", error=str(e), entity_id=request.entity_id)
+        raise HTTPException(status_code=500, detail=f"Failed to submit annotation: {str(e)}")

@@ -86,3 +86,69 @@ async def get_active_model(
     """
     active_version = model_manager.get_active_model_version()
     return {"active_model_version": active_version}
+
+@router.post("/models/deactivate-all", response_model=dict)
+async def deactivate_all_models(
+    db: Session = Depends(get_db),
+    api_key: str = Depends(get_api_key)
+):
+    """
+    Deactivates all trained models and reverts to the default rule-based pipeline.
+    """
+    try:
+        log.info("Deactivating all models")
+        result = model_manager.deactivate_all_models(db)
+        return result
+    except Exception as e:
+        log.error("Error deactivating models", error=str(e))
+        raise HTTPException(status_code=500, detail=f"Failed to deactivate models: {str(e)}")
+
+@router.get("/models/compare/{version1}/{version2}", response_model=dict)
+async def compare_models(
+    version1: str,
+    version2: str,
+    db: Session = Depends(get_db),
+    api_key: str = Depends(get_api_key)
+):
+    """
+    Compares two model versions based on their metrics.
+    """
+    try:
+        log.info("Comparing models", version1=version1, version2=version2)
+        comparison = model_manager.compare_models(db, version1, version2)
+
+        if comparison.get("status") == "error":
+            raise HTTPException(status_code=404, detail=comparison["message"])
+
+        return comparison
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("Error comparing models", error=str(e))
+        raise HTTPException(status_code=500, detail=f"Failed to compare models: {str(e)}")
+
+@router.post("/models/auto-select-best", response_model=dict)
+async def auto_select_best_model(
+    metric: str = "f1_score",
+    db: Session = Depends(get_db),
+    api_key: str = Depends(get_api_key)
+):
+    """
+    Automatically selects and activates the best model based on a specified metric.
+
+    Args:
+        metric: Metric to use for selection (f1_score, precision, recall, accuracy)
+    """
+    try:
+        log.info("Auto-selecting best model", metric=metric)
+        result = model_manager.auto_select_best_model(db, metric=metric)
+
+        if result.get("status") == "error":
+            raise HTTPException(status_code=400, detail=result["message"])
+
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("Error auto-selecting best model", error=str(e))
+        raise HTTPException(status_code=500, detail=f"Failed to auto-select best model: {str(e)}")

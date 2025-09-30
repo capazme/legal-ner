@@ -14,8 +14,14 @@ from transformers import AutoTokenizer
 log = structlog.get_logger()
 
 class DatasetBuilder:
+    """
+    Costruisce dataset per training da annotazioni database-backed.
+
+    Non dipende più da FeedbackLoop, ma query direttamente il database.
+    """
+
     def __init__(self):
-        log.info("Initializing DatasetBuilder")
+        log.info("Initializing DatasetBuilder (Database-backed)")
 
         # Load active learning configuration
         self.config = get_active_learning_config()
@@ -38,154 +44,208 @@ class DatasetBuilder:
             raise
 
     def build_dataset(self, db: Session, version_name: str) -> str:
-        """Builds a new dataset from reviewed annotations and uploads it to MinIO."""
-        log.info("Building dataset", version_name=version_name)
+        """
+        Costruisce un nuovo dataset dalle annotazioni validate nel database.
 
-        # Query for all correct annotations and their associated entities and documents
-        correct_annotations = db.query(models.Annotation, models.Entity, models.Document)\
-            .join(models.Entity, models.Annotation.entity_id == models.Entity.id)\
-            .join(models.Document, models.Entity.document_id == models.Document.id)\
-            .filter(models.Annotation.is_correct == True)\
+        Args:
+            db: Database session
+            version_name: Nome versione del dataset
+
+        Returns:
+            Path del dataset in MinIO
+        """
+        log.info("Building dataset from database annotations", version_name=version_name)
+
+        # Ottieni documenti con annotazioni validate
+        # Query per ottenere tutti i documenti che hanno almeno un'annotazione
+        documents_with_annotations = (
+            db.query(models.Document)
+            .join(models.Entity, models.Document.id == models.Entity.document_id)
+            .join(models.Annotation, models.Entity.id == models.Annotation.entity_id)
+            .distinct()
             .all()
+        )
 
-        # Group entities by document
-        documents_data = {}
-        for annotation, entity, document in correct_annotations:
-            if document.id not in documents_data:
-                documents_data[document.id] = {
+        if not documents_with_annotations:
+            log.warning("No documents with annotations found for dataset building")
+            raise ValueError("No annotated documents found to build training dataset.")
+
+        log.info(f"Found {len(documents_with_annotations)} documents with annotations")
+
+        # Costruisci dataset in formato span-based
+        dataset_to_upload = []
+
+        for document in documents_with_annotations:
+            # Ottieni tutte le entità per questo documento che hanno annotazioni
+            entities = (
+                db.query(models.Entity)
+                .filter(models.Entity.document_id == document.id)
+                .join(models.Annotation, models.Entity.id == models.Annotation.entity_id)
+                .distinct()
+                .all()
+            )
+
+            # Per ogni entità, verifica se è stata validata come corretta (majority voting)
+            validated_entities = []
+            for entity in entities:
+                annotations = db.query(models.Annotation).filter(
+                    models.Annotation.entity_id == entity.id
+                ).all()
+
+                if not annotations:
+                    continue
+
+                # Majority voting
+                correct_count = sum(1 for a in annotations if a.is_correct)
+                incorrect_count = len(annotations) - correct_count
+
+                # Include solo se la maggioranza dice che è corretta
+                if correct_count > incorrect_count:
+                    validated_entities.append({
+                        "text": entity.text,
+                        "label": entity.label,
+                        "start_char": entity.start_char,
+                        "end_char": entity.end_char
+                    })
+                # Se marcata come incorretta e c'è una label corretta, usa quella
+                elif incorrect_count > correct_count:
+                    # Cerca se c'è una corrected_label
+                    corrected_labels = [a.corrected_label for a in annotations if a.corrected_label]
+                    if corrected_labels:
+                        # Usa la label corretta più frequente
+                        most_common_label = max(set(corrected_labels), key=corrected_labels.count)
+                        validated_entities.append({
+                            "text": entity.text,
+                            "label": most_common_label,
+                            "start_char": entity.start_char,
+                            "end_char": entity.end_char
+                        })
+
+            # Aggiungi documento al dataset solo se ha entità validate
+            if validated_entities:
+                dataset_to_upload.append({
                     "text": document.text,
-                    "labels": []
-                }
-            
-            # Use corrected values if available, otherwise use the original entity values
-            label_to_use = annotation.corrected_label if annotation.corrected_label else entity.label
-            text_to_use = annotation.corrected_text if annotation.corrected_text else entity.text
-            start_char = entity.start_char
-            end_char = entity.end_char
-            
-            # If boundaries were corrected, use those instead
-            if annotation.corrected_boundaries:
-                boundaries = json.loads(annotation.corrected_boundaries)
-                start_char = boundaries.get("start_char", start_char)
-                end_char = boundaries.get("end_char", end_char)
-            
-            documents_data[document.id]["labels"].append({
-                "text": text_to_use,
-                "label": label_to_use,
-                "start_char": start_char,
-                "end_char": end_char
-            })
-        
-        # Convert dictionary values to a list
-        dataset_to_upload = list(documents_data.values())
+                    "labels": validated_entities
+                })
 
-        # Also create IOB format for token classification training
+        if not dataset_to_upload:
+            log.warning("No validated entities found for dataset building")
+            raise ValueError("No validated entities found to build training dataset.")
+
+        log.info(f"Dataset built with {len(dataset_to_upload)} documents and {sum(len(d['labels']) for d in dataset_to_upload)} entities")
+
+        # Converti a formato IOB per token classification
         iob_dataset = self._convert_to_iob_format(dataset_to_upload)
-        
-        # Upload both formats
+
+        if not iob_dataset:
+            log.error("IOB conversion failed or produced empty dataset")
+            raise ValueError("Failed to convert dataset to IOB format")
+
+        # Upload entrambi i formati
         self._upload_dataset(dataset_to_upload, f"datasets/{version_name}.json")
         self._upload_dataset(iob_dataset, f"datasets/{version_name}_iob.json")
 
         # Record dataset version in DB
         db_version = models.DatasetVersion(
-            version_name=version_name, 
-            description="Generated from reviewed annotations", 
+            version_name=version_name,
+            description=f"Generated from {len(dataset_to_upload)} annotated documents",
             model_version="N/A"
         )
         db.add(db_version)
         db.commit()
         db.refresh(db_version)
-        log.info("Dataset version recorded in DB", version_id=db_version.id)
+        log.info("Dataset version recorded in DB", version_id=db_version.id, version_name=version_name)
 
         return f"datasets/{version_name}.json"
-    
+
     def _convert_to_iob_format(self, dataset: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
         Converts span-based annotations to IOB format for token classification training.
+        Uses tokenizer's offset_mapping for robust token-to-char alignment.
         """
         try:
-            # Use tokenizer from active learning config
             tokenizer = AutoTokenizer.from_pretrained(self.config.training.base_model)
-            
+
             iob_dataset = []
-            
-            for doc in dataset:
+
+            for doc_idx, doc in enumerate(dataset):
                 text = doc["text"]
                 labels = doc["labels"]
-                
-                # Sort labels by start position
-                sorted_labels = sorted(labels, key=lambda x: x["start_char"])
-                
-                # Tokenize the text
-                tokens = tokenizer.tokenize(text)
-                token_spans = self._get_token_spans(text, tokens, tokenizer)
-                
-                # Create IOB tags
+
+                log.debug("IOB conversion: Processing document", doc_idx=doc_idx, text_len=len(text), num_labels=len(labels))
+
+                # Tokenize the text with offset mapping
+                tokenized_input = tokenizer(
+                    text,
+                    return_offsets_mapping=True,
+                    truncation=True,
+                    max_length=self.config.dataset.max_sequence_length
+                )
+
+                tokens = tokenizer.convert_ids_to_tokens(tokenized_input["input_ids"])
+                offset_mapping = tokenized_input["offset_mapping"]
+
+                log.debug("IOB conversion: Tokenization complete", num_tokens=len(tokens))
+
+                # Initialize IOB tags
                 iob_tags = ["O"] * len(tokens)
-                
+
+                # Sort labels by start position per evitare sovrapposizioni
+                sorted_labels = sorted(labels, key=lambda x: x["start_char"])
+
+                log.debug("IOB conversion: Sorted labels", num_labels=len(sorted_labels))
+
                 for label_info in sorted_labels:
                     label = label_info["label"]
                     start_char = label_info["start_char"]
                     end_char = label_info["end_char"]
-                    
-                    # Find which tokens overlap with this entity
+
+                    log.debug("IOB conversion: Processing label", label=label, start_char=start_char, end_char=end_char)
+
+                    # Find which tokens overlap with this entity using offset_mapping
                     entity_token_indices = []
-                    for i, (token_start, token_end) in enumerate(token_spans):
-                        if token_end > start_char and token_start < end_char:
+                    for i, (token_start, token_end) in enumerate(offset_mapping):
+                        # Skip special tokens (where start == end)
+                        if token_start == token_end:
+                            continue
+
+                        # Check for overlap
+                        # Un token appartiene all'entità se c'è sovrapposizione tra gli span
+                        if max(start_char, token_start) < min(end_char, token_end):
                             entity_token_indices.append(i)
-                    
+
+                    log.debug("IOB conversion: Entity token indices found", label=label, entity_token_indices=entity_token_indices)
+
                     # Assign IOB tags
                     if entity_token_indices:
-                        iob_tags[entity_token_indices[0]] = f"B-{label}"
-                        for idx in entity_token_indices[1:]:
-                            iob_tags[idx] = f"I-{label}"
-                
+                        # Solo se non è già stato marcato (per evitare sovrapposizioni)
+                        if iob_tags[entity_token_indices[0]] == "O":
+                            iob_tags[entity_token_indices[0]] = f"B-{label}"
+                            for idx in entity_token_indices[1:]:
+                                if iob_tags[idx] == "O":
+                                    iob_tags[idx] = f"I-{label}"
+
+                log.debug("IOB conversion: Final IOB tags for document", num_B_tags=sum(1 for t in iob_tags if t.startswith("B-")))
+
                 iob_dataset.append({
                     "tokens": tokens,
                     "tags": iob_tags,
-                    "text": text
+                    "text": text # Keep original text for reference
                 })
-                
+
+            log.info("IOB conversion: Successfully converted documents",
+                    num_docs=len(iob_dataset),
+                    total_entities=sum(sum(1 for t in doc["tags"] if t.startswith("B-")) for doc in iob_dataset))
             return iob_dataset
-            
+
         except Exception as e:
-            log.error("Error converting to IOB format", error=str(e))
+            log.error("Error converting to IOB format", error=str(e), exc_info=True)
             # Return empty dataset on error
             return []
-    
-    def _get_token_spans(self, text: str, tokens: List[str], tokenizer) -> List[tuple]:
-        """
-        Maps tokens to their character spans in the original text.
-        This is a simplified approach and might need refinement for your specific tokenizer.
-        """
-        spans = []
-        current_pos = 0
-        
-        for token in tokens:
-            # Handle special tokens
-            if token.startswith("##"):
-                token = token[2:]
-            
-            # Find token in text
-            token_stripped = token.replace("##", "")
-            if token_stripped:
-                token_pos = text.find(token_stripped, current_pos)
-                if token_pos != -1:
-                    spans.append((token_pos, token_pos + len(token_stripped)))
-                    current_pos = token_pos + len(token_stripped)
-                else:
-                    # If token not found, use approximate position
-                    spans.append((current_pos, current_pos + len(token_stripped)))
-                    current_pos += len(token_stripped)
-            else:
-                # For special tokens with no text representation
-                spans.append((current_pos, current_pos))
-        
-        return spans
-    
+
     def _upload_dataset(self, dataset: Any, object_name: str) -> None:
         """Uploads a dataset to MinIO."""
-        dataset_content = json.dumps(dataset, indent=2)
+        dataset_content = json.dumps(dataset, indent=2, ensure_ascii=False)
         dataset_bytes = dataset_content.encode('utf-8')
         data_stream = io.BytesIO(dataset_bytes)
         data_length = len(dataset_bytes)
@@ -198,7 +258,10 @@ class DatasetBuilder:
                 data_length,
                 content_type="application/json"
             )
-            log.info("Dataset uploaded to MinIO", bucket=self.config.minio.bucket, object_name=object_name)
+            log.info("Dataset uploaded to MinIO",
+                    bucket=self.config.minio.bucket,
+                    object_name=object_name,
+                    size_bytes=data_length)
         except S3Error as e:
             log.error("Error uploading dataset to MinIO", error=str(e))
             raise

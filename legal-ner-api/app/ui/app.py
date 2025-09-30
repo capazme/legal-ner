@@ -360,7 +360,7 @@ def api_create_task():
         # Create annotation task
         task_response = requests.post(
             f"{API_BASE_URL}/annotations/tasks",
-            json={"document_id": document_id, "priority": "high"},
+            json={"document_id": document_id, "priority": 0.8},
             headers={"X-API-Key": API_KEY}
         )
 
@@ -426,7 +426,7 @@ def api_upload_document():
             # Create annotation task
             task_response = requests.post(
                 f"{API_BASE_URL}/annotations/tasks",
-                json={"document_id": document_id, "priority": "high"},
+                json={"document_id": document_id, "priority": 0.8},
                 headers={"X-API-Key": API_KEY}
             )
 
@@ -456,72 +456,39 @@ def api_submit_annotation():
 
         app.logger.info(f"Submitting annotation feedback | Entity: {entity_id}, Correct: {is_correct}")
 
-        # Get the original entity from backend using the new efficient endpoint
-        entity_response = requests.get(
-            f"{API_BASE_URL}/entities/{entity_id}",
-            headers={"X-API-Key": API_KEY}
-        )
-
-        if entity_response.status_code != 200:
-            return jsonify({"status": "error", "message": f"Failed to fetch entity {entity_id}"})
-
-        original_entity = entity_response.json()
-        document_id = original_entity.get("document_id")
-
-        if not original_entity or not document_id:
-            return jsonify({"status": "error", "message": f"Entity {entity_id} not found"})
-
-        # Determine feedback type
-        if is_correct:
-            feedback_type = "correct"
-            corrected_entity = None
-        else:
-            feedback_type = "incorrect"
-            # If user provided corrections
-            if data.get("corrected_entity"):
-                corrected_entity = {
-                    "text": data["corrected_entity"]["text"],
-                    "label": data["corrected_entity"]["label"],
-                    "start_char": data["corrected_entity"]["start_char"],
-                    "end_char": data["corrected_entity"]["end_char"],
-                    "confidence": 1.0, # Add default confidence
-                    "model": "manual" # Add default model
-                }
-            else:
-                corrected_entity = None
-
-        # Format the feedback according to EnhancedFeedbackRequest schema
-        feedback = {
-            "document_id": str(document_id),
-            "feedback_type": feedback_type,
-            "original_entity": {
-                "text": original_entity.get("text"),
-                "label": original_entity.get("label"),
-                "start_char": original_entity.get("start_char"),
-                "end_char": original_entity.get("end_char"),
-                "confidence": original_entity.get("confidence"), # Add confidence
-                "model": original_entity.get("model") # Add model
-            },
-            "corrected_entity": corrected_entity,
-            "confidence_score": 1.0,
-            "notes": f"Feedback from task {task_id}"
+        # Build annotation request
+        annotation_data = {
+            "entity_id": entity_id,
+            "is_correct": is_correct,
+            "task_id": task_id,
+            "user_id": "ui_user",
+            "notes": f"Feedback from task {task_id}" if task_id else None
         }
 
-        app.logger.info(f"Sending feedback to API: {json.dumps(feedback)}")
+        # If user provided corrections
+        if not is_correct and data.get("corrected_entity"):
+            annotation_data["corrected_entity"] = {
+                "text": data["corrected_entity"]["text"],
+                "label": data["corrected_entity"]["label"],
+                "start_char": data["corrected_entity"]["start_char"],
+                "end_char": data["corrected_entity"]["end_char"]
+            }
 
-        # Submit to API
+        app.logger.info(f"Sending annotation to API: {json.dumps(annotation_data)}")
+
+        # Submit to new annotations endpoint
         response = requests.post(
-            f"{API_BASE_URL}/enhanced-feedback",
-            json=feedback,
+            f"{API_BASE_URL}/annotations/submit",
+            json=annotation_data,
             headers={"X-API-Key": API_KEY}
         )
 
-        if response.status_code != 200:
+        if response.status_code != 201:
             error_detail = response.text
-            app.logger.error(f"Failed to submit feedback: {response.status_code} - {error_detail}")
-            return jsonify({"status": "error", "message": f"Failed to submit feedback: {error_detail}"})
+            app.logger.error(f"Failed to submit annotation: {response.status_code} - {error_detail}")
+            return jsonify({"status": "error", "message": f"Failed to submit annotation: {error_detail}"})
 
-        app.logger.info(f"Feedback submitted successfully")
+        app.logger.info(f"Annotation submitted successfully")
         return jsonify({"status": "success", "result": response.json()})
 
     except Exception as e:
@@ -1059,6 +1026,12 @@ def api_reapply_model():
     except Exception as e:
         app.logger.exception("Error re-applying model")
         return jsonify({"status": "error", "message": str(e)})
+
+
+@app.route('/admin')
+def admin_panel():
+    """Admin panel for system management."""
+    return render_template('admin.html')
 
 
 if __name__ == '__main__':

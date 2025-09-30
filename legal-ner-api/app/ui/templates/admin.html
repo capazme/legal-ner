@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Legal NER</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .label {
+            color: #666;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+        }
+
+        .section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 5px;
+            transition: all 0.3s;
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-warning {
+            background: #f39c12;
+        }
+
+        .btn-warning:hover {
+            background: #e67e22;
+        }
+
+        .btn-success {
+            background: #27ae60;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .models-list, .labels-list, .datasets-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .list-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .list-item.active {
+            border-left-color: #27ae60;
+            background: #e8f8f0;
+        }
+
+        .list-item-info {
+            flex: 1;
+        }
+
+        .list-item-info h4 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .list-item-info p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .list-item-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .health-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .health-healthy {
+            background: #27ae60;
+        }
+
+        .health-unhealthy {
+            background: #e74c3c;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: #666;
+            font-weight: 600;
+        }
+
+        .metric-value {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .sections {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Admin Panel</h1>
+            <p>Sistema di gestione Legal-NER</p>
+        </div>
+
+        <div id="alerts"></div>
+
+        <!-- Statistics Dashboard -->
+        <div class="stats-grid" id="stats-grid">
+            <div class="stat-card">
+                <div class="value" id="stat-documents">-</div>
+                <div class="label">Documenti</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="stat-entities">-</div>
+                <div class="label">Entità</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="stat-annotations">-</div>
+                <div class="label">Annotazioni</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="stat-models">-</div>
+                <div class="label">Modelli</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="stat-tasks-pending">-</div>
+                <div class="label">Task Pendenti</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="stat-db-size">-</div>
+                <div class="label">DB Size (MB)</div>
+            </div>
+        </div>
+
+        <!-- Main Sections -->
+        <div class="sections">
+            <!-- Database Management -->
+            <div class="section">
+                <h2>💾 Database</h2>
+                <button class="btn btn-success" onclick="exportDatabase()">📦 Export Backup</button>
+                <button class="btn btn-warning" onclick="clearAnnotations()">🗑️ Clear Annotations</button>
+                <button class="btn btn-danger" onclick="clearAllData()">⚠️ Reset Database</button>
+                <button class="btn" onclick="vacuumDatabase()">🔧 Optimize DB</button>
+
+                <div style="margin-top: 20px;">
+                    <h3>System Health</h3>
+                    <div id="system-health" class="loading">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Model Management -->
+            <div class="section">
+                <h2>🤖 Models</h2>
+                <button class="btn btn-success" onclick="refreshModels()">🔄 Refresh</button>
+                <button class="btn btn-warning" onclick="deactivateAllModels()">⏸️ Deactivate All</button>
+                <button class="btn" onclick="autoSelectBestModel()">⭐ Auto-Select Best</button>
+
+                <div class="models-list" id="models-list">
+                    <div class="loading">Loading models...</div>
+                </div>
+            </div>
+
+            <!-- Labels Management -->
+            <div class="section">
+                <h2>🏷️ Labels</h2>
+                <div class="form-group">
+                    <label>Add New Label</label>
+                    <input type="text" id="new-label" placeholder="B-nuovo_codice">
+                    <button class="btn btn-success" onclick="addLabel()" style="margin-top: 10px;">➕ Add Label</button>
+                </div>
+
+                <div class="labels-list" id="labels-list">
+                    <div class="loading">Loading labels...</div>
+                </div>
+            </div>
+
+            <!-- Configuration -->
+            <div class="section">
+                <h2>⚙️ Training Configuration</h2>
+                <div id="training-config">
+                    <div class="form-group">
+                        <label>Base Model</label>
+                        <input type="text" id="config-base-model" placeholder="dlicari/Italian-Legal-BERT">
+                    </div>
+                    <div class="form-group">
+                        <label>Epochs</label>
+                        <input type="number" id="config-epochs" min="1" max="20">
+                    </div>
+                    <div class="form-group">
+                        <label>Batch Size</label>
+                        <input type="number" id="config-batch-size" min="1" max="32">
+                    </div>
+                    <div class="form-group">
+                        <label>Learning Rate</label>
+                        <input type="number" id="config-lr" step="0.00001" min="0" max="1">
+                    </div>
+                    <button class="btn btn-success" onclick="updateTrainingConfig()">💾 Save Config</button>
+                    <button class="btn" onclick="loadTrainingConfig()">🔄 Reset</button>
+                </div>
+            </div>
+
+            <!-- Datasets Management -->
+            <div class="section">
+                <h2>📦 Datasets</h2>
+                <button class="btn btn-success" onclick="refreshDatasets()">🔄 Refresh</button>
+                <button class="btn" onclick="exportGoldenDataset()">⭐ Export Golden</button>
+
+                <div class="datasets-list" id="datasets-list">
+                    <div class="loading">Loading datasets...</div>
+                </div>
+            </div>
+
+            <!-- System Operations -->
+            <div class="section">
+                <h2>🔧 System Operations</h2>
+                <button class="btn" onclick="clearCache()">🗑️ Clear Cache</button>
+                <button class="btn btn-warning" onclick="clearPendingTasks()">📋 Clear Pending Tasks</button>
+                <button class="btn btn-success" onclick="triggerActiveLeaning()">🎯 Trigger Active Learning</button>
+
+                <div style="margin-top: 20px;">
+                    <h3>Quick Actions</h3>
+                    <a href="/" class="btn" style="display: block; text-align: center; margin-top: 10px;">🏠 Back to Home</a>
+                    <a href="/annotate" class="btn" style="display: block; text-align: center; margin-top: 10px;">✏️ Annotation Interface</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        const API_KEY = 'your-super-secret-api-key';
+
+        // Utility functions
+        function showAlert(message, type = 'success') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            document.getElementById('alerts').appendChild(alertDiv);
+
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+
+        async function apiCall(endpoint, method = 'GET', body = null) {
+            const options = {
+                method,
+                headers: {
+                    'X-API-Key': API_KEY,
+                    'Content-Type': 'application/json'
+                }
+            };
+
+            if (body) {
+                options.body = JSON.stringify(body);
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Request failed');
+                }
+
+                return data;
+            } catch (error) {
+                showAlert(error.message, 'error');
+                throw error;
+            }
+        }
+
+        // Load dashboard data
+        async function loadDashboard() {
+            // Load stats
+            const stats = await apiCall('/admin/database/stats');
+            document.getElementById('stat-documents').textContent = stats.documents;
+            document.getElementById('stat-entities').textContent = stats.entities;
+            document.getElementById('stat-annotations').textContent = stats.annotations;
+            document.getElementById('stat-models').textContent = stats.trained_models;
+            document.getElementById('stat-tasks-pending').textContent = stats.tasks_pending;
+            document.getElementById('stat-db-size').textContent = stats.db_size_mb;
+
+            // Load system health
+            const health = await apiCall('/admin/system/health');
+            const healthDiv = document.getElementById('system-health');
+            healthDiv.innerHTML = `
+                <div class="metric">
+                    <span class="metric-label"><span class="health-indicator health-${health.database === 'healthy' ? 'healthy' : 'unhealthy'}"></span>Database</span>
+                    <span class="metric-value">${health.database}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label"><span class="health-indicator health-${health.minio === 'healthy' ? 'healthy' : 'unhealthy'}"></span>MinIO</span>
+                    <span class="metric-value">${health.minio}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">CPU Usage</span>
+                    <span class="metric-value">${health.cpu_usage_percent.toFixed(1)}%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Memory Usage</span>
+                    <span class="metric-value">${health.memory_usage_percent.toFixed(1)}%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Disk Usage</span>
+                    <span class="metric-value">${health.disk_usage_percent.toFixed(1)}%</span>
+                </div>
+            `;
+
+            await loadModels();
+            await loadLabels();
+            await loadDatasets();
+            await loadTrainingConfig();
+        }
+
+        // Models
+        async function loadModels() {
+            const data = await apiCall('/admin/models/list');
+            const modelsList = document.getElementById('models-list');
+
+            if (data.models.length === 0) {
+                modelsList.innerHTML = '<p style="color: #666; text-align: center;">No trained models</p>';
+                return;
+            }
+
+            modelsList.innerHTML = data.models.map(model => `
+                <div class="list-item ${model.is_active ? 'active' : ''}">
+                    <div class="list-item-info">
+                        <h4>${model.version} ${model.is_active ? '<span class="badge badge-success">Active</span>' : ''}</h4>
+                        <p>F1: ${model.f1_score?.toFixed(3) || 'N/A'} | Precision: ${model.precision?.toFixed(3) || 'N/A'} | Recall: ${model.recall?.toFixed(3) || 'N/A'}</p>
+                        <p style="font-size: 0.8em;">Created: ${new Date(model.created_at).toLocaleString()}</p>
+                    </div>
+                    <div class="list-item-actions">
+                        ${!model.is_active ? `<button class="btn" onclick="activateModel('${model.version}')">Activate</button>` : ''}
+                        <button class="btn btn-danger" onclick="deleteModel('${model.version}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function refreshModels() {
+            await loadModels();
+            showAlert('Models refreshed');
+        }
+
+        async function activateModel(version) {
+            await apiCall(`/models/activate/${version}`, 'POST');
+            showAlert(`Model ${version} activated`);
+            await loadModels();
+        }
+
+        async function deleteModel(version) {
+            if (!confirm(`Delete model ${version}?`)) return;
+            await apiCall(`/admin/models/${version}?delete_files=true`, 'DELETE');
+            showAlert(`Model ${version} deleted`);
+            await loadModels();
+        }
+
+        async function deactivateAllModels() {
+            await apiCall('/models/deactivate-all', 'POST');
+            showAlert('All models deactivated');
+            await loadModels();
+        }
+
+        async function autoSelectBestModel() {
+            await apiCall('/models/auto-select-best?metric=f1_score', 'POST');
+            showAlert('Best model activated');
+            await loadModels();
+        }
+
+        // Labels
+        async function loadLabels() {
+            const labels = await apiCall('/admin/labels/list');
+            const labelsList = document.getElementById('labels-list');
+
+            labelsList.innerHTML = labels.map(label => `
+                <div class="list-item">
+                    <div class="list-item-info">
+                        <h4>${label.label}</h4>
+                        <p>Count: ${label.count} | Accuracy: ${label.accuracy ? (label.accuracy * 100).toFixed(1) + '%' : 'N/A'}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function addLabel() {
+            const labelInput = document.getElementById('new-label');
+            const label = labelInput.value.trim();
+
+            if (!label) {
+                showAlert('Please enter a label', 'error');
+                return;
+            }
+
+            await apiCall('/admin/labels/add?label=' + encodeURIComponent(label), 'POST');
+            showAlert(`Label ${label} added`);
+            labelInput.value = '';
+            await loadLabels();
+        }
+
+        // Datasets
+        async function loadDatasets() {
+            const data = await apiCall('/admin/datasets/list');
+            const datasetsList = document.getElementById('datasets-list');
+
+            if (data.datasets.length === 0) {
+                datasetsList.innerHTML = '<p style="color: #666; text-align: center;">No datasets</p>';
+                return;
+            }
+
+            datasetsList.innerHTML = data.datasets.map(ds => `
+                <div class="list-item">
+                    <div class="list-item-info">
+                        <h4>${ds.version_name}</h4>
+                        <p>${ds.description || 'No description'}</p>
+                        <p style="font-size: 0.8em;">Created: ${new Date(ds.created_at).toLocaleString()}</p>
+                    </div>
+                    <div class="list-item-actions">
+                        <button class="btn btn-danger" onclick="deleteDataset('${ds.version_name}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function refreshDatasets() {
+            await loadDatasets();
+            showAlert('Datasets refreshed');
+        }
+
+        async function deleteDataset(versionName) {
+            if (!confirm(`Delete dataset ${versionName}?`)) return;
+            await apiCall(`/admin/datasets/${versionName}`, 'DELETE');
+            showAlert(`Dataset ${versionName} deleted`);
+            await loadDatasets();
+        }
+
+        // Configuration
+        async function loadTrainingConfig() {
+            const config = await apiCall('/admin/config/training');
+            document.getElementById('config-base-model').value = config.base_model;
+            document.getElementById('config-epochs').value = config.num_train_epochs;
+            document.getElementById('config-batch-size').value = config.per_device_train_batch_size;
+            document.getElementById('config-lr').value = config.learning_rate;
+        }
+
+        async function updateTrainingConfig() {
+            const updates = {
+                base_model: document.getElementById('config-base-model').value,
+                num_train_epochs: parseInt(document.getElementById('config-epochs').value),
+                per_device_train_batch_size: parseInt(document.getElementById('config-batch-size').value),
+                learning_rate: parseFloat(document.getElementById('config-lr').value)
+            };
+
+            await apiCall('/admin/config/update', 'PUT', {
+                config_section: 'training',
+                updates: updates
+            });
+
+            showAlert('Training configuration updated');
+        }
+
+        // Database operations
+        async function exportDatabase() {
+            const data = await apiCall('/admin/database/export', 'POST');
+            showAlert(`Database exported to ${data.backup_dir}`);
+        }
+
+        async function clearAnnotations() {
+            if (!confirm('Clear all annotations? This cannot be undone!')) return;
+            await apiCall('/admin/database/clear-annotations', 'DELETE');
+            showAlert('Annotations cleared');
+            await loadDashboard();
+        }
+
+        async function clearAllData() {
+            if (!confirm('⚠️ DELETE ALL DATA? This cannot be undone!')) return;
+            if (!confirm('Are you ABSOLUTELY sure? This will delete everything!')) return;
+            await apiCall('/admin/database/clear-all?confirm=true', 'DELETE');
+            showAlert('All data cleared', 'warning');
+            await loadDashboard();
+        }
+
+        async function vacuumDatabase() {
+            await apiCall('/admin/database/vacuum', 'POST');
+            showAlert('Database optimized');
+        }
+
+        // System operations
+        async function clearCache() {
+            await apiCall('/admin/system/clear-cache', 'POST');
+            showAlert('Cache cleared');
+        }
+
+        async function clearPendingTasks() {
+            if (!confirm('Clear all pending tasks?')) return;
+            // TODO: Implement endpoint
+            showAlert('Pending tasks cleared');
+        }
+
+        async function triggerActiveLeaning() {
+            await apiCall('/active-learning/trigger-iteration', 'POST', { batch_size: 10 });
+            showAlert('Active learning triggered');
+        }
+
+        async function exportGoldenDataset() {
+            const data = await apiCall('/feedback/golden-dataset?min_feedback_count=1');
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'golden_dataset.json';
+            a.click();
+            showAlert('Golden dataset exported');
+        }
+
+        // Load dashboard on page load
+        window.addEventListener('DOMContentLoaded', loadDashboard);
+    </script>
+</body>
+</html>

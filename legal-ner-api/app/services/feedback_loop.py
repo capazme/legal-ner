@@ -1,328 +1,148 @@
 """
-Feedback Loop and Golden Dataset Management
-===========================================
+Feedback Loop and Golden Dataset Management (DATABASE-BACKED)
+==============================================================
 
 Sistema per gestire feedback utenti e creare/aggiornare golden dataset
-per continuous learning del sistema NER legale.
+usando il database PostgreSQL invece di file JSONL.
 
 Features:
-1. Feedback collection tramite API
-2. Golden dataset creation e versioning
-3. Quality metrics tracking
+1. Feedback collection tramite tabelle Annotation
+2. Golden dataset built from validated annotations
+3. Quality metrics tracking basati su dati reali
 4. Automatic model retraining triggers
 """
 
 from typing import List, Dict, Any, Optional, Tuple
+from sqlalchemy.orm import Session
+from sqlalchemy import func
 import structlog
-import json
 from datetime import datetime, timedelta
-from dataclasses import dataclass, asdict
-from enum import Enum
-import uuid
-from pathlib import Path
+from app.database import models
 
 log = structlog.get_logger()
 
-class FeedbackType(Enum):
-    """Tipi di feedback possibili."""
-    CORRECT = "correct"              # Entità corretta
-    INCORRECT = "incorrect"          # Entità sbagliata
-    MISSING = "missing"              # Entità mancante
-    WRONG_LABEL = "wrong_label"      # Label sbagliata
-    WRONG_BOUNDARY = "wrong_boundary"  # Confini sbagliati
-    PARTIAL = "partial"              # Entità parzialmente corretta
-
-@dataclass
-class FeedbackEntry:
-    """Singolo feedback entry."""
-    id: str
-    document_id: str
-    user_id: str
-    timestamp: datetime
-    feedback_type: FeedbackType
-    original_entity: Optional[Dict[str, Any]]
-    corrected_entity: Optional[Dict[str, Any]]
-    confidence_score: float
-    notes: Optional[str] = None
-    validated: bool = False
-
-@dataclass
-class GoldenDatasetEntry:
-    """Entry nel golden dataset."""
-    id: str
-    text: str
-    entities: List[Dict[str, Any]]
-    source: str  # "feedback", "manual", "automatic"
-    quality_score: float
-    created_at: datetime
-    validated_by: Optional[str] = None
-    feedback_count: int = 0
 
 class FeedbackLoop:
     """
-    Sistema di feedback loop per continuous learning.
+    Sistema di feedback loop per continuous learning basato su database.
 
     Workflow:
-    1. Raccolta feedback tramite API
-    2. Validazione e processing feedback
-    3. Aggiornamento golden dataset
-    4. Quality metrics calculation
-    5. Trigger retraining se necessario
+    1. Le annotazioni sono salvate nella tabella `annotations` dal UI
+    2. Il golden dataset è costruito on-demand dalle annotazioni validate
+    3. Quality metrics calcolate da dati reali del database
+    4. Trigger retraining basato su soglie configurabili
     """
 
-    def __init__(self, golden_dataset_path: str = "data/golden_dataset.jsonl"):
-        log.info("Inizializzazione FeedbackLoop", dataset_path=golden_dataset_path)
-        self.golden_dataset_path = Path(golden_dataset_path)
-        self.golden_dataset_path.parent.mkdir(parents=True, exist_ok=True)
-
-        self.feedback_history: List[FeedbackEntry] = []
-        self.golden_dataset: List[GoldenDatasetEntry] = []
+    def __init__(self):
+        log.info("Inizializzazione FeedbackLoop (Database-backed)")
 
         # Threshold per quality control
-        self.min_feedback_for_golden = 2  # Minimo feedback per aggiungere al golden dataset
+        self.min_feedback_for_golden = 1  # Almeno 1 annotazione per includere nel golden dataset
         self.quality_threshold = 0.8      # Soglia qualità per golden dataset
-        self.retraining_threshold = 50    # Nuove entry per trigger retraining
+        self.retraining_threshold = 50    # Nuove annotazioni per trigger retraining
 
-        self._load_existing_data()
-
-    def _load_existing_data(self):
-        """Carica dati esistenti dal filesystem."""
-        try:
-            if self.golden_dataset_path.exists():
-                with open(self.golden_dataset_path, 'r', encoding='utf-8') as f:
-                    for line in f:
-                        data = json.loads(line.strip())
-                        entry = GoldenDatasetEntry(
-                            id=data['id'],
-                            text=data['text'],
-                            entities=data['entities'],
-                            source=data['source'],
-                            quality_score=data['quality_score'],
-                            created_at=datetime.fromisoformat(data['created_at']),
-                            validated_by=data.get('validated_by'),
-                            feedback_count=data.get('feedback_count', 0)
-                        )
-                        self.golden_dataset.append(entry)
-
-                log.info("Golden dataset loaded", entries=len(self.golden_dataset))
-        except Exception as e:
-            log.warning("Could not load existing golden dataset", error=str(e))
-
-    async def process_feedback(
-        self,
-        document_id: str,
-        user_id: str,
-        feedback_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def get_golden_dataset(self, db: Session, min_feedback_count: int = 1) -> List[Dict[str, Any]]:
         """
-        Processa feedback dell'utente e aggiorna il sistema.
+        Costruisce il golden dataset dalle annotazioni validate nel database.
 
         Args:
-            document_id: ID del documento
-            user_id: ID dell'utente che fornisce feedback
-            feedback_data: Dati del feedback
+            db: Database session
+            min_feedback_count: Minimo numero di feedback per documento
 
         Returns:
-            Risultato del processing
+            Lista di entries per il golden dataset con testo e entità
         """
-        log.info("Processing user feedback",
-                document_id=document_id,
-                user_id=user_id,
-                feedback_type=feedback_data.get('type'))
+        log.info("Building golden dataset from database annotations")
 
-        try:
-            # Crea feedback entry
-            feedback_entry = FeedbackEntry(
-                id=str(uuid.uuid4()),
-                document_id=document_id,
-                user_id=user_id,
-                timestamp=datetime.now(),
-                feedback_type=FeedbackType(feedback_data['type']),
-                original_entity=feedback_data.get('original_entity'),
-                corrected_entity=feedback_data.get('corrected_entity'),
-                confidence_score=feedback_data.get('confidence_score', 0.0),
-                notes=feedback_data.get('notes')
+        # Query per ottenere documenti con annotazioni
+        # Un documento è considerato "golden" se ha almeno min_feedback_count annotazioni
+        subquery = (
+            db.query(
+                models.Annotation.entity_id,
+                func.count(models.Annotation.id).label('feedback_count')
             )
-
-            # Aggiungi alla history
-            self.feedback_history.append(feedback_entry)
-
-            # Process feedback per golden dataset
-            await self._process_feedback_for_golden_dataset(feedback_entry)
-
-            # Update quality metrics
-            quality_impact = await self._calculate_quality_impact(feedback_entry)
-
-            # Check se trigger retraining
-            should_retrain = await self._check_retraining_trigger()
-
-            result = {
-                "feedback_id": feedback_entry.id,
-                "status": "processed",
-                "quality_impact": quality_impact,
-                "should_retrain": should_retrain,
-                "golden_dataset_size": len(self.golden_dataset)
-            }
-
-            log.info("Feedback processed successfully", result=result)
-            return result
-
-        except Exception as e:
-            log.error("Error processing feedback", error=str(e))
-            return {"status": "error", "error": str(e)}
-
-    async def _process_feedback_for_golden_dataset(self, feedback: FeedbackEntry):
-        """
-        Processa feedback per aggiornare il golden dataset.
-        """
-        # TODO: Implement robust document matching.
-        # This currently uses a simplified and incorrect matching of document_id against entry.text.
-        # A robust implementation should:
-        # 1. Fetch the document text from the database using feedback.document_id.
-        # 2. Find the corresponding entry in self.golden_dataset by matching the document text.
-        # 3. If no entry exists, one should be created with the full document text.
-        existing_entry = None
-        for entry in self.golden_dataset:
-            if entry.text == feedback.document_id:  # Simplified - dovrebbe essere text matching
-                existing_entry = entry
-                break
-
-        if feedback.feedback_type == FeedbackType.CORRECT:
-            # Feedback positivo - aumenta quality score
-            if existing_entry:
-                existing_entry.quality_score = min(1.0, existing_entry.quality_score + 0.1)
-                existing_entry.feedback_count += 1
-
-        elif feedback.feedback_type in [FeedbackType.INCORRECT, FeedbackType.WRONG_LABEL]:
-            # Feedback negativo - aggiorna o rimuovi
-            if feedback.corrected_entity:
-                # C'è una correzione - aggiorna il golden dataset
-                await self._update_golden_dataset_with_correction(feedback)
-            elif existing_entry:
-                # Rimuovi entità incorretta
-                existing_entry.quality_score = max(0.0, existing_entry.quality_score - 0.2)
-
-        elif feedback.feedback_type == FeedbackType.MISSING:
-            # Entità mancante - aggiungi al golden dataset
-            if feedback.corrected_entity:
-                await self._add_missing_entity_to_golden_dataset(feedback)
-
-        # Salva aggiornamenti
-        await self._save_golden_dataset()
-
-    async def _update_golden_dataset_with_correction(self, feedback: FeedbackEntry):
-        """
-        Aggiorna golden dataset con correzione dal feedback.
-        """
-        corrected_entity = feedback.corrected_entity
-
-        # TODO: Use the actual document text instead of a placeholder.
-        # The `text` field is currently populated with a placeholder string.
-        # It should be populated with the full text of the document associated with `feedback.document_id`.
-        # This requires fetching the document from the database.
-        new_entry = GoldenDatasetEntry(
-            id=str(uuid.uuid4()),
-            text=f"document_{feedback.document_id}",  # Simplified
-            entities=[corrected_entity],
-            source="feedback",
-            quality_score=0.8,  # Initial score per feedback corrections
-            created_at=datetime.now(),
-            validated_by=feedback.user_id,
-            feedback_count=1
+            .group_by(models.Annotation.entity_id)
+            .having(func.count(models.Annotation.id) >= min_feedback_count)
+            .subquery()
         )
 
-        self.golden_dataset.append(new_entry)
-        log.debug("Added corrected entity to golden dataset", entity=corrected_entity)
-
-    async def _add_missing_entity_to_golden_dataset(self, feedback: FeedbackEntry):
-        """
-        Aggiunge entità mancante al golden dataset.
-        """
-        missing_entity = feedback.corrected_entity
-
-        # TODO: Use the actual document text instead of a placeholder.
-        # The `text` field is currently populated with a placeholder string.
-        # It should be populated with the full text of the document associated with `feedback.document_id`.
-        # This requires fetching the document from the database.
-        new_entry = GoldenDatasetEntry(
-            id=str(uuid.uuid4()),
-            text=f"document_{feedback.document_id}",
-            entities=[missing_entity],
-            source="feedback_missing",
-            quality_score=0.9,  # High score per missing entities (important catches)
-            created_at=datetime.now(),
-            validated_by=feedback.user_id,
-            feedback_count=1
+        # Ottieni entità con feedback sufficiente
+        entities_with_feedback = (
+            db.query(models.Entity, subquery.c.feedback_count)
+            .join(subquery, models.Entity.id == subquery.c.entity_id)
+            .all()
         )
 
-        self.golden_dataset.append(new_entry)
-        log.debug("Added missing entity to golden dataset", entity=missing_entity)
+        # Raggruppa per documento
+        documents_dict = {}
+        for entity, feedback_count in entities_with_feedback:
+            doc_id = entity.document_id
 
-    async def _calculate_quality_impact(self, feedback: FeedbackEntry) -> Dict[str, float]:
-        """
-        Calcola l'impatto del feedback sulla qualità del sistema.
-        """
-        # TODO: Implement a more sophisticated quality impact calculation.
-        # The current implementation uses fixed placeholder values.
-        # A better approach would be to:
-        # 1. Maintain running metrics for precision, recall, and F1-score.
-        # 2. Update these metrics based on the type of feedback (TP, FP, FN).
-        #    - CORRECT = True Positive (if already detected)
-        #    - INCORRECT = False Positive
-        #    - MISSING = False Negative
-        #    - WRONG_LABEL = FP + FN
-        # 3. The impact should reflect the change in these metrics.
-        impact = {
-            "accuracy_impact": 0.0,
-            "precision_impact": 0.0,
-            "recall_impact": 0.0
-        }
+            if doc_id not in documents_dict:
+                # Carica il documento
+                document = db.query(models.Document).filter(models.Document.id == doc_id).first()
+                if not document:
+                    continue
 
-        if feedback.feedback_type == FeedbackType.CORRECT:
-            impact["accuracy_impact"] = 0.02
-            impact["precision_impact"] = 0.01
-        elif feedback.feedback_type == FeedbackType.INCORRECT:
-            impact["accuracy_impact"] = -0.05
-            impact["precision_impact"] = -0.03
-        elif feedback.feedback_type == FeedbackType.MISSING:
-            impact["recall_impact"] = -0.04
+                documents_dict[doc_id] = {
+                    'id': str(doc_id),
+                    'text': document.text,
+                    'entities': [],
+                    'source': 'database',
+                    'quality_score': 0.0,
+                    'created_at': document.created_at.isoformat(),
+                    'feedback_count': 0
+                }
 
-        return impact
+            # Aggiungi entità al documento
+            # Ottieni le annotazioni per questa entità per decidere se è corretta
+            annotations = db.query(models.Annotation).filter(
+                models.Annotation.entity_id == entity.id
+            ).all()
 
-    async def _check_retraining_trigger(self) -> bool:
-        """
-        Verifica se è necessario triggerare il retraining.
-        """
-        recent_feedback = [
-            f for f in self.feedback_history
-            if (datetime.now() - f.timestamp).days <= 7
-        ]
+            # Calcola se l'entità è considerata corretta dalla maggioranza
+            correct_count = sum(1 for a in annotations if a.is_correct)
+            incorrect_count = len(annotations) - correct_count
 
-        negative_feedback_count = sum(
-            1 for f in recent_feedback
-            if f.feedback_type in [FeedbackType.INCORRECT, FeedbackType.MISSING]
+            # Include solo entità validate come corrette
+            if correct_count > incorrect_count:
+                entity_data = {
+                    'text': entity.text,
+                    'label': entity.label,
+                    'start_char': entity.start_char,
+                    'end_char': entity.end_char,
+                    'confidence': entity.confidence,
+                    'model': entity.model,
+                    'feedback_count': len(annotations),
+                    'validation_score': correct_count / len(annotations) if annotations else 0.0
+                }
+                documents_dict[doc_id]['entities'].append(entity_data)
+                documents_dict[doc_id]['feedback_count'] += len(annotations)
+
+        # Converti in lista e calcola quality scores
+        golden_dataset = []
+        for doc_id, doc_data in documents_dict.items():
+            if not doc_data['entities']:  # Skip documenti senza entità validate
+                continue
+
+            # Calcola quality score basato su validation scores delle entità
+            validation_scores = [e['validation_score'] for e in doc_data['entities']]
+            doc_data['quality_score'] = sum(validation_scores) / len(validation_scores) if validation_scores else 0.0
+
+            golden_dataset.append(doc_data)
+
+        log.info(
+            "Golden dataset built from database",
+            total_documents=len(golden_dataset),
+            total_entities=sum(len(d['entities']) for d in golden_dataset),
+            avg_quality=sum(d['quality_score'] for d in golden_dataset) / len(golden_dataset) if golden_dataset else 0.0
         )
 
-        return negative_feedback_count >= self.retraining_threshold
+        return golden_dataset
 
-    async def _save_golden_dataset(self):
-        """
-        Salva il golden dataset su filesystem.
-        """
-        try:
-            with open(self.golden_dataset_path, 'w', encoding='utf-8') as f:
-                for entry in self.golden_dataset:
-                    # Converti a dict per serializzazione JSON
-                    entry_dict = asdict(entry)
-                    entry_dict['created_at'] = entry.created_at.isoformat()
-                    f.write(json.dumps(entry_dict, ensure_ascii=False) + '\n')
-
-            log.debug("Golden dataset saved", entries=len(self.golden_dataset))
-        except Exception as e:
-            log.error("Error saving golden dataset", error=str(e))
-
-    async def get_golden_dataset_for_training(
+    def get_golden_dataset_for_training(
         self,
+        db: Session,
         min_quality_score: float = 0.8,
         max_entries: Optional[int] = None
     ) -> List[Dict[str, Any]]:
@@ -330,143 +150,230 @@ class FeedbackLoop:
         Ottiene il golden dataset filtrato per training.
 
         Args:
+            db: Database session
             min_quality_score: Soglia minima qualità
             max_entries: Numero massimo entries da ritornare
 
         Returns:
             Lista di entries per training
         """
+        # Ottieni tutto il golden dataset
+        golden_dataset = self.get_golden_dataset(db)
+
         # Filtra per qualità
         quality_entries = [
-            entry for entry in self.golden_dataset
-            if entry.quality_score >= min_quality_score
+            entry for entry in golden_dataset
+            if entry['quality_score'] >= min_quality_score
         ]
 
         # Ordina per quality score (migliori prima)
-        quality_entries.sort(key=lambda x: x.quality_score, reverse=True)
+        quality_entries.sort(key=lambda x: x['quality_score'], reverse=True)
 
         # Limita numero se richiesto
         if max_entries:
             quality_entries = quality_entries[:max_entries]
 
-        # Converti a formato training
+        # Converti a formato training (solo testo ed entità)
         training_data = []
         for entry in quality_entries:
             training_data.append({
-                "text": entry.text,
-                "entities": entry.entities,
-                "quality_score": entry.quality_score,
-                "source": entry.source
+                "text": entry['text'],
+                "entities": entry['entities'],
+                "quality_score": entry['quality_score'],
+                "source": entry['source']
             })
 
-        log.info("Golden dataset prepared for training",
-                total_entries=len(self.golden_dataset),
-                quality_filtered=len(training_data),
-                avg_quality=sum(e["quality_score"] for e in training_data) / len(training_data) if training_data else 0)
+        log.info(
+            "Golden dataset prepared for training",
+            total_entries=len(golden_dataset),
+            quality_filtered=len(training_data),
+            avg_quality=sum(e["quality_score"] for e in training_data) / len(training_data) if training_data else 0
+        )
 
         return training_data
 
-    async def get_feedback_statistics(self, days: int = 30) -> Dict[str, Any]:
+    def get_feedback_statistics(self, db: Session, days: int = 30) -> Dict[str, Any]:
         """
-        Ottiene statistiche sui feedback recenti.
+        Ottiene statistiche sui feedback recenti dal database.
+
+        Args:
+            db: Database session
+            days: Numero di giorni da analizzare
+
+        Returns:
+            Dizionario con statistiche
         """
         cutoff_date = datetime.now() - timedelta(days=days)
-        recent_feedback = [
-            f for f in self.feedback_history
-            if f.timestamp >= cutoff_date
-        ]
 
-        if not recent_feedback:
-            return {"total_feedback": 0}
+        # Conta feedback totali
+        total_feedback = db.query(models.Annotation).filter(
+            models.Annotation.created_at >= cutoff_date
+        ).count()
 
-        feedback_by_type = {}
-        for feedback in recent_feedback:
-            fb_type = feedback.feedback_type.value
-            feedback_by_type[fb_type] = feedback_by_type.get(fb_type, 0) + 1
+        if total_feedback == 0:
+            return {"total_feedback": 0, "days_analyzed": days}
 
-        accuracy_feedback = [
-            f for f in recent_feedback
-            if f.feedback_type in [FeedbackType.CORRECT, FeedbackType.INCORRECT]
-        ]
+        # Conta feedback per tipo (correct/incorrect)
+        correct_feedback = db.query(models.Annotation).filter(
+            models.Annotation.created_at >= cutoff_date,
+            models.Annotation.is_correct == True
+        ).count()
 
-        accuracy_rate = (
-            sum(1 for f in accuracy_feedback if f.feedback_type == FeedbackType.CORRECT) /
-            len(accuracy_feedback) if accuracy_feedback else 0
+        incorrect_feedback = total_feedback - correct_feedback
+
+        # Calcola accuracy rate
+        accuracy_rate = correct_feedback / total_feedback if total_feedback > 0 else 0.0
+
+        # Conta dimensione golden dataset
+        golden_dataset_size = len(self.get_golden_dataset(db))
+
+        # Calcola qualità media del golden dataset
+        golden_dataset = self.get_golden_dataset(db)
+        avg_golden_quality = (
+            sum(e['quality_score'] for e in golden_dataset) / len(golden_dataset)
+            if golden_dataset else 0.0
         )
 
+        # Feedback per utente
+        user_feedback_counts = {}
+        annotations = db.query(models.Annotation).filter(
+            models.Annotation.created_at >= cutoff_date
+        ).all()
+
+        for annotation in annotations:
+            user_id = annotation.user_id
+            if user_id not in user_feedback_counts:
+                user_feedback_counts[user_id] = {'correct': 0, 'incorrect': 0}
+
+            if annotation.is_correct:
+                user_feedback_counts[user_id]['correct'] += 1
+            else:
+                user_feedback_counts[user_id]['incorrect'] += 1
+
         return {
-            "total_feedback": len(recent_feedback),
-            "feedback_by_type": feedback_by_type,
+            "total_feedback": total_feedback,
+            "feedback_by_type": {
+                "correct": correct_feedback,
+                "incorrect": incorrect_feedback
+            },
             "accuracy_rate": accuracy_rate,
-            "golden_dataset_size": len(self.golden_dataset),
-            "avg_golden_quality": sum(e.quality_score for e in self.golden_dataset) / len(self.golden_dataset) if self.golden_dataset else 0,
-            "days_analyzed": days
+            "golden_dataset_size": golden_dataset_size,
+            "avg_golden_quality": avg_golden_quality,
+            "days_analyzed": days,
+            "user_feedback_counts": user_feedback_counts,
+            "unique_annotators": len(user_feedback_counts)
         }
 
-    async def export_golden_dataset(self, format: str = "json") -> str:
+    def calculate_quality_metrics(self, db: Session) -> Dict[str, Any]:
         """
-        Esporta il golden dataset in formato specificato.
+        Calcola metriche di qualità reali basate su dati del database.
+
+        Returns:
+            Precision, Recall, F1 e altre metriche
         """
-        if format == "json":
-            export_data = []
-            for entry in self.golden_dataset:
-                export_data.append({
-                    "id": entry.id,
-                    "text": entry.text,
-                    "entities": entry.entities,
-                    "quality_score": entry.quality_score,
-                    "source": entry.source,
-                    "created_at": entry.created_at.isoformat()
-                })
-            return json.dumps(export_data, indent=2, ensure_ascii=False)
+        # Ottieni tutte le entità con annotazioni
+        entities_with_annotations = (
+            db.query(models.Entity)
+            .join(models.Annotation, models.Entity.id == models.Annotation.entity_id)
+            .all()
+        )
 
-        elif format == "conll":
-            # TODO: Implement a proper CoNLL-2003 format export.
-            # The current implementation is a simplified placeholder.
-            # A correct implementation should:
-            # 1. Tokenize the document text.
-            # 2. For each token, determine its IOB2 tag (B-LABEL, I-LABEL, O).
-            # 3. Format the output as "token IOB-tag" on each line.
-            # 4. Separate sentences with an empty line.
-            # 5. Separate documents with a "-DOCSTART-" line or similar.
-            conll_lines = []
-            for entry in self.golden_dataset:
-                # Simplified CoNLL export
-                conll_lines.append(f"# {entry.id}")
-                conll_lines.append(f"# {entry.text}")
-                for entity in entry.entities:
-                    conll_lines.append(f"{entity['text']}\t{entity['label']}")
-                conll_lines.append("")  # Empty line tra documenti
+        if not entities_with_annotations:
+            return {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1_score": 0.0,
+                "total_entities": 0,
+                "annotated_entities": 0
+            }
 
-            return "\n".join(conll_lines)
+        # Calcola True Positives, False Positives, False Negatives
+        true_positives = 0
+        false_positives = 0
 
-        else:
-            raise ValueError(f"Unsupported export format: {format}")
+        for entity in entities_with_annotations:
+            annotations = db.query(models.Annotation).filter(
+                models.Annotation.entity_id == entity.id
+            ).all()
 
-    async def validate_golden_dataset_entry(
-        self,
-        entry_id: str,
-        validator_user_id: str,
-        is_valid: bool,
-        notes: Optional[str] = None
-    ) -> bool:
+            # Usa majority voting
+            correct_count = sum(1 for a in annotations if a.is_correct)
+            total_count = len(annotations)
+
+            if correct_count > total_count / 2:
+                true_positives += 1
+            else:
+                false_positives += 1
+
+        # Per False Negatives, cerchiamo entità mancanti
+        # (annotazioni con corrected_label diverse da quella originale)
+        false_negatives = db.query(models.Annotation).filter(
+            models.Annotation.corrected_label.isnot(None),
+            models.Annotation.is_correct == False
+        ).count()
+
+        # Calcola metriche
+        precision = true_positives / (true_positives + false_positives) if (true_positives + false_positives) > 0 else 0.0
+        recall = true_positives / (true_positives + false_negatives) if (true_positives + false_negatives) > 0 else 0.0
+        f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0
+
+        total_entities = db.query(models.Entity).count()
+
+        return {
+            "precision": precision,
+            "recall": recall,
+            "f1_score": f1_score,
+            "true_positives": true_positives,
+            "false_positives": false_positives,
+            "false_negatives": false_negatives,
+            "total_entities": total_entities,
+            "annotated_entities": len(entities_with_annotations)
+        }
+
+    def check_retraining_trigger(self, db: Session) -> Dict[str, Any]:
         """
-        Valida una entry del golden dataset.
+        Verifica se è necessario triggerare il retraining basato su nuove annotazioni.
+
+        Args:
+            db: Database session
+
+        Returns:
+            Dizionario con informazioni sul trigger
         """
-        for entry in self.golden_dataset:
-            if entry.id == entry_id:
-                if is_valid:
-                    entry.quality_score = min(1.0, entry.quality_score + 0.1)
-                    entry.validated_by = validator_user_id
-                else:
-                    entry.quality_score = max(0.0, entry.quality_score - 0.3)
+        # Conta annotazioni recenti (ultimi 7 giorni)
+        cutoff_date = datetime.now() - timedelta(days=7)
+        recent_annotations = db.query(models.Annotation).filter(
+            models.Annotation.created_at >= cutoff_date
+        ).count()
 
-                await self._save_golden_dataset()
+        # Conta annotazioni negative (incorrect + has corrected_label)
+        negative_feedback_count = db.query(models.Annotation).filter(
+            models.Annotation.created_at >= cutoff_date,
+            models.Annotation.is_correct == False
+        ).count()
 
-                log.info("Golden dataset entry validated",
-                        entry_id=entry_id,
-                        is_valid=is_valid,
-                        new_quality_score=entry.quality_score)
-                return True
+        # Trigger retraining se:
+        # 1. Ci sono abbastanza annotazioni totali
+        # 2. C'è feedback negativo significativo
+        should_retrain = (
+            recent_annotations >= self.retraining_threshold or
+            negative_feedback_count >= self.retraining_threshold / 2
+        )
 
-        return False
+        # Ottieni dimensione dataset disponibile per training
+        golden_dataset_size = len(self.get_golden_dataset(db))
+
+        return {
+            "should_retrain": should_retrain,
+            "recent_annotations": recent_annotations,
+            "negative_feedback_count": negative_feedback_count,
+            "retraining_threshold": self.retraining_threshold,
+            "golden_dataset_size": golden_dataset_size,
+            "reason": (
+                f"Recent annotations ({recent_annotations}) >= threshold ({self.retraining_threshold})"
+                if recent_annotations >= self.retraining_threshold
+                else f"Negative feedback ({negative_feedback_count}) >= threshold ({self.retraining_threshold / 2})"
+                if negative_feedback_count >= self.retraining_threshold / 2
+                else "No retraining needed"
+            )
+        }

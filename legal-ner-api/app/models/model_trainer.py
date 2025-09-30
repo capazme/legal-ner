@@ -16,6 +16,7 @@ import io
 import numpy as np
 from sklearn.model_selection import train_test_split
 from app.core.active_learning_config import get_active_learning_config
+from app.core.config import settings # Import settings
 from sqlalchemy.orm import Session
 from app.database import models
 
@@ -56,15 +57,30 @@ class ModelTrainer:
         predictions, labels = p
         predictions = np.argmax(predictions, axis=2)
 
-        # Remove ignored index (-100)
-        true_predictions = [
-            [self.id2label[str(p)] for (p, l) in zip(prediction, label) if l != -100]
-            for prediction, label in zip(predictions, labels)
-        ]
-        true_labels = [
-            [self.id2label[str(l)] for (p, l) in zip(prediction, label) if l != -100]
-            for prediction, label in zip(predictions, labels)
-        ]
+        # Remove ignored index (-100) and handle out-of-range predictions
+        true_predictions = []
+        true_labels = []
+
+        for prediction, label in zip(predictions, labels):
+            pred_labels = []
+            true_label_list = []
+
+            for pred_id, label_id in zip(prediction, label):
+                if label_id != -100:  # Skip padding
+                    # Handle out-of-range predictions by mapping to "O"
+                    if pred_id in self.id2label:
+                        pred_labels.append(self.id2label[pred_id])
+                    else:
+                        pred_labels.append("O")
+
+                    if label_id in self.id2label:
+                        true_label_list.append(self.id2label[label_id])
+                    else:
+                        true_label_list.append("O")
+
+            if pred_labels and true_label_list:
+                true_predictions.append(pred_labels)
+                true_labels.append(true_label_list)
 
         return {
             "accuracy": accuracy_score(true_labels, true_predictions),
@@ -73,7 +89,7 @@ class ModelTrainer:
             "f1": f1_score(true_labels, true_predictions),
         }
     
-    def train_model(self, db: Session, version: str, dataset_path: str, model_name: str, output_dir: str, eval_split: float = 0.2) -> str:
+    def train_model(self, db: Session, version: str, dataset_path: str, model_name: str = None, output_dir: str = None, eval_split: float = 0.2) -> str:
         """
         Fine-tunes a model, evaluates it, and saves the metadata to the database.
 
@@ -81,13 +97,18 @@ class ModelTrainer:
             db: The database session.
             version: The unique version string for this model.
             dataset_path: Path to the dataset in MinIO (IOB format).
-            model_name: Name of the base model to fine-tune.
+            model_name: Name of the base model to fine-tune. Defaults to config base_model.
             output_dir: Directory to save the fine-tuned model.
             eval_split: Fraction of data to use for evaluation.
 
         Returns:
             Path to the fine-tuned model.
         """
+        # Use config base_model if model_name not provided or invalid
+        if not model_name or not model_name.startswith(('dbmdz/', 'DeepMount00/', 'bert-', 'xlm-')):
+            model_name = self.config.training.base_model
+            log.info("Using base model from config", base_model=model_name)
+
         log.info("Starting model training", dataset=dataset_path, model=model_name, version=version)
 
         # Load dataset from MinIO (IOB format)
@@ -129,7 +150,7 @@ class ModelTrainer:
             weight_decay=0.01,
             logging_dir=f"{output_dir}/logs",
             logging_steps=10,
-            evaluation_strategy="epoch",
+            eval_strategy="epoch",  # Updated from evaluation_strategy
             save_strategy="epoch",
             load_best_model_at_end=True,
             metric_for_best_model="eval_f1",
@@ -203,7 +224,7 @@ class ModelTrainer:
         """Loads a dataset from MinIO."""
         try:
             response = self.minio_client.get_object(
-                settings.MINIO_BUCKET,
+                self.config.minio.bucket, # Use the bucket from active_learning_config
                 dataset_path
             )
             

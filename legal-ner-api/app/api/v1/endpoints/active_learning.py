@@ -55,7 +55,7 @@ async def trigger_active_learning_iteration(
         log.info("Triggering active learning iteration", batch_size=request.batch_size)
 
         manager = ActiveLearningManager()
-        result = manager.run_active_learning_iteration(db, batch_size=request.batch_size)
+        result = await manager.run_active_learning_iteration(db, batch_size=request.batch_size)
 
         return TriggerIterationResponse(**result)
 

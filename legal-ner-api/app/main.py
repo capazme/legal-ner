@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request, Response
-from app.api.v1.endpoints import predict, feedback, active_learning, documents, annotations, process, export, models, labels
+from fastapi.middleware.cors import CORSMiddleware
+from app.api.v1.endpoints import predict, feedback, active_learning, documents, annotations, process, export, models, labels, admin
 from app.core.logging import configure_logging
 from app.core.model_manager import model_manager
 from app.database.database import SessionLocal
@@ -21,6 +22,15 @@ app = FastAPI(
         np.ndarray: lambda x: x.tolist(),
         torch.Tensor: lambda x: x.tolist()
     }
+)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5000", "http://127.0.0.1:5000"],  # Flask UI
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"],  # Allow all headers
 )
 
 # Logging middleware for detailed request/response tracking
@@ -101,6 +111,7 @@ app.include_router(process.router, prefix="/api/v1", tags=["Processing"])
 app.include_router(export.router, prefix="/api/v1", tags=["Export"])
 app.include_router(models.router, prefix="/api/v1", tags=["Models"])
 app.include_router(labels.router, prefix="/api/v1", tags=["Labels"])
+app.include_router(admin.router, prefix="/api/v1/admin", tags=["Admin"])
 
 @app.get("/health", tags=["Health"])
 async def health_check():
