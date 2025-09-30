@@ -1,6 +1,6 @@
 import uuid
 from fastapi import APIRouter, BackgroundTasks, Depends
-from fastapi.encoders import jsonable_encoder # Added import
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 from app.api.v1 import schemas
 from app.core.dependencies import get_legal_pipeline
@@ -10,6 +10,7 @@ from app.database.database import get_db
 import numpy as np
 from enum import Enum
 import torch
+from pathlib import Path
 
 router = APIRouter()
 
@@ -25,54 +26,63 @@ async def predict(
     The text and the entities are saved to the database.
     """
     request_id = str(uuid.uuid4())
+    
+    # Create a dedicated log file for this request
+    log_dir = Path("logs/requests")
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_file_path = log_dir / f"{request_id}.log"
 
     # The pipeline now returns structured legal sources.
     # We will use this to populate both pydantic_legal_sources and pydantic_entities.
-    extracted_legal_sources_data = await pipeline.extract_legal_sources(request.text)
+    extracted_legal_sources_data = await pipeline.extract_legal_sources(request.text, log_file_path=str(log_file_path))
 
     pydantic_entities = []
     pydantic_legal_sources = []
 
+    # Helper function to convert numpy types to Python native types
+    def convert_to_json_compatible(obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        if isinstance(obj, torch.Tensor):
+            return obj.tolist()
+        if isinstance(obj, (np.floating, np.integer)):
+            return obj.item()  # Convert numpy scalars to Python native types
+        if isinstance(obj, dict):
+            return {k: convert_to_json_compatible(v) for k, v in obj.items()}
+        if isinstance(obj, list):
+            return [convert_to_json_compatible(elem) for elem in obj]
+        if isinstance(obj, Enum):
+            return obj.value
+        return obj
+
     for legal_source_data in extracted_legal_sources_data:
+        # Convert to JSON-compatible types first
+        json_compatible_legal_source_data = convert_to_json_compatible(legal_source_data)
+
         # Create LegalSource schema
         legal_source = schemas.LegalSource(
-            source_type=str(legal_source_data.get('source_type')) if legal_source_data.get('source_type') else None,
-            text=legal_source_data['text'],
-            confidence=float(legal_source_data['confidence']),
-            start_char=legal_source_data['start_char'],
-            end_char=legal_source_data['end_char'],
-            act_type=str(legal_source_data.get('act_type')) if legal_source_data.get('act_type') else None,
-            date=legal_source_data.get('date'),
-            act_number=legal_source_data.get('act_number'),
-            article=legal_source_data.get('article'),
-            version=legal_source_data.get('version'),
-            version_date=legal_source_data.get('version_date'),
-            annex=legal_source_data.get('annex')
+            source_type=str(json_compatible_legal_source_data.get('source_type')) if json_compatible_legal_source_data.get('source_type') else None,
+            text=json_compatible_legal_source_data['text'],
+            confidence=json_compatible_legal_source_data['confidence'],  # Already converted to native Python float
+            start_char=json_compatible_legal_source_data['start_char'],
+            end_char=json_compatible_legal_source_data['end_char'],
+            act_type=str(json_compatible_legal_source_data.get('act_type')) if json_compatible_legal_source_data.get('act_type') else None,
+            date=json_compatible_legal_source_data.get('date'),
+            act_number=json_compatible_legal_source_data.get('act_number'),
+            article=json_compatible_legal_source_data.get('article'),
+            version=json_compatible_legal_source_data.get('version'),
+            version_date=json_compatible_legal_source_data.get('version_date'),
+            annex=json_compatible_legal_source_data.get('annex')
         )
         pydantic_legal_sources.append(legal_source)
 
         # Create generic Entity schema from the legal source data
-        def convert_to_json_compatible(obj):
-            if isinstance(obj, np.ndarray):
-                return obj.tolist()
-            if isinstance(obj, torch.Tensor):
-                return obj.tolist()
-            if isinstance(obj, dict):
-                return {k: convert_to_json_compatible(v) for k, v in obj.items()}
-            if isinstance(obj, list):
-                return [convert_to_json_compatible(elem) for elem in obj]
-            if isinstance(obj, Enum): # Handle Enums
-                return obj.value
-            return obj
-
-        json_compatible_legal_source_data = convert_to_json_compatible(legal_source_data)
-
         pydantic_entity = schemas.Entity(
-            text=legal_source_data['text'],
-            label=legal_source_data.get('source_type', 'UNKNOWN_LEGAL_ENTITY'), # Use source_type as label
-            start_char=legal_source_data['start_char'],
-            end_char=legal_source_data['end_char'],
-            confidence=float(legal_source_data['confidence']),
+            text=json_compatible_legal_source_data['text'],
+            label=json_compatible_legal_source_data.get('source_type', 'UNKNOWN_LEGAL_ENTITY'), # Use source_type as label
+            start_char=json_compatible_legal_source_data['start_char'],
+            end_char=json_compatible_legal_source_data['end_char'],
+            confidence=json_compatible_legal_source_data['confidence'],  # Already converted
             model='specialized_pipeline', # Hardcode model as it's from this pipeline
             stage='structure_building', # Final stage of the pipeline
             structured_data=json_compatible_legal_source_data, # Store the full structured data here

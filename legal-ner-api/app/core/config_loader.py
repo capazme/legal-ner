@@ -32,25 +32,10 @@ class ConfidenceConfig:
     rule_based_priority_threshold: float
     semantic_boost_factor: float
     semantic_similarity_scale: float
-
-    # Confidence rule-based
-    specific_codes: float
-    generic_codes: float
-    testo_unico: float
-    decreto_legislativo_full: float
-    decreto_legislativo_abbrev: float
-    dpr_full: float
-    dpr_abbrev: float
-    legge_full: float
-    legge_abbrev: float
-    costituzione_full: float
-    costituzione_abbrev: float
-    convention: float
-    institution: float
-    direttiva_ue: float
-    trattato: float
-    generic_article: float
-    default: float
+    minimum_classification_confidence: float
+    enable_semantic_validation_always: bool
+    semantic_discrepancy_confidence_threshold: float
+    rule_based: Dict[str, float]
 
 @dataclass
 class ContextConfig:
@@ -174,29 +159,15 @@ class ConfigLoader:
 
         # Confidence
         conf_raw = raw_config["confidence_thresholds"]
-        rule_conf = conf_raw["rule_based_confidence"]
         confidence = ConfidenceConfig(
             minimum_detection_confidence=conf_raw["minimum_detection_confidence"],
             rule_based_priority_threshold=conf_raw["rule_based_priority_threshold"],
             semantic_boost_factor=conf_raw["semantic_boost_factor"],
             semantic_similarity_scale=conf_raw["semantic_similarity_scale"],
-            specific_codes=rule_conf["specific_codes"],
-            generic_codes=rule_conf["generic_codes"],
-            testo_unico=rule_conf["testo_unico"],
-            decreto_legislativo_full=rule_conf["decreto_legislativo_full"],
-            decreto_legislativo_abbrev=rule_conf["decreto_legislativo_abbrev"],
-            dpr_full=rule_conf["dpr_full"],
-            dpr_abbrev=rule_conf["dpr_abbrev"],
-            legge_full=rule_conf["legge_full"],
-            legge_abbrev=rule_conf["legge_abbrev"],
-            costituzione_full=rule_conf["costituzione_full"],
-            costituzione_abbrev=rule_conf["costituzione_abbrev"],
-            convention=rule_conf["convention"],
-            institution=rule_conf["institution"],
-            direttiva_ue=rule_conf["direttiva_ue"],
-            trattato=rule_conf["trattato"],
-            generic_article=rule_conf["generic_article"],
-            default=rule_conf["default"]
+            minimum_classification_confidence=conf_raw.get("minimum_classification_confidence", 0.7),
+            enable_semantic_validation_always=conf_raw.get("enable_semantic_validation_always", True),
+            semantic_discrepancy_confidence_threshold=conf_raw.get("semantic_discrepancy_confidence_threshold", 0.90),
+            rule_based=conf_raw["rule_based_confidence"]
         )
 
         # Context windows
@@ -316,10 +287,9 @@ class ConfigLoader:
         confidence_values = [
             config.confidence.minimum_detection_confidence,
             config.confidence.rule_based_priority_threshold,
-            config.confidence.specific_codes,
-            config.confidence.generic_codes,
-            # ... altri valori
+            config.confidence.minimum_classification_confidence,
         ]
+        confidence_values.extend(config.confidence.rule_based.values())
 
         for val in confidence_values:
             if not 0.0 <= val <= 1.0:

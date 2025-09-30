@@ -1,4 +1,4 @@
-__pycache__/
+__pycache__
 .venv/
 .env
 .DS_Store
@@ -11,3 +11,4 @@ __pycache__/
 .cursorignore
 CLAUDE.md
 GEMINI.md
+*.log

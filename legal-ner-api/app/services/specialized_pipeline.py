@@ -1,3 +1,4 @@
+
 """
 Specialized Legal Source Extraction Pipeline (CONFIGURABILE)
 ==========================================================
@@ -15,7 +16,6 @@ Architettura:
 
 from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass, asdict
-from enum import Enum
 import structlog
 import torch
 from transformers import AutoTokenizer, AutoModelForTokenClassification, AutoModel
@@ -23,29 +23,16 @@ from sentence_transformers import SentenceTransformer
 import re
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
+import json
+from pathlib import Path
+from datetime import datetime
 
 from app.core.config_loader import get_pipeline_config, PipelineConfig
 
 log = structlog.get_logger()
 
-class ActType(Enum):
-    """Tipi di atti normativi italiani supportati."""
-    DECRETO_LEGISLATIVO = "decreto legislativo"
-    LEGGE = "legge"
-    DPR = "d.p.r."
-    DECRETO_MINISTERIALE = "decreto ministeriale"
-    CODICE = "codice"
-    COSTITUZIONE = "costituzione"
-    REGOLAMENTO = "regolamento ue"
-    DIRETTIVA_UE = "direttiva ue"
-    TRATTATO = "trattato"
-    CODICE_CIVILE = "codice civile"
-    CODICE_PENALE = "codice penale"
-    CODICE_PROCEDURA_CIVILE = "codice di procedura civile"
-    CODICE_PROCEDURA_PENALE = "codice di procedura penale"
-    TESTO_UNICO = "codice"
-    CONVENTION = "regolamento ue"
-    INSTITUTION = "istituzione"
+# Costante per fonti non identificate
+UNKNOWN_SOURCE = "fonte non identificata"
 
 @dataclass
 class TextSpan:
@@ -60,7 +47,7 @@ class TextSpan:
 class LegalClassification:
     """Risultato della classificazione legale."""
     span: TextSpan
-    act_type: ActType
+    act_type: str
     confidence: float
     semantic_embedding: Optional[np.ndarray] = None
 
@@ -68,7 +55,7 @@ class LegalClassification:
 class ParsedNormative:
     """Componenti strutturati di una norma."""
     text: str
-    act_type: ActType
+    act_type: str
     act_number: Optional[str] = None
     date: Optional[str] = None
     article: Optional[str] = None
@@ -128,6 +115,51 @@ class EntityDetector:
         log.info("NORMATTIVA mapping loaded",
                 abbreviations_count=len(self.normattiva_mapping))
 
+    def _log(self, log_file_path: Optional[str], event: str, **kwargs):
+        """Log eventi in formato JSON, gestendo tipi non serializzabili."""
+        if not log_file_path:
+            return
+
+        def make_serializable(obj):
+            """Converte oggetti non-JSON in formati serializzabili."""
+            if isinstance(obj, torch.Tensor):
+                return obj.tolist()
+            elif isinstance(obj, np.ndarray):
+                return obj.tolist()
+            elif isinstance(obj, (np.floating, np.integer)):
+                # Convert numpy scalars to Python types
+                return obj.item()
+            elif hasattr(obj, '__dict__'):
+                # Converti dataclass/object in dict
+                return {k: make_serializable(v) for k, v in obj.__dict__.items()}
+            elif isinstance(obj, (list, tuple)):
+                return [make_serializable(item) for item in obj]
+            elif isinstance(obj, dict):
+                return {k: make_serializable(v) for k, v in obj.items()}
+            else:
+                return obj
+
+        log_entry = {
+            'timestamp': datetime.utcnow().isoformat(),
+            'stage': 'EntityDetector',
+            'event': event,
+            **make_serializable(kwargs)
+        }
+
+        try:
+            with open(log_file_path, 'a', encoding='utf-8') as f:
+                f.write(json.dumps(log_entry, ensure_ascii=False) + '\n')
+        except Exception as e:
+            # Fallback: log semplificato senza dati complessi
+            simple_entry = {
+                'timestamp': datetime.utcnow().isoformat(),
+                'stage': 'EntityDetector',
+                'event': event,
+                'error': f'Failed to serialize: {str(e)}'
+            }
+            with open(log_file_path, 'a', encoding='utf-8') as f:
+                f.write(json.dumps(simple_entry, ensure_ascii=False) + '\n')
+
     def _build_flat_normattiva_mapping(self, normattiva_config: Dict[str, List[str]]) -> Dict[str, str]:
         """Costruisce mappatura piatta da configurazione."""
         flat_mapping = {}
@@ -151,13 +183,12 @@ class EntityDetector:
             all_patterns.extend(pattern_group)
         return all_patterns
 
-    def detect_candidates(self, text: str) -> List[TextSpan]:
+    def detect_candidates(self, text: str, log_file_path: Optional[str] = None) -> List[TextSpan]:
         """
         Trova candidati che potrebbero essere riferimenti normativi.
         Focus su PRECISIONE della posizione, non sulla classificazione.
         """
-        if self.config.output.enable_debug_logging:
-            log.debug("Detecting legal reference candidates", text_length=len(text))
+        self._log(log_file_path, "start_detection", text_length=len(text))
 
         # Tokenization con offset mapping per posizione precisa
         inputs = self.tokenizer(
@@ -182,6 +213,7 @@ class EntityDetector:
             offset_mapping,
             text
         )
+        self._log(log_file_path, "raw_entities_extracted", count=len(raw_entities), entities=[asdict(e) for e in raw_entities])
 
         # Filtra solo candidati legali potenziali
         legal_candidates = []
@@ -190,14 +222,11 @@ class EntityDetector:
                 # Espandi i confini per catturare il riferimento completo
                 expanded = self._expand_reference_boundaries(entity, text)
                 legal_candidates.append(expanded)
+        self._log(log_file_path, "legal_candidates_filtered", count=len(legal_candidates), candidates=[asdict(c) for c in legal_candidates])
 
         # Rimuovi duplicati e sovrapposizioni
         cleaned_candidates = self._remove_overlaps(legal_candidates)
-
-        if self.config.output.enable_debug_logging:
-            log.debug("Legal candidates detected",
-                     raw_entities=len(raw_entities),
-                     legal_candidates=len(cleaned_candidates))
+        self._log(log_file_path, "end_detection_cleaned_candidates", count=len(cleaned_candidates), candidates=[asdict(c) for c in cleaned_candidates])
 
         return cleaned_candidates
 
@@ -285,8 +314,8 @@ class EntityDetector:
         expanded_text = full_text[start_char:end_char].strip()
 
         # Rimuovi caratteri spuri all'inizio e alla fine
-        expanded_text = re.sub(r'^[^\w\s]+', '', expanded_text)
-        expanded_text = re.sub(r'[^\w\s.,:;)]+$', '', expanded_text)
+        expanded_text = re.sub(r'^[\W\s]+', '', expanded_text)
+        expanded_text = re.sub(r'[\W\s.,:;)]+$', '', expanded_text)
         expanded_text = expanded_text.strip()
 
         # Aggiorna le posizioni dopo la pulizia
@@ -385,10 +414,11 @@ class LegalClassifier:
     """
     Stage 2: Usa Italian-legal-bert come classificatore semantico per determinare
     il tipo specifico di riferimento normativo.
+    (Refactored to be config-driven)
     """
 
     def __init__(self, config: PipelineConfig):
-        """Inizializza con configurazione esterna."""
+        """Inizializza con configurazione esterna e costruisce il set di regole."""
         self.config = config
         log.info("Initializing LegalClassifier with configuration")
 
@@ -396,252 +426,271 @@ class LegalClassifier:
             # Carica il modello per embeddings semantici
             self.model = AutoModel.from_pretrained(config.models.legal_classifier_primary)
             self.tokenizer = AutoTokenizer.from_pretrained(config.models.legal_classifier_primary)
-
-            # Inizializza prototipi dalla configurazione
             self._initialize_prototypes()
-            log.info("LegalClassifier initialized successfully")
+            log.info("LegalClassifier models initialized successfully")
         except Exception as e:
             log.warning("Failed to load Italian-legal-bert for classification", error=str(e))
             self.model = None
             self.tokenizer = None
+        
+        # Costruisci il set di regole dinamicamente dalla configurazione
+        self._build_ruleset()
+        log.info("LegalClassifier initialized successfully with config-driven ruleset.", rules_count=len(self.rules))
+
+    def _log(self, log_file_path: Optional[str], event: str, **kwargs):
+        """Log eventi in formato JSON, gestendo tipi non serializzabili."""
+        if not log_file_path:
+            return
+
+        def make_serializable(obj):
+            """Converte oggetti non-JSON in formati serializzabili."""
+            if isinstance(obj, torch.Tensor):
+                return obj.tolist()
+            elif isinstance(obj, np.ndarray):
+                return obj.tolist()
+            elif isinstance(obj, (np.floating, np.integer)):
+                # Convert numpy scalars to Python types
+                return obj.item()
+            elif hasattr(obj, '__dict__'):
+                # Converti dataclass/object in dict
+                return {k: make_serializable(v) for k, v in obj.__dict__.items()}
+            elif isinstance(obj, (list, tuple)):
+                return [make_serializable(item) for item in obj]
+            elif isinstance(obj, dict):
+                return {k: make_serializable(v) for k, v in obj.items()}
+            else:
+                return obj
+
+        log_entry = {
+            'timestamp': datetime.utcnow().isoformat(),
+            'stage': 'LegalClassifier',
+            'event': event,
+            **make_serializable(kwargs)
+        }
+
+        try:
+            with open(log_file_path, 'a', encoding='utf-8') as f:
+                f.write(json.dumps(log_entry, ensure_ascii=False) + '\n')
+        except Exception as e:
+            # Fallback: log semplificato senza dati complessi
+            simple_entry = {
+                'timestamp': datetime.utcnow().isoformat(),
+                'stage': 'LegalClassifier',
+                'event': event,
+                'error': f'Failed to serialize: {str(e)}'
+            }
+            with open(log_file_path, 'a', encoding='utf-8') as f:
+                f.write(json.dumps(simple_entry, ensure_ascii=False) + '\n')
+
+    def _build_ruleset(self):
+        """Costruisce un set di regole prioritizzate dalla configurazione."""
+        self.rules = []
+        rule_conf = self.config.confidence.rule_based
+        
+        priority_keys = [
+            'codice_crisi_impresa', 'codice_beni_culturali', 'codice_procedura_civile', 'codice_procedura_penale',
+            'codice_civile', 'codice_penale', 'costituzione', 'testo_unico_pubblica_sicurezza',
+            'testo_unico_bancario', 'testo_unico_enti_locali', 'testo_unico',
+            'decreto_legislativo', 'decreto_legge', 'dpr', 'legge_costituzionale', 'legge', 'legge_fallimentare',
+            'regolamento_ue', 'direttiva_ue', 'convenzione_europea_diritti', 'trattato_ue',
+            'trattato_funzionamento_ue', 'decreto_ministeriale', 'dpcm', 'circolare'
+        ]
+        
+        self.rules.append((re.compile(r'\bccii\b', re.IGNORECASE), 'codice_crisi_impresa', rule_conf.get('codice_crisi_impresa', 0.95)))
+
+        processed_abbrevs = {'ccii'}
+
+        for key in priority_keys:
+            if key in self.config.normattiva_mapping:
+                act_type = key
+                abbreviations = sorted(self.config.normattiva_mapping[key], key=len, reverse=True)
+
+                for abbrev in abbreviations:
+                    if abbrev.lower() in processed_abbrevs:
+                        continue
+                    processed_abbrevs.add(abbrev.lower())
+                    
+                    pattern = re.compile(r'\b' + re.escape(abbrev) + r'\b', re.IGNORECASE)
+                    
+                    conf_key = key
+                    if ' ' not in abbrev:
+                        conf_key = f"{key}_abbrev"
+                    else:
+                        conf_key = f"{key}_full"
+
+                    confidence = rule_conf.get(conf_key, rule_conf.get(key, 0.85))
+                    self.rules.append((pattern, act_type, confidence))
+
+    def _classify_by_rules(self, text_span: TextSpan, log_file_path: Optional[str] = None) -> LegalClassification:
+        """Classificazione rule-based precisa usando il ruleset costruito dalla configurazione."""
+        text_lower = text_span.text.lower()
+
+        for pattern, act_type, confidence in self.rules:
+            if pattern.search(text_lower):
+                result = LegalClassification(
+                    span=text_span,
+                    act_type=act_type,
+                    confidence=confidence,
+                    semantic_embedding=None
+                )
+                self._log(log_file_path, "rule_match", pattern=pattern.pattern, result=result)
+                return result
+
+        default_result = LegalClassification(
+            span=text_span,
+            act_type='legge',
+            confidence=self.config.confidence.rule_based.get('default', 0.5),
+            semantic_embedding=None
+        )
+        self._log(log_file_path, "no_rule_match", fallback_result=default_result)
+        return default_result
 
     def _initialize_prototypes(self):
         """Inizializza prototipi semantici dalla configurazione."""
         if self.model is not None:
             self.prototype_embeddings = {}
-
             for act_type_str, texts in self.config.semantic_prototypes.items():
-                try:
-                    # Converti stringa in ActType enum
-                    act_type = ActType(act_type_str.replace("_", " "))
-                except ValueError:
-                    # Gestisci casi speciali di mapping
-                    act_type_mapping = {
-                        "decreto_legislativo": ActType.DECRETO_LEGISLATIVO,
-                        "legge": ActType.LEGGE,
-                        "dpr": ActType.DPR,
-                        "codice_civile": ActType.CODICE_CIVILE,
-                        "codice_penale": ActType.CODICE_PENALE,
-                        "codice_procedura_civile": ActType.CODICE_PROCEDURA_CIVILE,
-                        "codice_procedura_penale": ActType.CODICE_PROCEDURA_PENALE,
-                        "testo_unico": ActType.TESTO_UNICO,
-                        "costituzione": ActType.COSTITUZIONE,
-                        "convention": ActType.CONVENTION,
-                        "institution": ActType.INSTITUTION
-                    }
-                    act_type = act_type_mapping.get(act_type_str)
-                    if not act_type:
-                        continue
-
                 embeddings = []
                 for text in texts:
                     embedding = self._get_embedding(text)
                     if embedding is not None:
                         embeddings.append(embedding)
-
                 if embeddings:
-                    # Media degli embeddings per creare il prototipo
-                    self.prototype_embeddings[act_type] = np.mean(embeddings, axis=0)
+                    self.prototype_embeddings[act_type_str] = np.mean(embeddings, axis=0)
 
     def _get_embedding(self, text: str) -> Optional[np.ndarray]:
         """Genera embedding per un testo usando Italian-legal-bert."""
-        if self.model is None:
-            return None
-
+        if self.model is None: return None
         try:
-            # Tokenization
-            inputs = self.tokenizer(
-                text,
-                return_tensors="pt",
-                truncation=True,
-                max_length=self.config.models.legal_classifier_max_length,
-                padding=True
-            )
-
-            # Forward pass
+            inputs = self.tokenizer(text, return_tensors="pt", truncation=True, max_length=self.config.models.legal_classifier_max_length, padding=True)
             with torch.no_grad():
                 outputs = self.model(**inputs)
-                # Usa il [CLS] token come rappresentazione della frase
                 embedding = outputs.last_hidden_state[:, 0, :].numpy()[0]
-
             return embedding
         except Exception as e:
             log.warning("Failed to generate embedding", text=text[:50], error=str(e))
             return None
 
-    def classify_legal_type(self, text_span: TextSpan, context: str) -> LegalClassification:
+    def classify_legal_type(self, text_span: TextSpan, context: str, log_file_path: Optional[str] = None) -> LegalClassification:
         """
-        Classifica il tipo di atto normativo usando rule-based prioritario + semantica come supporto.
+        Classifica il tipo di atto normativo usando rule-based prioritario + validazione semantica.
+
+        Strategia:
+        1. Classificazione rule-based (sempre)
+        2. Validazione semantica (opzionale, configurabile)
+        3. Discrepancy check: se rule-based e semantic danno tipi DIVERSI e semantic ha confidence bassa → UNKNOWN
+        4. Se confidence finale < soglia minima → UNKNOWN
         """
-        # Step 1: Prova classificazione rule-based
-        rule_classification = self._classify_by_rules(text_span)
+        self._log(log_file_path, "start_classification", text_span=text_span)
+        rule_classification = self._classify_by_rules(text_span, log_file_path)
+        final_classification = rule_classification
 
-        # Se confidence rule-based è alta, priorità alle regole
-        if rule_classification.confidence >= self.config.confidence.rule_based_priority_threshold:
-            # Se semantica disponibile e concorda, boost confidence
-            semantic_classification = None
-            if self.model is not None:
-                semantic_classification = self._classify_by_semantics(text_span, context)
+        # Decide se fare validazione semantica
+        should_validate_semantic = (
+            self.config.confidence.enable_semantic_validation_always or
+            rule_classification.confidence < self.config.confidence.rule_based_priority_threshold
+        )
 
-            if semantic_classification and semantic_classification.act_type == rule_classification.act_type:
-                combined_confidence = min(
-                    (rule_classification.confidence + semantic_classification.confidence) / 2 + self.config.confidence.semantic_boost_factor,
-                    1.0
-                )
-                return LegalClassification(
-                    span=text_span,
-                    act_type=rule_classification.act_type,
-                    confidence=combined_confidence,
-                    semantic_embedding=semantic_classification.semantic_embedding
-                )
+        if should_validate_semantic:
+            if self.config.confidence.enable_semantic_validation_always:
+                self._log(log_file_path, "semantic_validation_enabled_always", rule_confidence=rule_classification.confidence)
             else:
-                return rule_classification
-        else:
-            # Se confidence rule-based è bassa, considera semantica
-            semantic_classification = None
-            if self.model is not None:
-                semantic_classification = self._classify_by_semantics(text_span, context)
+                self._log(log_file_path, "low_rule_confidence_trigger_semantic", rule_confidence=rule_classification.confidence)
 
-            if semantic_classification and semantic_classification.confidence > rule_classification.confidence:
-                return semantic_classification
-            else:
-                return rule_classification
+            semantic_classification = self._classify_by_semantics(text_span, context, log_file_path)
 
-    def _classify_by_semantics(self, text_span: TextSpan, context: str) -> Optional[LegalClassification]:
+            if semantic_classification:
+                # Check discrepancy: tipi diversi?
+                types_match = (rule_classification.act_type == semantic_classification.act_type)
+
+                if not types_match:
+                    # DISCREPANCY RILEVATA
+                    self._log(log_file_path, "discrepancy_detected",
+                             rule_type=rule_classification.act_type,
+                             rule_conf=rule_classification.confidence,
+                             semantic_type=semantic_classification.act_type,
+                             semantic_conf=semantic_classification.confidence)
+
+                    # REGOLA 1: Se rule-based ha alta confidence (>= 0.90), vince SEMPRE
+                    # Pattern specifici come "c.c.", "c.p." hanno confidence 0.99 e sono molto affidabili
+                    if rule_classification.confidence >= 0.90:
+                        self._log(log_file_path, "rule_based_high_confidence_maintained",
+                                 rule_conf=rule_classification.confidence,
+                                 semantic_conf=semantic_classification.confidence,
+                                 reason="Rule-based has high confidence >= 0.90, semantic discarded")
+                        final_classification = rule_classification
+
+                    # REGOLA 2: Se semantic ha confidence < threshold → UNKNOWN (troppo incerto)
+                    elif semantic_classification.confidence < self.config.confidence.semantic_discrepancy_confidence_threshold:
+                        self._log(log_file_path, "discrepancy_low_confidence_override_to_unknown",
+                                 semantic_conf=semantic_classification.confidence,
+                                 threshold=self.config.confidence.semantic_discrepancy_confidence_threshold)
+                        final_classification = LegalClassification(
+                            span=text_span,
+                            act_type=UNKNOWN_SOURCE,
+                            confidence=max(rule_classification.confidence, semantic_classification.confidence),
+                            semantic_embedding=semantic_classification.semantic_embedding
+                        )
+
+                    # REGOLA 3: Semantic vince solo se ha confidence SIGNIFICATIVAMENTE più alta (+0.15)
+                    elif semantic_classification.confidence > (rule_classification.confidence + 0.15):
+                        self._log(log_file_path, "semantic_override_significantly_higher",
+                                 semantic_result=semantic_classification,
+                                 rule_result=rule_classification,
+                                 delta=semantic_classification.confidence - rule_classification.confidence)
+                        final_classification = semantic_classification
+
+                    else:
+                        # Default: Rule-based vince in caso di incertezza
+                        self._log(log_file_path, "rule_based_maintained_despite_discrepancy",
+                                 rule_result=rule_classification,
+                                 reason="Semantic not significantly higher or rule-based more reliable")
+                        final_classification = rule_classification
+                else:
+                    # Tipi coincidono: usa la confidence più alta
+                    if semantic_classification.confidence > rule_classification.confidence:
+                        self._log(log_file_path, "semantic_boosts_confidence",
+                                 rule_conf=rule_classification.confidence,
+                                 semantic_conf=semantic_classification.confidence)
+                        final_classification = semantic_classification
+
+        # Final check: confidence minima
+        if final_classification.confidence < self.config.confidence.minimum_classification_confidence:
+            self._log(log_file_path, "low_final_confidence_override_to_unknown",
+                     final_result=final_classification,
+                     threshold=self.config.confidence.minimum_classification_confidence)
+            final_classification.act_type = UNKNOWN_SOURCE
+
+        self._log(log_file_path, "end_classification", final_result=final_classification)
+        return final_classification
+
+    def _classify_by_semantics(self, text_span: TextSpan, context: str, log_file_path: Optional[str] = None) -> Optional[LegalClassification]:
         """Classificazione semantica come metodo di supporto."""
-        # Crea una finestra di contesto per la classificazione
         context_window = self._extract_context_window(text_span, context)
-
-        # Genera embedding per il contesto
         context_embedding = self._get_embedding(context_window)
         if context_embedding is None:
+            self._log(log_file_path, "semantic_embedding_failed", context_window=context_window)
             return None
 
-        # Trova il prototipo più simile
-        best_act_type = ActType.LEGGE  # Default
+        best_act_type = UNKNOWN_SOURCE
         best_similarity = -1.0
 
         for act_type, prototype_embedding in self.prototype_embeddings.items():
-            similarity = cosine_similarity(
-                context_embedding.reshape(1, -1),
-                prototype_embedding.reshape(1, -1)
-            )[0][0]
-
+            similarity = cosine_similarity(context_embedding.reshape(1, -1), prototype_embedding.reshape(1, -1))[0][0]
             if similarity > best_similarity:
                 best_similarity = similarity
                 best_act_type = act_type
 
         confidence = min(best_similarity * self.config.confidence.semantic_similarity_scale, 1.0)
-
-        return LegalClassification(
-            span=text_span,
-            act_type=best_act_type,
-            confidence=confidence,
-            semantic_embedding=context_embedding
-        )
-
-    def _classify_by_rules(self, text_span: TextSpan) -> LegalClassification:
-        """Classificazione rule-based precisa con confidence configurabili."""
-        text_lower = text_span.text.lower()
-
-        act_type = ActType.LEGGE  # Default
-        confidence = self.config.confidence.default
-
-        # Codici specifici (massima priorità)
-        if re.search(r'\bc\.p\.c\.?\b', text_lower):
-            act_type = ActType.CODICE_PROCEDURA_CIVILE
-            confidence = self.config.confidence.specific_codes
-        elif re.search(r'\bc\.p\.p\.?\b', text_lower):
-            act_type = ActType.CODICE_PROCEDURA_PENALE
-            confidence = self.config.confidence.specific_codes
-        elif re.search(r'\bc\.c\.?\b', text_lower):
-            act_type = ActType.CODICE_CIVILE
-            confidence = self.config.confidence.specific_codes
-        elif re.search(r'\bc\.p\.?\b', text_lower) and not re.search(r'\b(?:c\.p\.c\.?|c\.p\.p\.?)\b', text_lower):
-            act_type = ActType.CODICE_PENALE
-            confidence = self.config.confidence.specific_codes
-        elif re.search(r'\b(?:testo unico|t\.u\.|tuf)\b', text_lower):
-            act_type = ActType.TESTO_UNICO
-            confidence = self.config.confidence.testo_unico
-        elif 'codice' in text_lower:
-            act_type = ActType.CODICE
-            confidence = self.config.confidence.generic_codes
-
-        # Decreto Legislativo
-        elif any(pattern in text_lower for pattern in ['decreto legislativo']):
-            act_type = ActType.DECRETO_LEGISLATIVO
-            confidence = self.config.confidence.decreto_legislativo_full
-        elif any(pattern in text_lower for pattern in ['d.lgs.', 'd.lgs', 'dlgs']):
-            act_type = ActType.DECRETO_LEGISLATIVO
-            confidence = self.config.confidence.decreto_legislativo_abbrev
-
-        # DPR
-        elif any(pattern in text_lower for pattern in ['decreto del presidente della repubblica']):
-            act_type = ActType.DPR
-            confidence = self.config.confidence.dpr_full
-        elif any(pattern in text_lower for pattern in ['d.p.r.', 'd.p.r', 'dpr']):
-            act_type = ActType.DPR
-            confidence = self.config.confidence.dpr_abbrev
-
-        # Legge
-        elif 'legge' in text_lower:
-            act_type = ActType.LEGGE
-            confidence = self.config.confidence.legge_full
-        elif text_lower.strip() in ['l.', 'l'] or 'l.' in text_lower:
-            act_type = ActType.LEGGE
-            confidence = self.config.confidence.legge_abbrev
-
-        # Costituzione
-        elif 'costituzione' in text_lower:
-            act_type = ActType.COSTITUZIONE
-            confidence = self.config.confidence.costituzione_full
-        elif 'cost.' in text_lower:
-            act_type = ActType.COSTITUZIONE
-            confidence = self.config.confidence.costituzione_abbrev
-
-        # Altri tipi
-        elif re.search(r'\b(?:c(?:venzione|edu)|protocollo)\b', text_lower):
-            act_type = ActType.CONVENTION
-            confidence = self.config.confidence.convention
-
-        elif re.search(r'\b(?:corte|tribunale|consiglio di stato|agenzia delle entrate)\b', text_lower, re.IGNORECASE):
-            act_type = ActType.INSTITUTION
-            confidence = self.config.confidence.institution
-
-        elif re.search(r'\b(?:direttiva\s*\(ue\)|direttiva\s*europea)\b', text_lower):
-            act_type = ActType.DIRETTIVA_UE
-            confidence = self.config.confidence.direttiva_ue
-
-        elif re.search(r'\b(?:trattato\s+sul\s+funzionamento\s+dell\'unione\s+europea|tfue)\b', text_lower):
-            act_type = ActType.TRATTATO
-            confidence = self.config.confidence.trattato
-
-        # Articoli generici
-        elif text_lower.startswith('art') or text_lower.startswith('articolo'):
-            confidence = self.config.confidence.generic_article
-
-        if self.config.output.log_pattern_matches:
-            patterns_matched = [p for p in ['decreto legislativo', 'd.lgs', 'legge', 'c.c.', 'costituzione']
-                              if p in text_lower][:self.config.output.max_logged_patterns]
-            log.debug("Rule-based classification",
-                     text=text_span.text[:50],
-                     act_type=act_type.value,
-                     confidence=confidence,
-                     patterns_matched=patterns_matched)
-
-        return LegalClassification(
-            span=text_span,
-            act_type=act_type,
-            confidence=confidence,
-            semantic_embedding=None
-        )
+        result = LegalClassification(span=text_span, act_type=best_act_type, confidence=confidence, semantic_embedding=context_embedding)
+        self._log(log_file_path, "semantic_classification_result", result=result)
+        return result
 
     def _extract_context_window(self, text_span: TextSpan, full_text: str) -> str:
         """Estrae una finestra di contesto attorno al text span."""
         window_size = self.config.context.classification_context
         start_context = max(0, text_span.start_char - window_size // 2)
         end_context = min(len(full_text), text_span.end_char + window_size // 2)
-
         return full_text[start_context:end_context]
 
 
@@ -653,17 +702,12 @@ class NormativeParser:
         """Inizializza con configurazione esterna."""
         self.config = config
         log.info("Initializing NormativeParser with configuration")
-
-        # Pattern dalla configurazione
         self.patterns = config.parsing_patterns.copy()
-        # Rimuovi pattern speciali che gestiremo separatamente
         self.patterns.pop("eu_directive", None)
         self.patterns.pop("date_patterns", None)
 
     def parse(self, legal_classification: LegalClassification) -> ParsedNormative:
-        """
-        Parses the text of a legal classification to extract structured components.
-        """
+        """Parses the text of a legal classification to extract structured components."""
         text = legal_classification.span.text
         parsed_data = {
             "text": text,
@@ -672,46 +716,32 @@ class NormativeParser:
             "start_char": legal_classification.span.start_char,
             "end_char": legal_classification.span.end_char
         }
-
         text_lower = text.lower()
-
-        # Pattern speciale per Direttive UE
         eu_directive_pattern = self.config.parsing_patterns["eu_directive"]
         match_eu_directive = re.search(eu_directive_pattern, text_lower)
         if match_eu_directive:
             parsed_data["date"] = match_eu_directive.group(1)
             parsed_data["act_number"] = match_eu_directive.group(2)
         else:
-            # Estrai componenti usando pattern configurabili
             for component, pattern in self.patterns.items():
-                if component == "date":  # Skip, gestito separatamente
-                    continue
+                if component == "date": continue
                 match = re.search(pattern, text_lower)
                 if match:
                     parsed_data[component] = match.group(1)
-
-            # Estrazione date con priorità configurabile
             date_patterns = self.config.parsing_patterns["date_patterns"]
-
-            # Pattern primario
             match_date_1 = re.search(date_patterns["primary"], text_lower)
             if match_date_1:
                 parsed_data["date"] = match_date_1.group(1)
             else:
-                # Pattern secondario
                 match_date_2 = re.search(date_patterns["secondary"], text_lower)
                 if match_date_2:
                     parsed_data["date"] = match_date_2.group(1)
                 else:
-                    # Pattern terziario
                     match_date_3 = re.search(date_patterns["tertiary"], text_lower)
                     if match_date_3:
                         parsed_data["date"] = match_date_3.group(1)
-
-        # Determina se è un riferimento completo
         is_complete = parsed_data.get("act_number") and (parsed_data.get("date") or parsed_data.get("article"))
         parsed_data["is_complete_reference"] = is_complete
-
         return ParsedNormative(**parsed_data)
 
 
@@ -725,14 +755,10 @@ class ReferenceResolver:
         log.info("Initializing ReferenceResolver with configuration")
 
     def resolve(self, parsed_normative: ParsedNormative, full_text: str) -> ResolvedNormative:
-        """
-        Resolves incomplete references based on context.
-        """
+        """Resolves incomplete references based on context."""
         resolved_data = asdict(parsed_normative)
         resolved_data["resolution_method"] = "direct"
         resolved_data["resolution_confidence"] = 1.0
-
-        # TODO: Implementazioni future configurabili
         return ResolvedNormative(**resolved_data)
 
 
@@ -746,24 +772,19 @@ class StructureBuilder:
         log.info("Initializing StructureBuilder with configuration")
 
     def build(self, resolved_normative: ResolvedNormative) -> Dict[str, Any]:
-        """
-        Builds the final structured output from a ResolvedNormative object.
-        """
-        # Filtra istituzioni se configurato
-        if (self.config.output.filter_institutions and
-            resolved_normative.act_type == ActType.INSTITUTION):
+        """Builds the final structured output from a ResolvedNormative object."""
+        if (self.config.output.filter_institutions and resolved_normative.act_type == 'institution'):
             if self.config.output.enable_debug_logging:
                 log.debug(f"Filtering out institution: {resolved_normative.text}")
             return {}
 
-        # Map to schema format
         structured_output = {
-            "source_type": resolved_normative.act_type.value if resolved_normative.act_type else None,
+            "source_type": resolved_normative.act_type,
             "text": resolved_normative.text,
             "confidence": resolved_normative.confidence,
             "start_char": resolved_normative.start_char,
             "end_char": resolved_normative.end_char,
-            "act_type": resolved_normative.act_type.value if resolved_normative.act_type else None,
+            "act_type": resolved_normative.act_type,
             "date": resolved_normative.date,
             "act_number": resolved_normative.act_number,
             "article": resolved_normative.article,
@@ -772,7 +793,6 @@ class StructureBuilder:
             "annex": resolved_normative.annex
         }
 
-        # Filtra valori null se configurato
         if self.config.output.filter_null_values:
             return {k: v for k, v in structured_output.items() if v is not None}
 
@@ -787,101 +807,64 @@ class LegalSourceExtractionPipeline:
     def __init__(self, config_path: Optional[str] = None):
         """Inizializza pipeline con configurazione esterna."""
         log.info("Initializing Specialized Legal Source Extraction Pipeline")
-
-        # Carica configurazione
         self.config = get_pipeline_config()
         log.info("Configuration loaded successfully")
-
-        # Inizializza tutti gli stage con configurazione
         self.entity_detector = EntityDetector(self.config)
         self.legal_classifier = LegalClassifier(self.config)
         self.normative_parser = NormativeParser(self.config)
         self.reference_resolver = ReferenceResolver(self.config)
         self.structure_builder = StructureBuilder(self.config)
-
         log.info("Specialized pipeline initialized successfully")
 
     def _is_spurious_entity(self, candidate: TextSpan) -> bool:
-        """
-        Filtra entità spurie usando configurazione.
-        """
+        """Filtra entità spurie usando configurazione."""
         text = candidate.text.strip()
-
-        # Filtra entità troppo brevi
         if len(text) <= self.config.spurious_filters.min_length:
             if text.lower() not in self.config.spurious_filters.valid_short_terms:
                 return True
-
-        # Filtra caratteri isolati
         if len(text) == 1 and text.isalpha() and self.config.spurious_filters.filter_single_alpha:
             return True
-
-        # Filtra parole spurie configurate
         if text.lower() in self.config.spurious_filters.spurious_words:
             return True
-
-        # Filtra usando pattern regex spurie
         for pattern in self.config.spurious_filters.spurious_patterns:
             if re.search(pattern, text.lower(), re.IGNORECASE):
                 return True
-
-        # Filtra se confidence troppo bassa
         if candidate.initial_confidence < self.config.spurious_filters.min_detection_confidence:
             return True
-
         return False
 
-    async def extract_legal_sources(self, text: str) -> List[Dict[str, Any]]:
+    async def extract_legal_sources(self, text: str, log_file_path: Optional[str] = None) -> List[Dict[str, Any]]:
         """
         Estrae fonti normative usando la pipeline specializzata configurabile.
         """
-        log.info("Starting specialized legal source extraction", text_length=len(text))
-
-        try:
-            # Stage 1: Detect candidates
-            candidates = self.entity_detector.detect_candidates(text)
-            log.info("Stage 1 complete - Candidates detected", candidates_count=len(candidates))
-
-            # Stage 2: Classify legal types + filter spurious entities
-            classified_entities = []
-            for candidate in candidates:
-                if self._is_spurious_entity(candidate):
-                    if self.config.output.enable_debug_logging:
-                        log.debug("Filtering spurious entity",
-                                 text=candidate.text,
-                                 length=len(candidate.text))
-                    continue
-
-                classification = self.legal_classifier.classify_legal_type(candidate, text)
-                classified_entities.append(classification)
-
-            log.info("Stage 2 complete - Legal types classified", classified_count=len(classified_entities))
-
-            # Stage 3: Parse normative components
-            parsed_normatives = []
-            for classification in classified_entities:
-                parsed = self.normative_parser.parse(classification)
-                parsed_normatives.append(parsed)
-            log.info("Stage 3 complete - Normative components parsed", parsed_count=len(parsed_normatives))
-
-            # Stage 4: Resolve incomplete references
-            resolved_normatives = []
-            for parsed in parsed_normatives:
-                resolved = self.reference_resolver.resolve(parsed, text)
-                resolved_normatives.append(resolved)
-            log.info("Stage 4 complete - Incomplete references resolved", resolved_count=len(resolved_normatives))
-
-            # Stage 5: Build final structured output
-            final_results = []
-            for resolved in resolved_normatives:
-                structured_output = self.structure_builder.build(resolved)
-                if structured_output:  # Only append if not empty
-                    final_results.append(structured_output)
-            log.info("Stage 5 complete - Final structured output built", final_results_count=len(final_results))
-
-            log.info("Specialized extraction complete", results_count=len(final_results))
-            return final_results
-
-        except Exception as e:
-            log.error("Error in specialized pipeline", error=str(e))
-            return []
+        # Stage 1: Detect candidates
+        candidates = self.entity_detector.detect_candidates(text, log_file_path)
+        
+        # Stage 2: Classify legal types + filter spurious entities
+        classified_entities = []
+        for candidate in candidates:
+            if self._is_spurious_entity(candidate):
+                continue
+            classification = self.legal_classifier.classify_legal_type(candidate, text, log_file_path)
+            classified_entities.append(classification)
+        
+        # Stage 3: Parse normative components
+        parsed_normatives = []
+        for classification in classified_entities:
+            parsed = self.normative_parser.parse(classification)
+            parsed_normatives.append(parsed)
+        
+        # Stage 4: Resolve incomplete references
+        resolved_normatives = []
+        for parsed in parsed_normatives:
+            resolved = self.reference_resolver.resolve(parsed, text)
+            resolved_normatives.append(resolved)
+        
+        # Stage 5: Build final structured output
+        final_results = []
+        for resolved in resolved_normatives:
+            structured_output = self.structure_builder.build(resolved)
+            if structured_output:
+                final_results.append(structured_output)
+        
+        return final_results

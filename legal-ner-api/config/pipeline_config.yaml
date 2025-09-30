@@ -1,400 +1,672 @@
-# Configurazione Pipeline Specializzata Legal-NER
-# ================================================
+# ================================================================================
+# CONFIGURAZIONE PIPELINE SPECIALIZZATA LEGAL-NER
+# ================================================================================
+# Questo file controlla TUTTI i parametri della pipeline di estrazione fonti normative.
+# Ogni modifica a questo file viene applicata immediatamente senza ricompilazione.
+# ================================================================================
 
-# Configurazione Modelli AI
+# ===================================
+# SEZIONE 1: MODELLI AI
+# ===================================
+# IMPATTO: Definisce quali modelli HuggingFace vengono caricati all'avvio
+# QUANDO MODIFICARE: Solo per testing di nuovi modelli o fallback
 models:
   entity_detector:
+    # IMPATTO: Modello primario per Stage 1 (rilevamento entità NER)
+    # USATO IN: EntityDetector.__init__() linea 95-101
+    # PERFORMANCE: Italian_NER_XXL_v2 è ottimizzato per italiano legale
     primary: "DeepMount00/Italian_NER_XXL_v2"
+
+    # IMPATTO: Modello di fallback se primary non è disponibile
+    # USATO IN: EntityDetector.__init__() linea 105-110
+    # PERFORMANCE: wikineural è più generico ma più leggero
     fallback: "Babelscape/wikineural-multilingual-ner"
+
+    # IMPATTO: Lunghezza massima input per tokenizer (in tokens)
+    # USATO IN: detect_candidates() linea 196
+    # TUNING: ↑ per testi più lunghi (↓ velocità), ↓ per velocità (↓ accuratezza su testi lunghi)
+    # RANGE CONSIGLIATO: 256-1024
     max_length: 512
 
   legal_classifier:
-    primary: "dlicari/Italian-Legal-BERT"
+    # IMPATTO: Modello per Stage 2 (classificazione semantica tipo atto)
+    # USATO IN: LegalClassifier.__init__() linea 424-425
+    # PERFORMANCE: distil-ita-legal-bert è specializzato per legal italiano
+    primary: "dlicari/distil-ita-legal-bert"
+
+    # IMPATTO: Lunghezza massima embeddings semantici (in tokens)
+    # USATO IN: _get_embedding() linea 559
+    # TUNING: ↑ per contesti più ricchi (↓ velocità), ↓ per velocità
+    # RANGE CONSIGLIATO: 128-512
     embedding_max_length: 256
 
   semantic_correlator:
-    model: "all-MiniLM-L6-v2"
+    # IMPATTO: Modello per correlazioni semantiche future (Stage avanzati)
+    # USATO IN: Placeholder per sviluppi futuri
+    # NOTA: Non ancora implementato nella pipeline corrente
+    model: "dlicari/Italian-Legal-BERT"
 
-# Soglie di Confidence
+# ===================================
+# SEZIONE 2: SOGLIE DI CONFIDENCE
+# ===================================
+# IMPATTO: Controllano la qualità minima delle entità rilevate e classificate
+# TUNING GENERALE: ↑ per più precisione (meno entità), ↓ per più recall (più entità)
 confidence_thresholds:
-  # Stage 1: Entity Detection
+
+  # --- Stage 1: Entity Detection ---
+  # IMPATTO: Soglia minima per accettare un'entità dal modello NER
+  # USATO IN: _is_spurious_entity() linea 755
+  # TUNING: 0.5 = bilanciato, ↑0.7 = solo entità molto sicure, ↓0.3 = anche entità dubbie
   minimum_detection_confidence: 0.5
 
-  # Stage 2: Legal Classification
-  rule_based_priority_threshold: 0.8  # Soglia per priorità rule-based
-  semantic_boost_factor: 0.1  # Boost quando rule+semantic concordano
-  semantic_similarity_scale: 1.2  # Moltiplicatore similarità→confidence
+  # --- Stage 2: Legal Classification ---
+  # IMPATTO: Se rule-based ≥ threshold, ignora classificazione semantica
+  # USATO IN: classify_legal_type() linea 576
+  # TUNING: 0.8 = priorità regole, ↓0.6 = più peso al semantic, ↑0.9 = solo regole
+  # LOGICA: Rule-based è più affidabile per pattern chiari
+  rule_based_priority_threshold: 0.8
 
-  # Confidence per pattern rule-based
+  # IMPATTO: Boost aggiunto quando rule-based e semantic concordano
+  # USATO IN: classify_legal_type() (calcolo combinato)
+  # TUNING: 0.1 = boost moderato, ↑0.2 = boost forte, ↓0.05 = boost minimo
+  semantic_boost_factor: 0.1
+
+  # IMPATTO: Moltiplicatore per convertire similarità coseno in confidence
+  # USATO IN: _classify_by_semantics() linea 607
+  # TUNING: 0.95 = conservativo (evita confidence 1.0 irrealistiche), 1.2 = aggressivo
+  # ESEMPIO: similarity 0.90 × 0.95 = confidence 0.855 (più realistico di 1.0)
+  # NOTE: Ridotto da 1.2 a 0.95 per evitare false certezze semantiche
+  semantic_similarity_scale: 0.95
+
+  # IMPATTO: Confidence minima per classificazione finale (sotto = UNKNOWN_SOURCE)
+  # USATO IN: classify_legal_type() linea 583-584
+  # TUNING: 0.7 = bilanciato, ↑0.8 = solo classificazioni sicure, ↓0.5 = permissivo
+  minimum_classification_confidence: 0.7
+
+  # --- Validazione Semantica ---
+  # IMPATTO: Abilita validazione semantica per TUTTE le classificazioni (anche rule-based ad alta confidence)
+  # USATO IN: classify_legal_type() - nuova logica di validazione
+  # TUNING: true = sempre valida, false = valida solo se confidence < threshold (comportamento vecchio)
+  enable_semantic_validation_always: true
+
+  # IMPATTO: Soglia di discrepanza tra act_type rule-based e semantico per marcare come UNKNOWN
+  # USATO IN: classify_legal_type() - discrepancy check logic
+  # TUNING: Se semantic e rule-based danno tipi DIVERSI e confidence semantica < questa soglia → UNKNOWN
+  # ESEMPIO: rule="legge" (0.75), semantic="convenzione_europea" (0.85) → se 0.85 < 0.90 → UNKNOWN
+  # LOGICA: Previene classificazioni semantiche dubbie quando in conflitto con rule-based
+  semantic_discrepancy_confidence_threshold: 0.90
+
+  # --- Confidence per Pattern Rule-Based ---
+  # IMPATTO: Confidence assegnata a ogni pattern specifico di classificazione
+  # USATO IN: _build_ruleset() linea 482-536
+  # TUNING: Valori 0.0-1.0, più alto = più fiducia nel pattern
   rule_based_confidence:
-    # Codici specifici (massima priorità)
-    specific_codes: 0.99  # c.c., c.p.c., c.p.p.
-    generic_codes: 0.85   # "codice" generico
-    testo_unico: 0.95
+    # Codici specifici (massima affidabilità)
+    specific_codes: 0.99              # c.c., c.p.c., c.p.p. → quasi certi
+    codice_crisi_impresa: 0.95        # CCII → codice specifico, alta affidabilità
+    codice_beni_culturali: 0.95       # Codice beni culturali (D.Lgs. 42/2004)
+    generic_codes: 0.85               # "codice" generico → serve contesto
+    testo_unico: 0.95                 # t.u., TUF → molto affidabili
 
-    # Decreti
-    decreto_legislativo_full: 0.98    # "decreto legislativo"
-    decreto_legislativo_abbrev: 0.95  # "d.lgs.", "dlgs"
-    dpr_full: 0.98                    # "decreto del presidente della repubblica"
-    dpr_abbrev: 0.95                  # "d.p.r.", "dpr"
+    # Codici fondamentali - abbreviazioni
+    codice_civile_abbrev: 0.99        # c.c, c.c. → massima affidabilità
+    codice_civile_full: 0.90          # "codice civile" completo
+    codice_penale_abbrev: 0.99        # c.p, c.p. → massima affidabilità
+    codice_penale_full: 0.90          # "codice penale" completo
+    codice_procedura_civile_abbrev: 0.99  # c.p.c, c.p.c. → massima affidabilità
+    codice_procedura_civile_full: 0.90    # "codice di procedura civile" completo
+    codice_procedura_penale_abbrev: 0.99  # c.p.p, c.p.p. → massima affidabilità
+    codice_procedura_penale_full: 0.90    # "codice di procedura penale" completo
+
+    # Decreti Legislativi
+    decreto_legislativo_full: 0.98    # "decreto legislativo" → forma completa = alta confidence
+    decreto_legislativo_abbrev: 0.95  # "d.lgs.", "dlgs" → abbreviazione standard
+
+    # Decreti Presidenziali
+    dpr_full: 0.98                    # "decreto del presidente della repubblica" → forma completa
+    dpr_abbrev: 0.95                  # "d.p.r.", "dpr" → abbreviazione standard
 
     # Leggi
-    legge_full: 0.90      # "legge"
-    legge_abbrev: 0.75    # "l.", "l"
+    legge_full: 0.90                  # "legge" → parola comune, serve conferma
+    legge_abbrev: 0.75                # "l.", "l" → molto ambiguo, serve contesto forte
+    legge_fallimentare_full: 0.95     # "legge fallimentare", "r.d. 267/1942" → specifico
+    legge_fallimentare_abbrev: 0.90   # "L.F.", "l.f." → abbreviazione ben nota nel dominio
 
-    # Altri atti
-    costituzione_full: 0.98   # "costituzione"
-    costituzione_abbrev: 0.90 # "cost."
-    convention: 0.90
-    institution: 0.99
-    direttiva_ue: 0.99
-    trattato: 0.99
+    # Costituzione
+    costituzione_full: 0.98           # "costituzione" → univoco nel contesto legale
+    costituzione_abbrev: 0.90         # "cost." → abbreviazione chiara
 
-    # Articoli generici (necessitano contesto)
-    generic_article: 0.3
+    # Normativa Internazionale
+    convention: 0.95                  # convenzioni → termini specifici
+    trattato: 0.98                    # trattati UE → molto specifici
 
-    # Default per pattern non riconosciuti
-    default: 0.5
+    # Normativa Europea
+    direttiva_ue: 0.98               # direttive UE/CE → pattern chiari
 
-# Parametri di Finestra e Contesto
+    # Istituzioni
+    institution: 0.99                # tribunali, corti → identificazione certa
+
+    # Pattern Generici (bassa confidence)
+    generic_article: 0.3             # "art." isolato → necessita contesto
+    default: 0.5                     # pattern non riconosciuto → neutro
+
+# ===================================
+# SEZIONE 3: FINESTRE DI CONTESTO
+# ===================================
+# IMPATTO: Controllano quanto testo attorno all'entità viene analizzato
+# TUNING GENERALE: ↑ finestre = più contesto (↓ velocità), ↓ finestre = più veloce (↓ accuratezza)
 context_windows:
-  # Stage 1: Entity Detection
+
+  # --- Stage 1: Entity Detection ---
   entity_expansion:
-    left_window: 100    # Caratteri a sinistra per espansione
-    right_window: 100   # Caratteri a destra per espansione
-    context_window: 50  # Finestra contesto per span finale
+    # IMPATTO: Caratteri a SINISTRA dell'entità per cercare tipo di atto
+    # USATO IN: _expand_reference_boundaries() linea 285
+    # TUNING: 100-200 caratteri, es: "decreto legislativo n. [ENTITÀ]"
+    # ESEMPIO: Con 150, cattura: "...secondo il decreto legislativo n. 231..."
+    left_window: 150
 
-  # Contesto semantico per pattern matching
+    # IMPATTO: Caratteri a DESTRA dell'entità per cercare date/anno
+    # USATO IN: _expand_reference_boundaries() linea 299
+    # TUNING: 100-200 caratteri, es: "[ENTITÀ] del 2001, pubblicato..."
+    # ESEMPIO: Con 150, cattura: "...n. 231 del 2001, che disciplina..."
+    right_window: 150
+
+    # IMPATTO: Finestra di contesto per TextSpan finale (debug/logging)
+    # USATO IN: _expand_reference_boundaries() linea 331-332
+    # TUNING: 50-100 caratteri, solo per contesto visivo
+    context_window: 75
+
+  # --- Contesto Semantico per Pattern Matching ---
   semantic_context:
-    immediate_context: 50   # Contesto immediato per numeri isolati
-    extended_context: 100   # Contesto esteso per indicatori legali
-    full_context: 200       # Finestra completa per verifica pattern
+    # IMPATTO: Contesto per numeri isolati con parole legali vicine
+    # USATO IN: _is_potential_legal_reference() linea 266-267
+    # TUNING: 30-100 caratteri, es: "...decreto 231..." identifica "231"
+    # ESEMPIO: Con 50, "decreto 231" viene riconosciuto come riferimento
+    immediate_context: 50
 
-  # Stage 2: Legal Classification
-  classification_context: 200  # Finestra per classificazione semantica
+    # IMPATTO: Contesto per indicatori legali (disciplina, regola, prevede)
+    # USATO IN: _is_potential_legal_reference() linea 252-253
+    # TUNING: 80-150 caratteri, cattura frasi tipo "come previsto dal..."
+    extended_context: 120
 
-# Mappatura NORMATTIVA (Abbreviazioni Normative Italiane)
+    # IMPATTO: Finestra completa per verifica pattern contestuali
+    # USATO IN: Verifica presenza pattern nel contesto esteso
+    # TUNING: 150-300 caratteri, analisi contestuale approfondita
+    full_context: 250
+
+  # --- Stage 2: Legal Classification ---
+  # IMPATTO: Finestra per classificazione semantica con embeddings
+  # USATO IN: _extract_context_window() linea 614
+  # TUNING: 150-300 caratteri, più contesto = miglior classificazione semantica
+  # ESEMPIO: Con 200, analizza "...in base al decreto legislativo n. 231 del 2001..."
+  classification_context: 200
+
+# ===================================
+# SEZIONE 4: MAPPATURA NORMATTIVA
+# ===================================
+# IMPATTO: Definisce TUTTE le abbreviazioni riconosciute come riferimenti normativi
+# USATO IN: EntityDetector._build_flat_normattiva_mapping() linea 114
+# USATO IN: _is_potential_legal_reference() linea 209
+# QUANDO MODIFICARE: Aggiungi nuove abbreviazioni quando le trovi nei documenti
+# FORMATO: chiave = tipo_normalizzato, valori = lista abbreviazioni (case-insensitive)
 normattiva_mapping:
-  # Decreti Legislativi
+  # Ogni entry qui viene convertita in mapping piatto: abbreviazione → tipo
+  # ESEMPIO: "d.lgs." → "decreto.legislativo"
+
   decreto_legislativo:
     - "d.lgs."
-    - "dpr"
-    - "rd"
-    - "r.d."
-    - "regio decreto"
-    - "d.p.r."
-    - "decreto legge"
-    - "decreto legislativo"
-    - "decreto.legge"
-    - "decreto.legislativo"
-    - "dl"
+    - "d.lgs"
     - "dlgs"
+    - "decreto legislativo"
+    - "decreto.legislativo"
 
-  # Leggi
+  decreto_legge:
+    - "d.l."
+    - "d.l"
+    - "dl"
+    - "decreto legge"
+    - "decreto-legge"
+
+  decreto_presidente_repubblica:
+    - "d.p.r."
+    - "d.p.r"
+    - "dpr"
+    - "decreto del presidente della repubblica"
+    - "decreto presidente repubblica"
+
+  decreto_ministeriale:
+    - "d.m."
+    - "d.m"
+    - "dm"
+    - "decreto ministeriale"
+
+  decreto_presidente_consiglio:
+    - "d.p.c.m."
+    - "d.p.c.m"
+    - "dpcm"
+    - "decreto del presidente del consiglio dei ministri"
+
   legge:
-    - "l"
     - "l."
+    - "l"
     - "legge"
 
-  # Codici Specifici
+  legge_fallimentare:
+    - "L.F."
+    - "L.F"
+    - "l.f."
+    - "r.d. 267/1942"
+    - "regio decreto 267/1942"
+    - "legge fallimentare"
+
+  legge_costituzionale:
+    - "l.cost."
+    - "legge costituzionale"
+
+  legge_regionale:
+    - "l.r."
+    - "legge regionale"
+
+  regio_decreto:
+    - "r.d."
+    - "rd"
+    - "regio decreto"
+
   codice_civile:
     - "c.c."
+    - "c.c"
     - "cc"
+    - "codice civile"
 
   codice_penale:
     - "c.p."
+    - "c.p"
+    - "cp"
+    - "codice penale"
 
   codice_procedura_civile:
+    - "c.p.c."
     - "c.p.c"
+    - "cpc"
+    - "codice di procedura civile"
 
   codice_procedura_penale:
     - "c.p.p."
-
-  # Altri Codici
-  codice_contratti_pubblici:
-    - "c.c.p"
-
-  codice_amministrazione_digitale:
-    - "cad"
-
-  codice_antimafia:
-    - "cam"
-
-  codice_ambiente:
-    - "camb"
-
-  codice_assicurazioni:
-    - "cap"
-
-  codice_beni_culturali:
-    - "cbc"
-
-  codice_comunicazioni:
-    - "cce"
-
-  codice_crisi_impresa:
-    - "cci"
-
-  codice_consumo:
-    - "cdc"
-
-  codice_protezione_civile:
-    - "cdpc"
-
-  codice_strada:
-    - "cds"
-
-  codice_giustizia_contabile:
-    - "cgco"
+    - "c.p.p"
+    - "cpp"
+    - "codice di procedura penale"
 
   codice_navigazione:
-    - "cn"
+    - "c.nav."
+    - "codice della navigazione"
 
-  codice_nautica:
-    - "cnd"
+  codice_strada:
+    - "c.str."
+    - "cds"
+    - "c.str"
+    - "c.d.s."
+    - "codice della strada"
 
-  # Costituzione
+  codice_crisi_impresa:
+    - "CCII"
+    - "ccii"
+    - "codice della crisi d'impresa e dell'insolvenza"
+    - "codice crisi impresa"
+    - "c.c.i.i."
+
+  codice_beni_culturali:
+    - "codice dei beni culturali"
+    - "codice beni culturali e del paesaggio"
+    - "cbcp"
+
+  testo_unico:
+    - "t.u."
+    - "tu"
+    - "testo unico"
+    - "tuf"
+    - "tub"
+    - "tulps"
+    - "tuel"
+    - "tubcp"
+    - "tubc"
+    - "tusl"
+    - "tuog"
+
   costituzione:
-    - "cost"
     - "cost."
     - "costituzione"
+    - "costituzione italiana"
 
-# Pattern Regex per Detection
+  regolamento_ue:
+    - "reg. ue"
+    - "regolamento ue"
+    - "regolamento (ue)"
+
+  direttiva_ue:
+    - "dir. ue"
+    - "direttiva ue"
+    - "direttiva (ue)"
+
+  trattato_unione_europea:
+    - "tue"
+    - "trattato sull'unione europea"
+    - "tfue"
+    
+
+  convenzione_europea_diritti:
+    - "cedu"
+    - "c.e.d.u."
+    - "convenzione europea diritti uomo"
+
+  cassazione:
+    - "cass."
+    - "cassazione"
+    - "suprema corte di cassazione"
+
+  corte_costituzionale:
+    - "corte costituzionale"
+    - "consulta"
+
+  consiglio_stato:
+    - "consiglio di stato"
+    - "c.d.s."
+
+  tar:
+    - "tar"
+    - "t.a.r."
+    - "tribunale amministrativo regionale"
+
+  tribunale:
+    - "trib."
+    - "tribunale"
+
+# ===================================
+# SEZIONE 5: PATTERN REGEX
+# ===================================
+# IMPATTO: Pattern regex per rilevare riferimenti normativi nel testo
+# USATO IN: EntityDetector._get_all_regex_patterns() linea 172
+# USATO IN: _is_potential_legal_reference() linea 230
+# FORMATO: Lista di regex Python (raw strings r"...")
+# TUNING: Aggiungi nuovi pattern quando trovi forme non coperte
 regex_patterns:
-  # Pattern per tipi di atti con numeri
+  # Ogni pattern qui viene testato su ogni potenziale entità
+  # PERFORMANCE: Pattern semplici = veloci, pattern complessi = lenti
+
   legal_acts:
-    - r'\b(?:d\.?\s*lgs\.?|decreto\s+legislativo)\s+n?\.?\s*\d+'
-    - r'\b(?:d\.?\s*p\.?\s*r\.?|dpr)\s+n?\.?\s*\d+'
-    - r'\b(?:d\.?\s*l\.?|decreto\s+legge)\s+n?\.?\s*\d+'
-    - r'\b(?:l\.?|legge)\s+n?\.?\s*\d+'
-    - r'\b(?:r\.?\s*d\.?|regio\s+decreto)\s+n?\.?\s*\d+'
+    # Pattern per atti con numeri
+    - r'\b(?:d\.?\s*lgs\.?|decreto\s+legislativo)\s+n?\.?\s*\d+(?:/\d{4})?'
+    - r'\b(?:d\.?\s*p\.?\s*r\.?|dpr)\s+n?\.?\s*\d+(?:/\d{4})?'
+    - r'\b(?:d\.?\s*l\.?|decreto\s+legge)\s+n?\.?\s*\d+(?:/\d{4})?'
+    - r'\b(?:l\.?|legge)\s+n?\.?\s*\d+(?:/\d{4})?'
 
-  # Codici specifici
   codes:
-    - r'\bc\.?\s*c\.?\b'     # codice civile
-    - r'\bc\.?\s*p\.?\b'     # codice penale
-    - r'\bc\.?\s*p\.?\s*c\.?\b'  # codice procedura civile
-    - r'\bc\.?\s*p\.?\s*p\.?\b'  # codice procedura penale
+    # Pattern per codici specifici
+    - r'\bc\.?\s*c\.?(?:\s+|$)'           # c.c. = codice civile
+    - r'\bc\.?\s*p\.?\s*c\.?(?:\s+|$)'    # c.p.c. = codice proc. civile
+    - r'\bc\.?\s*p\.?\s*p\.?(?:\s+|$)'    # c.p.p. = codice proc. penale
 
-  # Pattern numerici normativi
-  numeric:
-    - r'\bn\.?\s*\d+(?:/\d{4})?(?:\s+del\s+\d{4})?'
-    - r'\b\d+/\d{4}\b'
-    - r'\b\d+\s+del\s+\d{4}\b'
-
-  # Articoli e suddivisioni
   articles:
-    - r'\bart\.?\s*\d+(?:\s*[,-]\s*(?:co\.?|comma)\s*\d+)?'
-    - r'\barticolo\s+\d+(?:\s*[,-]\s*comma\s*\d+)?'
-    - r'\bco\.?\s*\d+'
+    # Pattern per articoli e suddivisioni
+    - r'\bart\.?\s*\d+(?:\s*[,-]?\s*(?:co\.?|comma)\s*\d+)?'
     - r'\bcomma\s+\d+'
-    - r'\blett\.?\s*[a-z](?:\)|\b)'
-    - r'\blettera\s+[a-z]\b'
+    - r'\blett\.?\s*[a-z]'
 
-  # Allegati e appendici
-  annexes:
-    - r'\ballegato\s+[a-z0-9]'
-    - r'\bappendice\s+[a-z0-9]'
-    - r'\bannesso\s+[a-z0-9]'
-    - r'\btabella\s+[a-z0-9]'
-
-# Pattern Contestuali per Verifica Semantica
+# ===================================
+# SEZIONE 6: PATTERN CONTESTUALI
+# ===================================
+# IMPATTO: Verifica che un'entità sia in contesto normativo
+# USATO IN: EntityDetector._get_all_context_patterns() linea 179
+# USATO IN: _is_potential_legal_reference() linea 248
+# LOGICA: Se un pattern matcha nel contesto, l'entità è probabilmente normativa
 context_patterns:
-  # Riferimenti normativi
   normative_references:
+    # Pattern che indicano un riferimento normativo
     - r'(?:secondo|ai\s+sensi|in\s+base\s+a|previsto|stabilito)\s+(?:da|dal|dell?|nel)'
-    - r'(?:disciplina|regola|prevede|stabilisce|dispone|determina)'
+    - r'(?:disciplina|regola|prevede|stabilisce|dispone)'
     - r'(?:modificato|integrato|sostituito|abrogato)\s+(?:da|dal|con)'
-    - r'(?:entrat[oa]\s+in\s+vigore|vigente|applicabil[ei])'
 
-  # Procedure legali
   legal_procedures:
-    - r'(?:sentenza|decreto|ordinanza|delibera|risoluzione)\s+n?\.?\s*\d+'
-    - r'(?:tribunale|corte|tar|consiglio\s+di\s+stato)'
-    - r'(?:ricorso|appello|opposizione|istanza)'
+    # Pattern che indicano procedure legali
+    - r'(?:sentenza|decreto|ordinanza)\s+n?\.?\s*\d+'
+    - r'(?:tribunale|corte|tar)\s+(?:di\s+)?\w+'
 
-  # Contesto amministrativo
-  administrative:
-    - r'(?:gazzetta\s+ufficiale|g\.?\s*u\.?)'
-    - r'(?:ministero|dipartimento|agenzia|ente)'
-    - r'(?:autorizza\w*|approva\w*|emana\w*|promulga\w*)'
-
-  # Riferimenti interni
-  internal_references:
-    - r'(?:di\s+cui\s+all?|previsto\s+dall?|secondo\s+l?)\s*art'
-    - r'(?:comma|co\.)\s+precedente'
-    - r'medesim[oa]\s+(?:articolo|comma|decreto|legge)'
-
-# Pattern per Espansione Confini
+# ===================================
+# SEZIONE 7: ESPANSIONE CONFINI
+# ===================================
+# IMPATTO: Pattern per espandere i confini dell'entità rilevata
+# USATO IN: _expand_reference_boundaries() linea 289 (left) e 303 (right)
+# LOGICA: Cattura tipo di atto a sinistra e data/articoli a destra
 boundary_expansion:
-  # Pattern a sinistra (tipo di atto)
   left_patterns:
+    # IMPATTO: Espande a sinistra per catturare tipo di atto
+    # ESEMPIO: "decreto legislativo n. [231]" → cattura "decreto legislativo"
     - r'(decreto\s+legislativo\s+n?\.?\s?)$'
     - r'(d\.?\s*lgs\.?\s+n?\.?\s?)$'
     - r'(legge\s+n?\.?\s?)$'
-    - r'(l\.?\s+n?\.?\s?)$'
-    - r'(decreto\s+del\s+presidente\s+della\s+repubblica\s+n?\.?\s?)$'
-    - r'(d\.?\s*p\.?\s*r\.?\s+n?\.?\s?)$'
     - r'(articolo\s+)$'
     - r'(art\.?\s*)$'
 
-  # Pattern a destra (data/anno/articoli)
   right_patterns:
-    - r'^(\s+del\s+\d{1,2}[/-]\d{1,2}[/-]\d{4})'  # del 23/05/2001
-    - r'^(\s+del\s+\d{4})'                          # del 2001
-    - r'^(/\d{4})'                                  # /2001
-    - r'^(\s*,\s*articolo\s+\d+)'                  # , articolo 25
-    - r'^(\s*,\s*art\.?\s*\d+)'                    # , art. 25
-    - r'^(\s*,\s*comma\s+\d+)'                     # , comma 2
+    # IMPATTO: Espande a destra per catturare date/anno/articoli
+    # ESEMPIO: "[231] del 2001" → cattura " del 2001"
+    - r'^(\s+del\s+\d{4})'                    # " del 2001"
+    - r'^(/\d{4})'                            # "/2001"
+    - r'^(\s*,\s*articolo\s+\d+)'             # ", articolo 25"
+    - r'^(\s*,\s*comma\s+\d+)'                # ", comma 2"
 
-# Prototipo Semantici per Classificazione
+# ===================================
+# SEZIONE 8: PROTOTIPI SEMANTICI
+# ===================================
+# IMPATTO: Testi prototipo per classificazione semantica con embeddings
+# USATO IN: LegalClassifier._initialize_prototypes() linea 546
+# LOGICA: Ogni tipo ha frasi esempio, classifier trova il più simile
+# TUNING: Aggiungi frasi tipiche per migliorare classificazione semantica
 semantic_prototypes:
+  # Decreti
   decreto_legislativo:
     - "decreto legislativo numero del anno"
     - "d.lgs. n. del"
-    - "dlgs"
     - "decreto legislativo che disciplina"
 
+  decreto_legge:
+    - "decreto legge numero del anno"
+    - "d.l. n. del"
+    - "decreto legge convertito in legge"
+
+  decreto_presidente_repubblica:
+    - "decreto del presidente della repubblica"
+    - "d.p.r. n. del"
+    - "dpr che approva il regolamento"
+
+  # Leggi
   legge:
     - "legge numero del anno"
     - "l. n. del"
     - "legge che stabilisce"
-    - "legge concernente"
 
-  dpr:
-    - "decreto del presidente della repubblica numero del"
-    - "d.p.r. n. del"
-    - "dpr"
-    - "decreto presidente repubblica"
+  legge_fallimentare:
+    - "legge fallimentare regio decreto 267 del 1942"
+    - "articolo della legge fallimentare"
+    - "disciplina fallimentare prevista dalla l.f."
 
+  legge_costituzionale:
+    - "legge costituzionale numero del anno"
+    - "l.cost. che modifica la costituzione"
+
+  # Codici
   codice_civile:
-    - "codice civile"
-    - "c.c."
+    - "codice civile articolo"
+    - "c.c. disposizioni"
+    - "secondo il codice civile"
 
   codice_penale:
-    - "codice penale"
-    - "c.p."
+    - "codice penale articolo"
+    - "c.p. reato previsto"
+    - "secondo il codice penale"
 
   codice_procedura_civile:
-    - "codice di procedura civile"
-    - "c.p.c."
+    - "codice di procedura civile articolo"
+    - "c.p.c. processo civile"
+    - "secondo il codice di procedura civile"
 
   codice_procedura_penale:
-    - "codice di procedura penale"
-    - "c.p.p."
+    - "codice di procedura penale articolo"
+    - "c.p.p. processo penale"
+    - "secondo il codice di procedura penale"
 
+  codice_crisi_impresa:
+    - "codice della crisi d'impresa e dell'insolvenza"
+    - "ccii articolo"
+    - "disciplina della crisi d'impresa"
+
+  codice_beni_culturali:
+    - "codice dei beni culturali e del paesaggio"
+    - "d.lgs. 42 del 2004 beni culturali"
+    - "tutela dei beni culturali secondo il codice"
+
+  # Testi Unici e Costituzione
   testo_unico:
-    - "testo unico"
-    - "t.u."
-    - "tuf"
+    - "testo unico numero del anno"
+    - "t.u. disposizioni"
+    - "secondo il testo unico"
 
   costituzione:
-    - "costituzione italiana"
-    - "cost."
+    - "costituzione italiana articolo"
     - "carta costituzionale"
-    - "principi costituzionali"
+    - "secondo la costituzione"
 
-  convention:
-    - "convenzione europea dei diritti dell'uomo"
-    - "c.e.d.u."
-    - "protocollo addizionale"
+  # Normativa Europea
+  regolamento_ue:
+    - "regolamento unione europea numero"
+    - "reg. ue che stabilisce"
+    - "secondo il regolamento europeo"
 
-  institution:
-    - "corte costituzionale"
-    - "corte europea dei diritti dell'uomo"
-    - "tribunale"
-    - "consiglio di stato"
+  direttiva_ue:
+    - "direttiva unione europea numero"
+    - "dir. ue che disciplina"
+    - "recepimento della direttiva europea"
 
-# Pattern per Parsing Componenti Normativi
+  trattato_unione_europea:
+    - "trattato sull'unione europea"
+    - "tue articolo"
+    - "secondo il trattato europeo"
+
+# ===================================
+# SEZIONE 9: PATTERN DI PARSING
+# ===================================
+# IMPATTO: Regex per estrarre componenti strutturati (numero, data, articolo...)
+# USATO IN: NormativeParser.parse() linea 628-654
+# FORMATO: Dizionario pattern_name → regex con gruppo di cattura
 parsing_patterns:
-  act_number: r"(?:n\.?|numero)\s*(\d+)"
-  date: r"(?:del|in\s+data\s+del)\s*(\d{1,2}[/-]\d{1,2}[/-]\d{4}|\d{4})"
-  article: r"(?:art\.?|articolo)\s*(\d+)"
-  comma: r"(?:co\.?|comma)\s*(\d+)"
-  letter: r"(?:lett\.?|lettera)\s*([a-z])"
-  version: r"(?:versione|aggiornato\s+al)\s*(\d{1,2}[/-]\d{1,2}[/-]\d{4}|\d{4})"
-  annex: r"(?:allegato|annesso)\s*([a-zA-Z0-9]+)"
+  # Ogni pattern estrae UNA componente specifica
+  act_number: r"(?:n\.?|numero)\s*(\d+)"     # Cattura: "n. 231" → "231"
+  date: r"(?:del|in\s+data\s+del)\s*(\d{1,2}[/-]\d{1,2}[/-]\d{4}|\d{4})"  # "del 2001" → "2001"
+  article: r"(?:art\.?|articolo)\s*(\d+)"    # "art. 5" → "5"
+  comma: r"(?:co\.?|comma)\s*(\d+)"          # "comma 2" → "2"
+  letter: r"(?:lett\.?|lettera)\s*([a-z])"   # "lett. a" → "a"
 
   # Pattern speciali
-  eu_directive: r"direttiva\s*\(ue\)\s*(\d{4})/(\d{1,4})"
+  eu_directive: r"direttiva\s*\(ue\)\s*(\d{4})/(\d{1,4})"  # "Direttiva (UE) 2016/679"
 
-  # Pattern per estrazione date (priorità)
+  # Pattern date con priorità
   date_patterns:
     primary: r"(?:del|in\s+data\s+del)\s*(\d{1,2}[/-]\d{1,2}[/-]\d{4}|\d{4})"
-    secondary: r"\d{1,4}/(\d{4})"  # anno dopo slash
-    tertiary: r"(\d{4})$"          # anno alla fine
+    secondary: r"\d{1,4}/(\d{4})"            # Estrae anno da "231/2001"
+    tertiary: r"(\d{4})$"                    # Anno alla fine del testo
 
-# Filtri Anti-Spurio
+# ===================================
+# SEZIONE 10: FILTRI ANTI-SPURIO
+# ===================================
+# IMPATTO: Filtrano entità che NON sono riferimenti normativi validi
+# USATO IN: LegalSourceExtractionPipeline._is_spurious_entity() linea 745-755
+# TUNING: ↑ restrizioni = meno falsi positivi (ma possibili falsi negativi)
 spurious_filters:
-  # Lunghezza minima (eccetto abbreviazioni valide)
-  min_length: 4
+  # IMPATTO: Lunghezza minima caratteri (eccetto valid_short_terms)
+  # TUNING: 3-5 caratteri, più basso = più permissivo
+  min_length: 3
+
+  # IMPATTO: Termini brevi validi (eccezioni a min_length)
+  # LOGICA: "l." è valido anche se corto
   valid_short_terms:
     - "l."
     - "l"
     - "cc"
-    - "cp"
     - "c.c."
-    - "c.p."
+    - "tu"
+    - "tar"
 
-  # Parole spurie da filtrare
+  # IMPATTO: Parole da filtrare sempre (articoli, preposizioni...)
+  # LOGICA: "il", "la", "del" non sono mai riferimenti normativi
   spurious_words:
     - "l'"
     - "il"
     - "la"
-    - "lo"
-    - "gli"
-    - "le"
     - "del"
     - "della"
-    - "dei"
-    - "delle"
     - "si"
     - "s."
-    - "s. n."
     - "n."
-    - "d'"
-    - "e"
     - "di"
     - "da"
 
-  # Pattern spurie da filtrare (regex)
+  # IMPATTO: Pattern regex che identificano entità spurie
+  # LOGICA: Match = entità scartata
   spurious_patterns:
-    - r"^s\.\s*$"              # "s."
-    - r"^s\.\s*n\.\s*$"        # "s. n."
-    - r"^n\.\s*$"              # "n."
-    - r"^si\s+"                # "si ..." all'inizio
-    - r"^\w{1,2}\s+d'"         # "xx d'..."
-    - r"^\w{1,2}\s+dell'"      # "xx dell'..."
+    - r"^s\.\s*$"              # "s." isolato
+    - r"^s\.\s*n\.\s*$"        # "s. n." isolato
+    - r"^n\.\s*$"              # "n." isolato
+    - r"^\d{1,2}$"             # numeri 1-99 isolati
+    - r"^[a-z]$"               # singole lettere
 
-  # Caratteri isolati da filtrare
+  # IMPATTO: Filtra singole lettere alfabetiche
   filter_single_alpha: true
 
-  # Confidence minime
-  min_detection_confidence: 0.7
+  # IMPATTO: Confidence minima per accettare un'entità dal NER
+  # USATO IN: _is_spurious_entity() linea 755
+  # TUNING: 0.5-0.8, più alto = solo entità sicure
+  min_detection_confidence: 0.6
 
-# Parole Legali per Contesto Numerico
+# ===================================
+# SEZIONE 11: PAROLE CONTESTO LEGALE
+# ===================================
+# IMPATTO: Parole che indicano contesto legale per numeri isolati
+# USATO IN: _is_potential_legal_reference() linea 270
+# LOGICA: "decreto 231" identifica "231" come riferimento
 legal_context_words:
   - "decreto"
   - "legge"
   - "articolo"
   - "art"
   - "comma"
-  - "co"
   - "dlgs"
   - "dpr"
   - "norma"
   - "codice"
   - "costituzione"
+  - "tribunale"
+  - "corte"
+  - "sentenza"
 
-# Configurazione Output
+# ===================================
+# SEZIONE 12: CONFIGURAZIONE OUTPUT
+# ===================================
+# IMPATTO: Controlla cosa viene incluso nell'output finale
+# USATO IN: StructureBuilder.build() linea 699-719
 output_settings:
-  # Filtro tipi di atti dall'output finale
-  filter_institutions: true  # Filtra INSTITUTION dall'output
+  # IMPATTO: Se true, filtra istituzioni dall'output (non sono fonti normative)
+  # LOGICA: "Tribunale di Milano" viene rilevato ma non incluso nell'output
+  filter_institutions: true
 
-  # Pulizia output
-  filter_null_values: true   # Rimuove campi null dall'output
+  # IMPATTO: Se true, rimuove campi null dall'output JSON
+  # LOGICA: Output più compatto, {"date": null} diventa {}
+  filter_null_values: true
 
-  # Logging
-  enable_debug_logging: true
-  log_pattern_matches: true
+  # IMPATTO: Abilita logging dettagliato (verbose)
+  # PERFORMANCE: false = più veloce, true = più debugging
+  enable_debug_logging: false
+
+  # IMPATTO: Logga pattern che matchano (per debugging)
+  log_pattern_matches: false
+
+  # IMPATTO: Numero massimo pattern da loggare
   max_logged_patterns: 3
