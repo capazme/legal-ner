@@ -80,7 +80,7 @@ async def get_system_stats(
     Get comprehensive system statistics including feedback and golden dataset metrics.
     """
     try:
-        stats = feedback_loop.get_statistics()
+        stats = await feedback_loop.get_feedback_statistics()
 
         return schemas.SystemStatsResponse(
             predictor_type="specialized_pipeline",

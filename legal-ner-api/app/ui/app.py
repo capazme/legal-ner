@@ -126,6 +126,12 @@ def trigger_active_learning():
             json={"batch_size": int(batch_size)},
             headers={"X-API-Key": API_KEY}
         )
+        
+        if response.status_code != 200: # Check for non-200 status codes
+            error_detail = response.text
+            app.logger.error(f"Failed to trigger active learning: {response.status_code} - {error_detail}")
+            return jsonify({"status": "error", "message": f"Failed to trigger active learning: {error_detail}"})
+
         result = response.json()
 
         app.logger.info("Active learning iteration triggered successfully | Result: %s", result)

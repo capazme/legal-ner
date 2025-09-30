@@ -1,0 +1,1872 @@
+[
+  {
+    "task": {
+      "id": 1,
+      "document_id": 76,
+      "status": "completed",
+      "created_at": "2025-09-30T17:04:28.384995+02:00",
+      "priority": 0.5
+    },
+    "document": {
+      "id": 76,
+      "text": "Il liquidatore giudiziale di una società controllata (facente parte di un gruppo di imprese) scopre che, nell'anno precedente la dichiarazione di insolvenza, la società ha effettuato pagamenti anomali a favore della società controllante, estinguendo debiti non ancora scaduti, al fine di favorirla a scapito degli altri creditori. Si analizzi la duplice rilevanza di tale condotta: da un lato, come reato di bancarotta preferenziale (art. 323, co. 1, CCII, ex art. 216, co. 3, L.F.); dall'altro, come atto soggetto ad azione revocatoria fallimentare (art. 166 CCII, ex art. 67 L.F.). Si esamini come la disciplina sulla direzione e coordinamento di società (artt. 2497 e ss. c.c.) influenzi la valutazione dei \"vantaggi compensativi\" che la controllante potrebbe addurre a difesa. Infine, si discuta se il curatore possa utilizzare anche lo strumento della revocatoria ordinaria (art. 2901 c.c.) in sede fallimentare (ex art. 165 CCII) e quale sia il regime probatorio dell'elemento soggettivo (la scientia decoctionis) in un contesto di pagamenti infragruppo.\r\n",
+      "created_at": "2025-09-30T17:04:28.336888+02:00"
+    },
+    "entities": [
+      {
+        "id": 505,
+        "document_id": 76,
+        "text": "art. 323, co. 1, CCII",
+        "label": "codice_crisi_impresa",
+        "start_char": 434,
+        "end_char": 455,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 506,
+        "document_id": 76,
+        "text": "art. 216, co. 3, L.F",
+        "label": "legge_fallimentare",
+        "start_char": 460,
+        "end_char": 480,
+        "confidence": 0.9367207884788513,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 507,
+        "document_id": 76,
+        "text": "art. 166 CCII",
+        "label": "codice_crisi_impresa",
+        "start_char": 551,
+        "end_char": 564,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 508,
+        "document_id": 76,
+        "text": "art. 67 L.F",
+        "label": "legge_fallimentare",
+        "start_char": 569,
+        "end_char": 580,
+        "confidence": 0.9401283264160156,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 509,
+        "document_id": 76,
+        "text": "artt. 2497 e ss. c.c",
+        "label": "codice_civile",
+        "start_char": 658,
+        "end_char": 678,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 510,
+        "document_id": 76,
+        "text": "art. 2901 c.c",
+        "label": "codice_civile",
+        "start_char": 880,
+        "end_char": 893,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 511,
+        "document_id": 76,
+        "text": "art. 165 CCII",
+        "label": "codice_crisi_impresa",
+        "start_char": 921,
+        "end_char": 934,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      }
+    ]
+  },
+  {
+    "task": {
+      "id": 23,
+      "document_id": 98,
+      "status": "completed",
+      "created_at": "2025-09-30T17:04:28.976498+02:00",
+      "priority": 0.5
+    },
+    "document": {
+      "id": 98,
+      "text": "Sul danno ingiusto (Art. 2043 c.c.): L'articolo 2043 del Codice Civile pone a fondamento della responsabilità extracontrattuale il requisito del \"danno ingiusto\". Come si concilia questo concetto con la risarcibilità della lesione di interessi legittimi da parte della Pubblica Amministrazione? Analizzare come la giurisprudenza abbia superato la tradizionale limitazione del \"danno ingiusto\" alla sola lesione di diritti soggettivi assoluti, specificando quali sono i criteri per cui la lesione di un interesse legittimo assume carattere di ingiustizia e dà diritto a risarcimento.[9][10][11][12]\r\n",
+      "created_at": "2025-09-30T17:04:28.967062+02:00"
+    },
+    "entities": [
+      {
+        "id": 667,
+        "document_id": 98,
+        "text": "Art. 2043 c.c",
+        "label": "codice_civile",
+        "start_char": 20,
+        "end_char": 33,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 668,
+        "document_id": 98,
+        "text": "articolo 2043 del Codice Civile",
+        "label": "codice_civile",
+        "start_char": 39,
+        "end_char": 70,
+        "confidence": 0.9,
+        "model": "specialized_pipeline"
+      }
+    ]
+  },
+  {
+    "task": {
+      "id": 25,
+      "document_id": 100,
+      "status": "completed",
+      "created_at": "2025-09-30T17:04:29.004571+02:00",
+      "priority": 0.5
+    },
+    "document": {
+      "id": 100,
+      "text": "Sulla responsabilità precontrattuale (Art. 1337 c.c.): Qualora un contratto sia validamente concluso, ma a condizioni inique per una delle parti a causa della violazione del dovere di buona fede dell'altra parte durante le trattative (ad esempio, per la reticenza su informazioni essenziali), in che modo l'articolo 1337 del Codice Civile può essere invocato per ottenere un risarcimento? Si tratterebbe di un risarcimento commisurato al cosiddetto \"interesse negativo\" o si potrebbe configurare un danno pari al \"minor vantaggio\" o \"maggior aggravio economico\" derivante dalle condizioni inique, e con quale onere probatorio a carico della parte lesa?[1][2][3]\r\n",
+      "created_at": "2025-09-30T17:04:28.996640+02:00"
+    },
+    "entities": [
+      {
+        "id": 671,
+        "document_id": 100,
+        "text": "Art. 1337 c.c",
+        "label": "codice_civile",
+        "start_char": 38,
+        "end_char": 51,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 672,
+        "document_id": 100,
+        "text": "articolo 1337 del Codice Civile",
+        "label": "codice_civile",
+        "start_char": 307,
+        "end_char": 338,
+        "confidence": 0.9,
+        "model": "specialized_pipeline"
+      }
+    ]
+  },
+  {
+    "task": {
+      "id": 22,
+      "document_id": 97,
+      "status": "completed",
+      "created_at": "2025-09-30T17:04:28.964271+02:00",
+      "priority": 0.5
+    },
+    "document": {
+      "id": 97,
+      "text": "Sul concorso di colpa del danneggiato (Art. 1227 c.c.): In un caso di responsabilità medica, come si distingue l'ipotesi in cui la condotta del paziente (es. mancata aderenza alle terapie post-operatorie) concorre a causare il danno (primo comma dell'art. 1227 c.c.), dall'ipotesi in cui il paziente omette di usare l'ordinaria diligenza per evitare danni ulteriori (secondo comma dell'art. 1227 c.c.)? Si discuta delle differenze in termini di onere della prova e di quantificazione della riduzione del risarcimento.[13][14][15][16]\r\n",
+      "created_at": "2025-09-30T17:04:28.948969+02:00"
+    },
+    "entities": [
+      {
+        "id": 684,
+        "document_id": 97,
+        "text": "Art. 1227 c.c.",
+        "label": "ALTRO",
+        "start_char": 39,
+        "end_char": 53,
+        "confidence": 1.0,
+        "model": "manual"
+      },
+      {
+        "id": 685,
+        "document_id": 97,
+        "text": "primo comma dell'art. 1227 c.c.",
+        "label": "LEGGE",
+        "start_char": 234,
+        "end_char": 265,
+        "confidence": 1.0,
+        "model": "manual"
+      },
+      {
+        "id": 686,
+        "document_id": 97,
+        "text": "secondo comma dell'art. 1227 c.c.",
+        "label": "LEGGE",
+        "start_char": 367,
+        "end_char": 400,
+        "confidence": 1.0,
+        "model": "manual"
+      }
+    ]
+  },
+  {
+    "task": {
+      "id": 20,
+      "document_id": 95,
+      "status": "completed",
+      "created_at": "2025-09-30T17:04:28.935053+02:00",
+      "priority": 0.5
+    },
+    "document": {
+      "id": 95,
+      "text": "In un'ipotesi di inquinamento ambientale (art. 452-bis c.p.) causato da uno sversamento industriale, come si articola la responsabilità penale dell'amministratore delegato per omesso impedimento del reato del dipendente (art. 40, co. 2, c.p.), in parallelo con la responsabilità amministrativa dell'ente ai sensi del D.Lgs. 231/2001? Si analizzi inoltre in che modo l'adozione ed efficace attuazione di un modello organizzativo e di gestione (art. 6, D.Lgs. 231/2001) possa escludere la colpa di organizzazione della società, e come la condanna penale del dirigente influenzi l'azione civile per il risarcimento del danno ambientale (art. 2043 c.c. e art. 18 della Legge 349/1986) e la ripartizione dell'onere probatorio (art. 2697 c.c.) nel relativo giudizio.\r\n",
+      "created_at": "2025-09-30T17:04:28.910451+02:00"
+    },
+    "entities": [
+      {
+        "id": 653,
+        "document_id": 95,
+        "text": "art. 452-bis c.p",
+        "label": "codice_penale",
+        "start_char": 42,
+        "end_char": 58,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 655,
+        "document_id": 95,
+        "text": "art. 40, co. 2, c.p",
+        "label": "codice_penale",
+        "start_char": 221,
+        "end_char": 240,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 656,
+        "document_id": 95,
+        "text": "D.Lgs. 231/2001",
+        "label": "decreto_legislativo",
+        "start_char": 317,
+        "end_char": 332,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 657,
+        "document_id": 95,
+        "text": "art. 6, D.Lgs. 231/2001",
+        "label": "decreto_legislativo",
+        "start_char": 443,
+        "end_char": 466,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 658,
+        "document_id": 95,
+        "text": "art. 2043 c.c",
+        "label": "codice_civile",
+        "start_char": 634,
+        "end_char": 647,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 659,
+        "document_id": 95,
+        "text": "art. 18 della Legge 349/1986",
+        "label": "codice_procedura_civile",
+        "start_char": 651,
+        "end_char": 679,
+        "confidence": 0.9386323690414429,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 660,
+        "document_id": 95,
+        "text": "art. 2697 c.c",
+        "label": "codice_civile",
+        "start_char": 722,
+        "end_char": 735,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      }
+    ]
+  },
+  {
+    "task": {
+      "id": 24,
+      "document_id": 99,
+      "status": "completed",
+      "created_at": "2025-09-30T17:04:28.991026+02:00",
+      "priority": 0.5
+    },
+    "document": {
+      "id": 99,
+      "text": "Sugli atti emulativi (Art. 833 c.c.): Posto che l'articolo 833 del Codice Civile vieta gli atti che non abbiano altro scopo che quello di nuocere o recare molestia ad altri, come si può provare in giudizio l'elemento soggettivo dell'\"animus nocendi\" (l'intenzione di nuocere)? Può la totale e oggettiva assenza di utilità per il proprietario che compie l'atto essere considerata prova sufficiente a integrare la fattispecie, o è necessario dimostrare un'intenzione positiva e specifica di arrecare danno al vicino?[4][5][6][7][8]\r\n",
+      "created_at": "2025-09-30T17:04:28.982135+02:00"
+    },
+    "entities": [
+      {
+        "id": 669,
+        "document_id": 99,
+        "text": "Art. 833 c.c",
+        "label": "codice_civile",
+        "start_char": 22,
+        "end_char": 34,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 670,
+        "document_id": 99,
+        "text": "articolo 833 del Codice Civile",
+        "label": "codice_civile",
+        "start_char": 50,
+        "end_char": 80,
+        "confidence": 0.9,
+        "model": "specialized_pipeline"
+      }
+    ]
+  },
+  {
+    "task": {
+      "id": 21,
+      "document_id": 96,
+      "status": "completed",
+      "created_at": "2025-09-30T17:04:28.946383+02:00",
+      "priority": 0.5
+    },
+    "document": {
+      "id": 96,
+      "text": "Sulla responsabilità solidale (Art. 2055 c.c.): Se un danno è causato da più soggetti, l'articolo 2055 del Codice Civile prevede la loro responsabilità solidale.[17] Qualora uno dei responsabili sia rimasto ignoto e un altro sia stato identificato e abbia risarcito l'intero danno, come si ripartisce internamente la colpa ai fini dell'azione di regresso, considerando che l'ultimo comma dell'articolo presume le singole colpe uguali \"nel dubbio\"? Può il responsabile che ha pagato provare che la colpa del soggetto ignoto era maggiore della sua per limitare la propria quota di responsabilità interna?\r\n",
+      "created_at": "2025-09-30T17:04:28.937930+02:00"
+    },
+    "entities": [
+      {
+        "id": 661,
+        "document_id": 96,
+        "text": "Art. 2055 c.c",
+        "label": "codice_civile",
+        "start_char": 31,
+        "end_char": 44,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 662,
+        "document_id": 96,
+        "text": "articolo 2055 del Codice Civile",
+        "label": "codice_civile",
+        "start_char": 89,
+        "end_char": 120,
+        "confidence": 0.9,
+        "model": "specialized_pipeline"
+      }
+    ]
+  },
+  {
+    "task": {
+      "id": 2,
+      "document_id": 77,
+      "status": "completed",
+      "created_at": "2025-09-30T17:04:28.422255+02:00",
+      "priority": 0.5
+    },
+    "document": {
+      "id": 77,
+      "text": "Un Comune espropria un'area edificabile per la realizzazione di un'opera pubblica, seguendo la procedura prevista dal D.P.R. n. 327/2001 (Testo Unico Espropriazioni) e corrispondendo l'indennità di esproprio. Anni dopo, l'opera pubblica non viene realizzata e il Comune muta la destinazione urbanistica dell'area, che perde gran parte del suo valore. Si analizzi se il precedente proprietario possa chiedere la retrocessione totale del bene (art. 47 TUE). In caso di impossibilità, si discuta se egli possa agire per il risarcimento del danno, non per l'illegittimità del provvedimento originario, ma per la lesione del suo affidamento legittimo e per la violazione dei principi di buona fede e correttezza dell'azione amministrativa (art. 1 della Legge n. 241/1990). Si valuti se tale azione rientri nella giurisdizione del giudice amministrativo e se possa essere fondata sull'art. 2-bis, comma 1, della Legge 241/1990, che prevede la responsabilità della P.A. per il danno da mero ritardo, o se debba essere inquadrata nella più generale responsabilità da \"contatto sociale qualificato\".\r\n",
+      "created_at": "2025-09-30T17:04:28.398564+02:00"
+    },
+    "entities": [
+      {
+        "id": 512,
+        "document_id": 77,
+        "text": "D.P.R. n. 327/2001",
+        "label": "legge_fallimentare",
+        "start_char": 118,
+        "end_char": 136,
+        "confidence": 0.9339548349380493,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 513,
+        "document_id": 77,
+        "text": "Testo Unico Espropriazioni",
+        "label": "testo_unico",
+        "start_char": 138,
+        "end_char": 164,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 514,
+        "document_id": 77,
+        "text": "art. 47 TUE",
+        "label": "codice_procedura_civile",
+        "start_char": 442,
+        "end_char": 453,
+        "confidence": 0.9354034066200256,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 515,
+        "document_id": 77,
+        "text": "art. 1 della Legge n. 241/1990",
+        "label": "codice_beni_culturali",
+        "start_char": 735,
+        "end_char": 765,
+        "confidence": 0.9342846274375916,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 516,
+        "document_id": 77,
+        "text": "art. 2-bis, comma 1, della Legge 241/1990",
+        "label": "codice_procedura_civile",
+        "start_char": 879,
+        "end_char": 920,
+        "confidence": 0.9373877644538879,
+        "model": "specialized_pipeline"
+      }
+    ]
+  },
+  {
+    "task": {
+      "id": 19,
+      "document_id": 94,
+      "status": "completed",
+      "created_at": "2025-09-30T17:04:28.907547+02:00",
+      "priority": 0.5
+    },
+    "document": {
+      "id": 94,
+      "text": "Posto un commento gravemente lesivo della reputazione altrui pubblicato su un social network, si esamini il concorso tra la responsabilità penale dell'autore per diffamazione aggravata (art. 595, co. 3, c.p.) e la responsabilità civile del provider del servizio, qualificato come hosting provider ai sensi del D.Lgs. 70/2003 e del nuovo Digital Services Act (Reg. UE 2022/2065). Come si bilanciano il diritto di manifestare liberamente il proprio pensiero (art. 21 Cost.) e il diritto all'onore e alla reputazione (art. 2 Cost.)? Inoltre, si valuti come il risarcimento del danno non patrimoniale (art. 2059 c.c.) possa essere richiesto solidalmente all'autore e alla piattaforma, e quali obblighi di rimozione del contenuto illecito incombono su quest'ultima dopo la segnalazione della persona offesa, alla luce dei principi stabiliti dalla Corte di Giustizia Europea.\r\n",
+      "created_at": "2025-09-30T17:04:28.888038+02:00"
+    },
+    "entities": [
+      {
+        "id": 647,
+        "document_id": 94,
+        "text": "art. 595, co. 3, c.p",
+        "label": "codice_penale",
+        "start_char": 186,
+        "end_char": 206,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 648,
+        "document_id": 94,
+        "text": "D.Lgs. 70/2003",
+        "label": "decreto_legislativo",
+        "start_char": 310,
+        "end_char": 324,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 649,
+        "document_id": 94,
+        "text": "Digital Services Act (Reg. UE 2022/2065",
+        "label": "regolamento_ue",
+        "start_char": 337,
+        "end_char": 376,
+        "confidence": 0.98,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 650,
+        "document_id": 94,
+        "text": "art. 21 Cost",
+        "label": "costituzione",
+        "start_char": 457,
+        "end_char": 469,
+        "confidence": 0.9,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 651,
+        "document_id": 94,
+        "text": "art. 2 Cost",
+        "label": "costituzione",
+        "start_char": 515,
+        "end_char": 526,
+        "confidence": 0.9,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 652,
+        "document_id": 94,
+        "text": "art. 2059 c.c",
+        "label": "codice_civile",
+        "start_char": 598,
+        "end_char": 611,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      }
+    ]
+  },
+  {
+    "task": {
+      "id": 18,
+      "document_id": 93,
+      "status": "completed",
+      "created_at": "2025-09-30T17:04:28.882733+02:00",
+      "priority": 0.5
+    },
+    "document": {
+      "id": 93,
+      "text": "In un intervento chirurgico complesso, a seguito del quale il paziente subisce un grave danno, come si procede all'accertamento della responsabilità penale per lesioni colpose (art. 590 c.p.) qualora l'errore sia imputabile a un membro dell'equipe (es. l'anestesista) ma il primario chirurgo abbia omesso la dovuta vigilanza? Si analizzi l'applicazione del principio dell'affidamento e dei limiti della posizione di garanzia del primario (art. 40, co. 2, c.p.), coordinandolo con la disciplina sulla sicurezza delle cure della Legge n. 24/2017 (c.d. \"Legge Gelli-Bianco\"). Sul piano civile, si discuta come la responsabilità contrattuale della struttura sanitaria (art. 1218 e 1228 c.c.) si intrecci con la responsabilità extracontrattuale del singolo medico (art. 2043 c.c., come modificato dalla L. 24/2017) e con l'azione di rivalsa della struttura verso il professionista, tenendo conto dei diversi gradi di colpa richiesti.\r\n",
+      "created_at": "2025-09-30T17:04:28.849406+02:00"
+    },
+    "entities": [
+      {
+        "id": 639,
+        "document_id": 93,
+        "text": "art. 590 c.p",
+        "label": "codice_penale",
+        "start_char": 177,
+        "end_char": 189,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 641,
+        "document_id": 93,
+        "text": "art. 40, co. 2, c.p",
+        "label": "codice_penale",
+        "start_char": 439,
+        "end_char": 458,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 642,
+        "document_id": 93,
+        "text": "Legge n. 24/2017",
+        "label": "codice_procedura_civile",
+        "start_char": 527,
+        "end_char": 543,
+        "confidence": 0.9383322596549988,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 643,
+        "document_id": 93,
+        "text": "Legge Gelli-Bianco",
+        "label": "legge_fallimentare",
+        "start_char": 551,
+        "end_char": 569,
+        "confidence": 0.936769425868988,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 644,
+        "document_id": 93,
+        "text": "art. 1218 e 1228 c.c",
+        "label": "codice_civile",
+        "start_char": 665,
+        "end_char": 685,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 645,
+        "document_id": 93,
+        "text": "art. 2043 c.c",
+        "label": "codice_civile",
+        "start_char": 760,
+        "end_char": 773,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 646,
+        "document_id": 93,
+        "text": "L. 24/2017",
+        "label": "codice_procedura_civile",
+        "start_char": 798,
+        "end_char": 808,
+        "confidence": 0.9327768683433533,
+        "model": "specialized_pipeline"
+      }
+    ]
+  },
+  {
+    "task": {
+      "id": 17,
+      "document_id": 92,
+      "status": "completed",
+      "created_at": "2025-09-30T17:04:28.846457+02:00",
+      "priority": 0.5
+    },
+    "document": {
+      "id": 92,
+      "text": "A fronte del crollo parziale di un immobile di recente costruzione, si delinei lo scenario delle responsabilità concorrenti. Come si coordina la responsabilità penale per crollo colposo (art. 449 c.p.) a carico del costruttore e del direttore dei lavori, con la responsabilità civile decennale del costruttore per gravi difetti (art. 1669 c.c.) e con la responsabilità oggettiva del proprietario per il danno a terzi (art. 2053 c.c.)? Si esamini inoltre in quale misura il rilascio del certificato di agibilità da parte del Comune, ai sensi del D.P.R. 380/2001 (Testo Unico Edilizia), possa influire sull'accertamento della colpa dei professionisti coinvolti e se il proprietario, dopo aver risarcito il terzo danneggiato, possa agire in regresso (art. 2055 c.c.) nei confronti di costruttore e progettista, e con quale regime probatorio.\r\n",
+      "created_at": "2025-09-30T17:04:28.818085+02:00"
+    },
+    "entities": [
+      {
+        "id": 629,
+        "document_id": 92,
+        "text": "art. 449 c.p",
+        "label": "codice_penale",
+        "start_char": 187,
+        "end_char": 199,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 632,
+        "document_id": 92,
+        "text": "art. 1669 c.c",
+        "label": "codice_civile",
+        "start_char": 329,
+        "end_char": 342,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 633,
+        "document_id": 92,
+        "text": "art. 2053 c.c",
+        "label": "codice_civile",
+        "start_char": 418,
+        "end_char": 431,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 634,
+        "document_id": 92,
+        "text": "D.P.R. 380/2001",
+        "label": "codice_procedura_civile",
+        "start_char": 545,
+        "end_char": 560,
+        "confidence": 0.9341269731521606,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 635,
+        "document_id": 92,
+        "text": "Testo Unico Edilizia",
+        "label": "testo_unico",
+        "start_char": 562,
+        "end_char": 582,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 636,
+        "document_id": 92,
+        "text": "art. 2055 c.c",
+        "label": "codice_civile",
+        "start_char": 748,
+        "end_char": 761,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      }
+    ]
+  },
+  {
+    "task": {
+      "id": 16,
+      "document_id": 91,
+      "status": "completed",
+      "created_at": "2025-09-30T17:04:28.815694+02:00",
+      "priority": 0.5
+    },
+    "document": {
+      "id": 91,
+      "text": "Analizzando i provvedimenti adottati durante un'emergenza sanitaria o di altra natura, si discuta la tensione tra le prerogative del Governo di emanare decreti-legge e DPCM (artt. 77 e 95 Cost.) e la riserva di legge, assoluta o relativa, posta a presidio di diritti fondamentali. In particolare, come si giustifica la compressione della libertà di iniziativa economica (art. 41 Cost.) e della libertà di circolazione (art. 16 Cost.)? Si valuti la costituzionalità di tali atti alla luce del principio di proporzionalità e ragionevolezza elaborato dalla Corte Costituzionale (con riferimento all'art. 3 Cost.) e del bilanciamento con il diritto alla salute inteso come interesse della collettività (art. 32 Cost.), specificando il ruolo del Parlamento in sede di conversione del decreto-legge (art. 77, co. 2, Cost.) come meccanismo di controllo e di ripristino dell'equilibrio tra poteri.\r\n",
+      "created_at": "2025-09-30T17:04:28.791322+02:00"
+    },
+    "entities": [
+      {
+        "id": 622,
+        "document_id": 91,
+        "text": "artt. 77 e 95 Cost",
+        "label": "costituzione",
+        "start_char": 174,
+        "end_char": 192,
+        "confidence": 0.9,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 623,
+        "document_id": 91,
+        "text": "art. 41 Cost",
+        "label": "costituzione",
+        "start_char": 371,
+        "end_char": 383,
+        "confidence": 0.9,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 624,
+        "document_id": 91,
+        "text": "art. 16 Cost",
+        "label": "costituzione",
+        "start_char": 419,
+        "end_char": 431,
+        "confidence": 0.9,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 626,
+        "document_id": 91,
+        "text": "art. 3 Cost",
+        "label": "costituzione",
+        "start_char": 596,
+        "end_char": 607,
+        "confidence": 0.9,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 627,
+        "document_id": 91,
+        "text": "art. 32 Cost",
+        "label": "costituzione",
+        "start_char": 699,
+        "end_char": 711,
+        "confidence": 0.9,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 628,
+        "document_id": 91,
+        "text": "art. 77, co. 2, Cost",
+        "label": "costituzione",
+        "start_char": 794,
+        "end_char": 814,
+        "confidence": 0.9,
+        "model": "specialized_pipeline"
+      }
+    ]
+  },
+  {
+    "task": {
+      "id": 3,
+      "document_id": 78,
+      "status": "completed",
+      "created_at": "2025-09-30T17:04:28.445517+02:00",
+      "priority": 0.5
+    },
+    "document": {
+      "id": 78,
+      "text": "Un atleta professionista risulta positivo a un controllo antidoping. Si analizzi la sua responsabilità di fronte agli organi di giustizia sportiva (secondo le Norme Sportive Antidoping adottate dal CONI in recepimento del Codice Mondiale Antidoping WADA) e le relative sanzioni (squalifica). Contestualmente, si configuri la sua responsabilità penale per il reato di utilizzo o somministrazione di farmaci o di altre sostanze al fine di alterare le prestazioni agonistiche (art. 586-bis c.p., introdotto dalla Legge n. 376/2000). Si discuta il valore probatorio degli accertamenti condotti in sede sportiva all'interno del processo penale (art. 238-bis c.p.p.) e come il principio del ne bis in idem sia stato interpretato dalla giurisprudenza in relazione al doppio binario sanzionatorio, sportivo e penale, con riferimento all'art. 654 c.p.p. sull'efficacia della sentenza penale nel giudizio disciplinare.\r\n",
+      "created_at": "2025-09-30T17:04:28.425671+02:00"
+    },
+    "entities": [
+      {
+        "id": 518,
+        "document_id": 78,
+        "text": "art. 586-bis c.p",
+        "label": "codice_penale",
+        "start_char": 474,
+        "end_char": 490,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 519,
+        "document_id": 78,
+        "text": "Legge n. 376/2000",
+        "label": "codice_procedura_civile",
+        "start_char": 510,
+        "end_char": 527,
+        "confidence": 0.9348896741867065,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 520,
+        "document_id": 78,
+        "text": "art. 238-bis c.p.p",
+        "label": "codice_procedura_penale",
+        "start_char": 640,
+        "end_char": 658,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 521,
+        "document_id": 78,
+        "text": "art. 654 c.p.p",
+        "label": "codice_procedura_penale",
+        "start_char": 829,
+        "end_char": 843,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      }
+    ]
+  },
+  {
+    "task": {
+      "id": 4,
+      "document_id": 79,
+      "status": "completed",
+      "created_at": "2025-09-30T17:04:28.476570+02:00",
+      "priority": 0.5
+    },
+    "document": {
+      "id": 79,
+      "text": "Un'azienda farmaceutica detiene un brevetto per un farmaco salvavita, concesso ai sensi degli artt. 81-bis e ss. del D.Lgs. n. 30/2005 (Codice della Proprietà Industriale), e ne fissa un prezzo molto elevato. Un'altra azienda inizia a produrre un farmaco generico equivalente prima della scadenza del brevetto. Si esamini l'azione di contraffazione (art. 124 CPI) che l'azienda titolare può intentare. Parallelamente, si discuta se lo Stato, in una situazione di emergenza sanitaria, possa ricorrere all'istituto della licenza obbligatoria per pubblica utilità (art. 70 CPI) per consentire la produzione del generico. Si valuti infine come tale disputa si collochi nel quadro dell'Accordo TRIPS (allegato all'accordo istitutivo dell'OMC) e della Dichiarazione di Doha sull'accesso ai farmaci, e se il comportamento dell'azienda titolare del brevetto possa configurare un abuso di posizione dominante ai sensi dell'art. 102 del TFUE e dell'art. 3 della Legge n. 287/1990 (Legge Antitrust).\r\n",
+      "created_at": "2025-09-30T17:04:28.448493+02:00"
+    },
+    "entities": [
+      {
+        "id": 522,
+        "document_id": 79,
+        "text": "artt. 81-bis e ss. del D.Lgs. n. 30/2005",
+        "label": "decreto_legislativo",
+        "start_char": 94,
+        "end_char": 134,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 523,
+        "document_id": 79,
+        "text": "Codice della Proprietà Industriale",
+        "label": "codice_procedura_civile",
+        "start_char": 136,
+        "end_char": 170,
+        "confidence": 0.9348574280738831,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 524,
+        "document_id": 79,
+        "text": "art. 124 CPI",
+        "label": "codice_crisi_impresa",
+        "start_char": 350,
+        "end_char": 362,
+        "confidence": 0.9372879266738892,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 525,
+        "document_id": 79,
+        "text": "art. 70 CPI",
+        "label": "codice_crisi_impresa",
+        "start_char": 562,
+        "end_char": 573,
+        "confidence": 0.9377850890159607,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 526,
+        "document_id": 79,
+        "text": "art. 102 del TFUE",
+        "label": "codice_crisi_impresa",
+        "start_char": 914,
+        "end_char": 931,
+        "confidence": 0.936047375202179,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 527,
+        "document_id": 79,
+        "text": "art. 3 della Legge n. 287/1990",
+        "label": "codice_crisi_impresa",
+        "start_char": 939,
+        "end_char": 969,
+        "confidence": 0.9352285861968994,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 528,
+        "document_id": 79,
+        "text": "Legge Antitrust",
+        "label": "codice_crisi_impresa",
+        "start_char": 971,
+        "end_char": 986,
+        "confidence": 0.9339810013771057,
+        "model": "specialized_pipeline"
+      }
+    ]
+  },
+  {
+    "task": {
+      "id": 5,
+      "document_id": 80,
+      "status": "completed",
+      "created_at": "2025-09-30T17:04:28.506570+02:00",
+      "priority": 0.5
+    },
+    "document": {
+      "id": 80,
+      "text": "Una nave petroliera, battente bandiera di uno Stato extra-UE, causa un grave sversamento di petrolio in acque internazionali, ma la marea nera raggiunge le coste italiane. Si delinei il complesso quadro di responsabilità, partendo dalla Convenzione internazionale sulla responsabilità civile per i danni da inquinamento da idrocarburi (CLC 1992) e dalla Convenzione sull'istituzione di un Fondo internazionale per il risarcimento dei danni da inquinamento da idrocarburi (FUND 1992). Si analizzi come lo Stato italiano possa agire per il risarcimento del danno ambientale, secondo le procedure previste dalla Parte VI del D.Lgs. n. 152/2006 (Testo Unico Ambientale). Si discuta, inoltre, la giurisdizione del giudice italiano sulla base del Regolamento (UE) n. 1215/2012 (\"Bruxelles I bis\") e se il comandante della nave possa essere perseguito penalmente in Italia per il reato di inquinamento ambientale (art. 452-bis c.p.), in applicazione del principio di territorialità (art. 6 c.p.) esteso dalla Convenzione delle Nazioni Unite sul diritto del mare (UNCLOS) del 1982.\r\n",
+      "created_at": "2025-09-30T17:04:28.479874+02:00"
+    },
+    "entities": [
+      {
+        "id": 530,
+        "document_id": 80,
+        "text": "D.Lgs. n. 152/2006",
+        "label": "decreto_legislativo",
+        "start_char": 622,
+        "end_char": 640,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 531,
+        "document_id": 80,
+        "text": "Testo Unico Ambientale",
+        "label": "testo_unico",
+        "start_char": 642,
+        "end_char": 664,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 532,
+        "document_id": 80,
+        "text": "Regolamento (UE) n. 1215/2012",
+        "label": "codice_procedura_civile",
+        "start_char": 741,
+        "end_char": 770,
+        "confidence": 0.9354197978973389,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 533,
+        "document_id": 80,
+        "text": "Bruxelles I bis",
+        "label": "codice_procedura_civile",
+        "start_char": 773,
+        "end_char": 788,
+        "confidence": 0.935541033744812,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 536,
+        "document_id": 80,
+        "text": "art. 6 c.p",
+        "label": "codice_penale",
+        "start_char": 976,
+        "end_char": 986,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 687,
+        "document_id": 80,
+        "text": "art. 452-bis c.p.",
+        "label": "codice_penale",
+        "start_char": 907,
+        "end_char": 924,
+        "confidence": 1.0,
+        "model": "manual"
+      }
+    ]
+  },
+  {
+    "task": {
+      "id": 6,
+      "document_id": 81,
+      "status": "completed",
+      "created_at": "2025-09-30T17:04:28.539067+02:00",
+      "priority": 0.5
+    },
+    "document": {
+      "id": 81,
+      "text": "Una società italiana si fonde per incorporazione in una società madre con sede in uno Stato UE a fiscalità privilegiata. L'operazione, pur formalmente lecita ai sensi della Direttiva (UE) 2019/2121 (recepita con il D.Lgs. n. 19/2023), ha come scopo principale quello di sottrarre base imponibile all'erario italiano. Si analizzi come l'Agenzia delle Entrate possa contestare l'operazione applicando la clausola generale anti-abuso contenuta nell'art. 10-bis della Legge n. 212/2000 (Statuto dei diritti del contribuente). Si discuta inoltre la compatibilità di tale riqualificazione con le libertà fondamentali garantite dal Trattato sul Funzionamento dell'Unione Europea (TFUE), in particolare la libertà di stabilimento (art. 49 TFUE), alla luce della giurisprudenza della Corte di Giustizia dell'UE (sentenze \"Cadbury Schweppes\" e \"Deister Holding\"). Infine, si valuti se l'operazione possa integrare gli estremi del reato di dichiarazione fraudolenta mediante altri artifici (art. 3 del D.Lgs. n. 74/2000) e la conseguente responsabilità dell'ente ex D.Lgs. 231/2001.\r\n",
+      "created_at": "2025-09-30T17:04:28.509282+02:00"
+    },
+    "entities": [
+      {
+        "id": 537,
+        "document_id": 81,
+        "text": "Direttiva (UE) 2019/2121",
+        "label": "codice_crisi_impresa",
+        "start_char": 173,
+        "end_char": 197,
+        "confidence": 0.9365478157997131,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 538,
+        "document_id": 81,
+        "text": "D.Lgs. n. 19/2023",
+        "label": "decreto_legislativo",
+        "start_char": 215,
+        "end_char": 232,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 540,
+        "document_id": 81,
+        "text": "art. 10-bis della Legge n. 212/2000",
+        "label": "codice_crisi_impresa",
+        "start_char": 446,
+        "end_char": 481,
+        "confidence": 0.9367549419403076,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 541,
+        "document_id": 81,
+        "text": "Trattato sul Funzionamento dell'Unione Europea (TFUE",
+        "label": "codice_beni_culturali",
+        "start_char": 625,
+        "end_char": 677,
+        "confidence": 0.9329972267150879,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 542,
+        "document_id": 81,
+        "text": "art. 49 TFUE",
+        "label": "codice_crisi_impresa",
+        "start_char": 723,
+        "end_char": 735,
+        "confidence": 0.9335111975669861,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 545,
+        "document_id": 81,
+        "text": "art. 3 del D.Lgs. n. 74/2000",
+        "label": "decreto_legislativo",
+        "start_char": 980,
+        "end_char": 1008,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      }
+    ]
+  },
+  {
+    "task": {
+      "id": 7,
+      "document_id": 82,
+      "status": "completed",
+      "created_at": "2025-09-30T17:04:28.556626+02:00",
+      "priority": 0.5
+    },
+    "document": {
+      "id": 82,
+      "text": "Un istituto di credito nega la concessione di un mutuo a un cliente sulla base di una valutazione di merito creditizio effettuata esclusivamente da un sistema di IA. La decisione si rivela errata e discriminatoria, basata su correlazioni spurie presenti nei dati di addestramento. Si analizzi il diritto del cliente di ottenere l'intervento umano e di contestare la decisione, come previsto dall'art. 22 del Regolamento (UE) 2016/679 (GDPR). Si discuta poi la configurabilità di un \"danno da algoritmo\", risarcibile ai sensi dell'art. 82 del GDPR e, in via generale, dell'art. 2043 c.c. Si esamini inoltre la possibile responsabilità del fornitore dell'algoritmo qualificabile come sistema di IA ad alto rischio ai sensi del nuovo AI Act (Reg. (UE) 2024/1689), alla luce degli obblighi di trasparenza, accuratezza e non discriminazione, e se la banca possa essere considerata responsabile per l'esercizio di attività pericolosa ai sensi dell'art. 2050 c.c., con la conseguente inversione dell'onere della prova.\r\n",
+      "created_at": "2025-09-30T17:04:28.541744+02:00"
+    },
+    "entities": [
+      {
+        "id": 546,
+        "document_id": 82,
+        "text": "art. 22 del Regolamento (UE) 2016/679 (GDPR",
+        "label": "codice_procedura_civile",
+        "start_char": 396,
+        "end_char": 439,
+        "confidence": 0.9374629259109497,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 547,
+        "document_id": 82,
+        "text": "art. 82 del GDPR",
+        "label": "codice_crisi_impresa",
+        "start_char": 530,
+        "end_char": 546,
+        "confidence": 0.9370290040969849,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 548,
+        "document_id": 82,
+        "text": "art. 2043 c.c",
+        "label": "codice_civile",
+        "start_char": 572,
+        "end_char": 585,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 549,
+        "document_id": 82,
+        "text": "AI Act (Reg. (UE) 2024/1689",
+        "label": "codice_crisi_impresa",
+        "start_char": 731,
+        "end_char": 758,
+        "confidence": 0.9353822469711304,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 550,
+        "document_id": 82,
+        "text": "art. 2050 c.c",
+        "label": "codice_civile",
+        "start_char": 942,
+        "end_char": 955,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      }
+    ]
+  },
+  {
+    "task": {
+      "id": 15,
+      "document_id": 90,
+      "status": "completed",
+      "created_at": "2025-09-30T17:04:28.788885+02:00",
+      "priority": 0.5
+    },
+    "document": {
+      "id": 90,
+      "text": "Un amministratore di una società quotata, venuto a conoscenza di un'informazione privilegiata (come definita dall'art. 181 del D.Lgs. n. 58/1998, Testo Unico della Finanza), la utilizza per compiere operazioni sul mercato. Si analizzi il concorso tra la sanzione penale per il reato di insider trading (art. 184 del TUF) e la sanzione amministrativa irrogata dalla CONSOB per il medesimo fatto (art. 187-bis del TUF). Come si applica il principio del ne bis in idem, sancito dall'art. 649 c.p.p. e dall'art. 4 del Protocollo n. 7 della CEDU, alla luce della giurisprudenza della Corte Europea dei Diritti dell'Uomo e della Corte Costituzionale italiana? Si esamini, inoltre, come la confisca del profitto del reato (art. 187 del TUF e art. 240 c.p.) si coordini con l'azione civile di risarcimento del danno promossa dagli investitori danneggiati ai sensi dell'art. 187-undecies del TUF e della norma generale dell'art. 2043 c.c.\r\n",
+      "created_at": "2025-09-30T17:04:28.754379+02:00"
+    },
+    "entities": [
+      {
+        "id": 609,
+        "document_id": 90,
+        "text": "art. 181 del D.Lgs. n. 58/1998",
+        "label": "decreto_legislativo",
+        "start_char": 114,
+        "end_char": 144,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 610,
+        "document_id": 90,
+        "text": "Testo Unico della Finanza",
+        "label": "testo_unico",
+        "start_char": 146,
+        "end_char": 171,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 611,
+        "document_id": 90,
+        "text": "art. 184 del TUF",
+        "label": "codice_procedura_penale",
+        "start_char": 303,
+        "end_char": 319,
+        "confidence": 0.9350033402442932,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 612,
+        "document_id": 90,
+        "text": "art. 187-bis del TUF",
+        "label": "codice_procedura_penale",
+        "start_char": 395,
+        "end_char": 415,
+        "confidence": 0.9387915730476379,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 613,
+        "document_id": 90,
+        "text": "art. 649 c.p.p",
+        "label": "codice_procedura_penale",
+        "start_char": 480,
+        "end_char": 494,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 614,
+        "document_id": 90,
+        "text": "art. 4 del Protocollo n. 7 della CEDU",
+        "label": "convenzione_europea_diritti",
+        "start_char": 503,
+        "end_char": 540,
+        "confidence": 0.85,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 617,
+        "document_id": 90,
+        "text": "art. 187 del TUF",
+        "label": "codice_procedura_penale",
+        "start_char": 716,
+        "end_char": 732,
+        "confidence": 0.9372822642326355,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 618,
+        "document_id": 90,
+        "text": "art. 240 c.p",
+        "label": "codice_penale",
+        "start_char": 735,
+        "end_char": 747,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 619,
+        "document_id": 90,
+        "text": "art. 187-undecies del TUF",
+        "label": "codice_crisi_impresa",
+        "start_char": 861,
+        "end_char": 886,
+        "confidence": 0.9371688365936279,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 620,
+        "document_id": 90,
+        "text": "art. 2043 c.c",
+        "label": "codice_civile",
+        "start_char": 915,
+        "end_char": 928,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      }
+    ]
+  },
+  {
+    "task": {
+      "id": 14,
+      "document_id": 89,
+      "status": "completed",
+      "created_at": "2025-09-30T17:04:28.751955+02:00",
+      "priority": 0.5
+    },
+    "document": {
+      "id": 89,
+      "text": "A seguito di un attacco informatico che sfrutta una vulnerabilità nota e non corretta, una società subisce una massiccia esfiltrazione di dati personali dei propri clienti. Si delinei il quadro delle responsabilità. In primo luogo, quali obblighi procedurali incombono sulla società titolare del trattamento ai sensi degli artt. 33 e 34 del Regolamento (UE) 2016/679 (GDPR), e quali sanzioni amministrative pecuniarie possono essere comminate dall'Autorità Garante secondo l'art. 83 del medesimo regolamento? In secondo luogo, si configuri la possibile responsabilità penale degli amministratori per il reato di trattamento illecito di dati (art. 167 del D.Lgs. 196/2003, \"Codice Privacy\") e per la mancata adozione di misure di sicurezza idonee, interpretate alla luce dell'art. 40, co. 2, c.p. Infine, si discuta la natura della responsabilità civile della società nei confronti dei clienti danneggiati, comparando l'azione specifica prevista dall'art. 82 del GDPR con l'azione basata sulla responsabilità per l'esercizio di attività pericolose (art. 2050 c.c.), specificando quale sia il rito processuale applicabile per tali controversie secondo l'art. 10 del D.Lgs. n. 150/2011.\r\n",
+      "created_at": "2025-09-30T17:04:28.728291+02:00"
+    },
+    "entities": [
+      {
+        "id": 601,
+        "document_id": 89,
+        "text": "artt. 33 e 34 del Regolamento (UE) 2016/679 (GDPR",
+        "label": "codice_procedura_civile",
+        "start_char": 323,
+        "end_char": 372,
+        "confidence": 0.9365682005882263,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 602,
+        "document_id": 89,
+        "text": "art. 83 del medesimo regolamento",
+        "label": "codice_procedura_penale",
+        "start_char": 475,
+        "end_char": 507,
+        "confidence": 0.93723064661026,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 603,
+        "document_id": 89,
+        "text": "art. 167 del D.Lgs. 196/2003",
+        "label": "decreto_legislativo",
+        "start_char": 642,
+        "end_char": 670,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 604,
+        "document_id": 89,
+        "text": "Codice Privacy",
+        "label": "codice_beni_culturali",
+        "start_char": 673,
+        "end_char": 687,
+        "confidence": 0.933738112449646,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 605,
+        "document_id": 89,
+        "text": "art. 40, co. 2, c.p",
+        "label": "codice_penale",
+        "start_char": 775,
+        "end_char": 794,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 606,
+        "document_id": 89,
+        "text": "art. 82 del GDPR",
+        "label": "codice_crisi_impresa",
+        "start_char": 950,
+        "end_char": 966,
+        "confidence": 0.9383440613746643,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 607,
+        "document_id": 89,
+        "text": "art. 2050 c.c",
+        "label": "codice_civile",
+        "start_char": 1048,
+        "end_char": 1061,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 608,
+        "document_id": 89,
+        "text": "art. 10 del D.L",
+        "label": "decreto_legge",
+        "start_char": 1152,
+        "end_char": 1167,
+        "confidence": 0.92,
+        "model": "specialized_pipeline"
+      }
+    ]
+  },
+  {
+    "task": {
+      "id": 13,
+      "document_id": 88,
+      "status": "completed",
+      "created_at": "2025-09-30T17:04:28.725833+02:00",
+      "priority": 0.5
+    },
+    "document": {
+      "id": 88,
+      "text": "Una lavoratrice viene licenziata poco dopo aver comunicato la propria intenzione di fruire di un congedo parentale. Si esamini la nullità di tale licenziamento, coordinando la tutela prevista dall'art. 18 della Legge n. 300/1970 (Statuto dei Lavoratori), come modificato dalla Legge n. 92/2012 e dal D.Lgs. n. 23/2015, con la normativa specifica contro la discriminazione di genere contenuta nel D.Lgs. n. 198/2006 (Codice delle pari opportunità tra uomo e donna). Si approfondisca in particolare il regime probatorio agevolato a favore della lavoratrice previsto dall'art. 40 del citato D.Lgs. 198/2006, mettendolo in relazione con i principi generali sulla presunzione (art. 2727 c.c.) e con il divieto di atti discriminatori sancito dall'art. 15 dello Statuto dei Lavoratori. Si consideri infine la legittimità costituzionale del differente regime sanzionatorio a seconda della data di assunzione, alla luce degli artt. 3 e 37 della Costituzione.\r\n",
+      "created_at": "2025-09-30T17:04:28.695391+02:00"
+    },
+    "entities": [
+      {
+        "id": 591,
+        "document_id": 88,
+        "text": "art. 18 della Legge n. 300/1970",
+        "label": "codice_crisi_impresa",
+        "start_char": 197,
+        "end_char": 228,
+        "confidence": 0.9359670877456665,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 592,
+        "document_id": 88,
+        "text": "Statuto dei Lavoratori",
+        "label": "codice_crisi_impresa",
+        "start_char": 230,
+        "end_char": 252,
+        "confidence": 0.9360673427581787,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 593,
+        "document_id": 88,
+        "text": "Legge n. 92/2012",
+        "label": "codice_crisi_impresa",
+        "start_char": 277,
+        "end_char": 293,
+        "confidence": 0.9372254014015198,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 594,
+        "document_id": 88,
+        "text": "D.Lgs. n. 23/2015",
+        "label": "decreto_legislativo",
+        "start_char": 300,
+        "end_char": 317,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 595,
+        "document_id": 88,
+        "text": "D.Lgs. n. 198/2006",
+        "label": "decreto_legislativo",
+        "start_char": 396,
+        "end_char": 414,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 596,
+        "document_id": 88,
+        "text": "Codice delle pari opportunità tra uomo e donna",
+        "label": "codice_procedura_civile",
+        "start_char": 416,
+        "end_char": 462,
+        "confidence": 0.9374508857727051,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 597,
+        "document_id": 88,
+        "text": "art. 40 del citato D.Lgs. 198/2006",
+        "label": "decreto_legislativo",
+        "start_char": 569,
+        "end_char": 603,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 598,
+        "document_id": 88,
+        "text": "art. 2727 c.c",
+        "label": "codice_civile",
+        "start_char": 672,
+        "end_char": 685,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 599,
+        "document_id": 88,
+        "text": "art. 15 dello Statuto dei Lavoratori",
+        "label": "codice_procedura_civile",
+        "start_char": 741,
+        "end_char": 777,
+        "confidence": 0.9356095194816589,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 600,
+        "document_id": 88,
+        "text": "artt. 3 e 37 della Costituzione",
+        "label": "costituzione",
+        "start_char": 917,
+        "end_char": 948,
+        "confidence": 0.9,
+        "model": "specialized_pipeline"
+      }
+    ]
+  },
+  {
+    "task": {
+      "id": 12,
+      "document_id": 87,
+      "status": "completed",
+      "created_at": "2025-09-30T17:04:28.692831+02:00",
+      "priority": 0.5
+    },
+    "document": {
+      "id": 87,
+      "text": "Un'azienda italiana titolare di un marchio registrato scopre che un'impresa concorrente importa da un paese extra-UE e commercializza in Italia prodotti recanti un marchio identico. Si illustrino i diversi strumenti di tutela cumulabili. Sul piano civilistico, si descrivano le azioni di contraffazione, inibitoria e risarcimento del danno previste dagli artt. 20, 124 e 125 del D.Lgs. n. 30/2005 (Codice della Proprietà Industriale), e come queste si affianchino all'azione per concorrenza sleale confusoria (art. 2598, n. 1, c.c.). Sul piano penale, si qualifichino le fattispecie di reato configurabili (artt. 473, 474 e 517-ter c.p.) e la conseguente responsabilità amministrativa dell'ente importatore ai sensi dell'art. 25-bis.1 del D.Lgs. 231/2001. Infine, si analizzi lo strumento preventivo della sorveglianza doganale, specificando come l'azienda titolare del diritto possa attivare il blocco delle merci contraffatte alla frontiera attraverso una domanda di intervento basata sul Regolamento (UE) n. 608/2013.\r\n",
+      "created_at": "2025-09-30T17:04:28.670817+02:00"
+    },
+    "entities": [
+      {
+        "id": 585,
+        "document_id": 87,
+        "text": "artt. 20, 124 e 125 del D.Lgs. n. 30/2005",
+        "label": "decreto_legislativo",
+        "start_char": 355,
+        "end_char": 396,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 586,
+        "document_id": 87,
+        "text": "Codice della Proprietà Industriale",
+        "label": "codice_crisi_impresa",
+        "start_char": 398,
+        "end_char": 432,
+        "confidence": 0.9350956678390503,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 587,
+        "document_id": 87,
+        "text": "art. 2598, n. 1, c.c",
+        "label": "codice_civile",
+        "start_char": 510,
+        "end_char": 530,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 588,
+        "document_id": 87,
+        "text": "artt. 473, 474 e 517-ter c.p",
+        "label": "codice_penale",
+        "start_char": 607,
+        "end_char": 635,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 589,
+        "document_id": 87,
+        "text": "art. 25-bis.1 del D.Lgs. 231/2001",
+        "label": "decreto_legislativo",
+        "start_char": 721,
+        "end_char": 754,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 590,
+        "document_id": 87,
+        "text": "Regolamento (UE) n. 608/2013",
+        "label": "legge_fallimentare",
+        "start_char": 991,
+        "end_char": 1019,
+        "confidence": 0.9351174235343933,
+        "model": "specialized_pipeline"
+      }
+    ]
+  },
+  {
+    "task": {
+      "id": 11,
+      "document_id": 86,
+      "status": "completed",
+      "created_at": "2025-09-30T17:04:28.668348+02:00",
+      "priority": 0.5
+    },
+    "document": {
+      "id": 86,
+      "text": "In una procedura di gara per l'affidamento di un contratto pubblico, l'impresa aggiudicataria ottiene illecitamente la vittoria grazie a collusioni e promesse corruttive, integrando il reato di turbata libertà degli incanti (art. 353 c.p.) e di traffico di influenze illecite (art. 346-bis c.p.). Si esamini l'impatto di tale condotta sulla procedura amministrativa, specificando le cause di esclusione previste dal nuovo Codice dei Contratti Pubblici (D.Lgs. n. 36/2023, in particolare gli artt. 94 e 95) e il ruolo di vigilanza dell'Autorità Nazionale Anticorruzione (ANAC) ai sensi della Legge n. 190/2012. Successivamente, si analizzi la posizione dell'impresa seconda classificata: quale azione può esperire dinanzi al Giudice Amministrativo per ottenere l'annullamento dell'aggiudicazione e il subentro nel contratto, secondo le regole speciali del rito appalti (art. 120 del D.Lgs. n. 104/2010, Codice del Processo Amministrativo)? Infine, si qualifichi il danno risarcibile in sede civile (o amministrativa con giurisdizione esclusiva), distinguendo tra il danno da perdita di chance di aggiudicazione e le spese sostenute per la partecipazione alla gara, in relazione agli artt. 1223 e 2043 del Codice Civile.\r\n",
+      "created_at": "2025-09-30T17:04:28.644599+02:00"
+    },
+    "entities": [
+      {
+        "id": 576,
+        "document_id": 86,
+        "text": "art. 353 c.p",
+        "label": "codice_penale",
+        "start_char": 225,
+        "end_char": 237,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 577,
+        "document_id": 86,
+        "text": "art. 346-bis c.p",
+        "label": "codice_penale",
+        "start_char": 277,
+        "end_char": 293,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 578,
+        "document_id": 86,
+        "text": "Codice dei Contratti Pubblici",
+        "label": "codice_procedura_civile",
+        "start_char": 422,
+        "end_char": 451,
+        "confidence": 0.9361777901649475,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 579,
+        "document_id": 86,
+        "text": "D.Lgs. n. 36/2023",
+        "label": "decreto_legislativo",
+        "start_char": 453,
+        "end_char": 470,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 581,
+        "document_id": 86,
+        "text": "Legge n. 190/2012",
+        "label": "codice_crisi_impresa",
+        "start_char": 591,
+        "end_char": 608,
+        "confidence": 0.9385193586349487,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 582,
+        "document_id": 86,
+        "text": "art. 120 del D.Lgs. n. 104/2010",
+        "label": "decreto_legislativo",
+        "start_char": 869,
+        "end_char": 900,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 583,
+        "document_id": 86,
+        "text": "Codice del Processo Amministrativo",
+        "label": "codice_procedura_civile",
+        "start_char": 902,
+        "end_char": 936,
+        "confidence": 0.9389755129814148,
+        "model": "specialized_pipeline"
+      }
+    ]
+  },
+  {
+    "task": {
+      "id": 10,
+      "document_id": 85,
+      "status": "completed",
+      "created_at": "2025-09-30T17:04:28.642080+02:00",
+      "priority": 0.5
+    },
+    "document": {
+      "id": 85,
+      "text": "Si ipotizzi una società per azioni che emette un prestito obbligazionario, redigendo un prospetto informativo approvato dalla CONSOB ai sensi del Regolamento (UE) 2017/1129 e dell'art. 94 del D.Lgs. n. 58/1998 (TUF), che si rivela successivamente falso. Tale falsità (rilevante ai sensi dell'art. 2621 c.c.) maschera una crisi che porta la società alla liquidazione giudiziale (ex D.Lgs. n. 14/2019, Codice della Crisi d'Impresa e dell'Insolvenza). Si analizzi come il curatore fallimentare possa esperire l'azione di responsabilità contro gli amministratori (art. 2394-bis c.c. e art. 378 CCII), coordinandola con la possibile azione individuale del singolo obbligazionista per responsabilità da prospetto (art. 94, co. 8, TUF). Inoltre, si discuta se il danno lamentato dagli obbligazionisti (il mancato rimborso) debba essere qualificato come danno-conseguenza del reato di false comunicazioni sociali, consentendo la costituzione di parte civile nel processo penale (art. 74 c.p.p.), e come la responsabilità solidale dell'intermediario che ha curato il collocamento (art. 94, co. 7, TUF) si intrecci con l'eventuale responsabilità penale per concorso nel reato (art. 110 c.p.).\r\n",
+      "created_at": "2025-09-30T17:04:28.613335+02:00"
+    },
+    "entities": [
+      {
+        "id": 567,
+        "document_id": 85,
+        "text": "Regolamento (UE) 2017/1129",
+        "label": "tub",
+        "start_char": 146,
+        "end_char": 172,
+        "confidence": 0.933827817440033,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 568,
+        "document_id": 85,
+        "text": "art. 94 del D.Lgs. n. 58/1998 (TUF",
+        "label": "decreto_legislativo",
+        "start_char": 180,
+        "end_char": 214,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 569,
+        "document_id": 85,
+        "text": "art. 2621 c.c",
+        "label": "codice_civile",
+        "start_char": 292,
+        "end_char": 305,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 570,
+        "document_id": 85,
+        "text": "D.Lgs. n. 14/2019",
+        "label": "decreto_legislativo",
+        "start_char": 381,
+        "end_char": 398,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 571,
+        "document_id": 85,
+        "text": "Codice della Crisi d'Impresa e dell'Insolvenza",
+        "label": "codice_crisi_impresa",
+        "start_char": 400,
+        "end_char": 446,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 572,
+        "document_id": 85,
+        "text": "art. 2394-bis c.c",
+        "label": "codice_civile",
+        "start_char": 560,
+        "end_char": 577,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 573,
+        "document_id": 85,
+        "text": "art. 378 CCII",
+        "label": "codice_crisi_impresa",
+        "start_char": 581,
+        "end_char": 594,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 574,
+        "document_id": 85,
+        "text": "art. 94, co. 8, TUF",
+        "label": "codice_procedura_civile",
+        "start_char": 708,
+        "end_char": 727,
+        "confidence": 0.9360252022743225,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 575,
+        "document_id": 85,
+        "text": "art. 74 c.p.p",
+        "label": "codice_procedura_penale",
+        "start_char": 971,
+        "end_char": 984,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      }
+    ]
+  },
+  {
+    "task": {
+      "id": 9,
+      "document_id": 84,
+      "status": "completed",
+      "created_at": "2025-09-30T17:04:28.610971+02:00",
+      "priority": 0.5
+    },
+    "document": {
+      "id": 84,
+      "text": "Un'opera d'arte di proprietà dello Stato, soggetta ai vincoli del D.Lgs. n. 42/2004 (Codice dei beni culturali e del paesaggio), viene illecitamente trafugata e venduta all'estero, finendo in una casa d'aste in un altro Stato membro dell'UE. Si esamini l'interazione tra la disciplina penale interna (art. 518-bis c.p., furto di beni culturali), l'azione di rivendicazione civilistica (art. 948 c.c.) e la sua imprescrittibilità per i beni del demanio culturale (art. 823 c.c.). Si analizzi poi come lo Stato italiano possa ottenere la restituzione del bene attivando la procedura prevista dalla Direttiva 2014/60/UE (recepita dal D.Lgs. n. 222/2017) e quali limiti incontri tale azione di restituzione di fronte a un eventuale terzo acquirente in buona fede, alla luce dei principi di diritto internazionale privato contenuti nella Legge n. 218/1995 e del principio possesso vale titolo (art. 1153 c.c.), la cui applicabilità ai beni culturali statali è esclusa dall'art. 9, co. 2, del Codice dei beni culturali.\r\n",
+      "created_at": "2025-09-30T17:04:28.583736+02:00"
+    },
+    "entities": [
+      {
+        "id": 558,
+        "document_id": 84,
+        "text": "D.Lgs. n. 42/2004",
+        "label": "decreto_legislativo",
+        "start_char": 66,
+        "end_char": 83,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 559,
+        "document_id": 84,
+        "text": "Codice dei beni culturali e del paesaggio",
+        "label": "codice_beni_culturali",
+        "start_char": 85,
+        "end_char": 126,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 560,
+        "document_id": 84,
+        "text": "art. 518-bis c.p",
+        "label": "codice_penale",
+        "start_char": 301,
+        "end_char": 317,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 561,
+        "document_id": 84,
+        "text": "art. 948 c.c",
+        "label": "codice_civile",
+        "start_char": 386,
+        "end_char": 398,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 562,
+        "document_id": 84,
+        "text": "art. 823 c.c",
+        "label": "codice_civile",
+        "start_char": 463,
+        "end_char": 475,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 564,
+        "document_id": 84,
+        "text": "D.Lgs. n. 222/2017",
+        "label": "decreto_legislativo",
+        "start_char": 631,
+        "end_char": 649,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 565,
+        "document_id": 84,
+        "text": "Legge n. 218/1995",
+        "label": "codice_beni_culturali",
+        "start_char": 833,
+        "end_char": 850,
+        "confidence": 0.9385590553283691,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 566,
+        "document_id": 84,
+        "text": "art. 1153 c.c",
+        "label": "codice_civile",
+        "start_char": 889,
+        "end_char": 902,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      }
+    ]
+  },
+  {
+    "task": {
+      "id": 8,
+      "document_id": 83,
+      "status": "completed",
+      "created_at": "2025-09-30T17:04:28.581117+02:00",
+      "priority": 0.5
+    },
+    "document": {
+      "id": 83,
+      "text": "Un paziente subisce gravi effetti collaterali, non indicati nel foglietto illustrativo, a seguito dell'assunzione di un farmaco regolarmente autorizzato dall'AIFA (Agenzia Italiana del Farmaco) secondo le procedure del D.Lgs. n. 219/2006. Si delinei la responsabilità del produttore ai sensi della disciplina sui prodotti difettosi (artt. 114 e ss. del D.Lgs. n. 206/2005, Codice del Consumo), specificando come il paziente possa provare il nesso causale tra l'assunzione del farmaco e il danno, applicando il criterio del \"più probabile che non\". Si discuta inoltre se il produttore possa invocare l'esimente dello \"stato delle conoscenze scientifiche e tecniche\" (art. 118, co. 1, lett. e), Codice del Consumo) e quale sia il ruolo della farmacovigilanza (Titolo IX del D.Lgs. 219/2006). Infine, si valuti se la condotta omissiva del medico che non ha informato adeguatamente il paziente dei rischi noti alla comunità scientifica possa configurare una concausa, rilevante ai fini della riduzione del risarcimento ex art. 1227 c.c.\r\n",
+      "created_at": "2025-09-30T17:04:28.559419+02:00"
+    },
+    "entities": [
+      {
+        "id": 552,
+        "document_id": 83,
+        "text": "D.Lgs. n. 219/2006",
+        "label": "decreto_legislativo",
+        "start_char": 219,
+        "end_char": 237,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 553,
+        "document_id": 83,
+        "text": "artt. 114 e ss. del D.Lgs. n. 206/2005",
+        "label": "decreto_legislativo",
+        "start_char": 333,
+        "end_char": 371,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 554,
+        "document_id": 83,
+        "text": "Codice del Consumo",
+        "label": "codice_beni_culturali",
+        "start_char": 373,
+        "end_char": 391,
+        "confidence": 0.9339268207550049,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 555,
+        "document_id": 83,
+        "text": "art. 118, co. 1, lett. e), Codice del Consumo",
+        "label": "codice_beni_culturali",
+        "start_char": 666,
+        "end_char": 711,
+        "confidence": 0.9368019700050354,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 556,
+        "document_id": 83,
+        "text": "Titolo IX del D.Lgs. 219/2006",
+        "label": "decreto_legislativo",
+        "start_char": 758,
+        "end_char": 787,
+        "confidence": 0.95,
+        "model": "specialized_pipeline"
+      },
+      {
+        "id": 557,
+        "document_id": 83,
+        "text": "art. 1227 c.c",
+        "label": "codice_civile",
+        "start_char": 1018,
+        "end_char": 1031,
+        "confidence": 0.99,
+        "model": "specialized_pipeline"
+      }
+    ]
+  }
+]
