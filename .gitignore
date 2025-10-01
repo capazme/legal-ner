@@ -20,3 +20,5 @@ legal-ner-api/data/.minio.sys/*
 .*
 *.bkp
 xl*
+legal-ner-api/data/.minio.sys
+*.json
