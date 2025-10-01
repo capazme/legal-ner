@@ -311,18 +311,19 @@ async def list_labels(
     db: Session = Depends(get_db),
     api_key: str = Depends(get_api_key)
 ):
-    """List all labels with usage statistics."""
+    """List all labels with usage statistics using centralized label mapping."""
     try:
-        log.info("Fetching label statistics")
+        log.info("Fetching label statistics from centralized label system")
 
-        config = get_active_learning_config()
+        # Import centralized label system
+        from app.core.label_mapping import get_all_labels
+
+        # Get standardized labels from centralized system
+        all_labels = get_all_labels()
         label_stats = []
 
-        for label in config.labels.label_list:
-            if label == "O":
-                continue  # Skip Outside tag
-
-            # Count entities with this label
+        for label in all_labels:
+            # Count entities with this label (exact match)
             count = db.query(models.Entity).filter(models.Entity.label == label).count()
 
             # Calculate accuracy (entities marked as correct)
@@ -342,16 +343,18 @@ async def list_labels(
 
             accuracy = correct / total if total > 0 else None
 
+            # Include ALL labels from centralized system (even with 0 count)
+            # This matches the annotation task interface behavior
             label_stats.append(LabelInfo(
                 label=label,
                 count=count,
                 accuracy=accuracy
             ))
 
-        # Sort by count descending
+        # Sort by count descending (labels with 0 count will be at the end)
         label_stats.sort(key=lambda x: x.count, reverse=True)
 
-        log.info("Label statistics fetched", total_labels=len(label_stats))
+        log.info("Label statistics fetched from centralized system", total_labels=len(label_stats))
 
         return label_stats
 

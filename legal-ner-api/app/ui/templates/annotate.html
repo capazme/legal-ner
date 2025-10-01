@@ -318,52 +318,6 @@
                 });
             });
 
-            // Gestione del salvataggio della nuova etichetta
-            document.getElementById('save-new-label-btn').addEventListener('click', function() {
-                const newLabelName = document.getElementById('new-label-name').value;
-                if (!newLabelName) {
-                    alert('Il nome dell\'etichetta non può essere vuoto.');
-                    return;
-                }
-
-                fetch('/api/v1/labels', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-API-Key': 'your-super-secret-api-key'
-                    },
-                    body: JSON.stringify({ name: newLabelName })
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(err => { throw new Error(err.detail || 'Failed to add label') });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.status === 'success') {
-                        // Add to our JS array
-                        if (!availableLabels.includes(data.new_label)) {
-                            availableLabels.push(data.new_label);
-                            availableLabels.sort();
-                        }
-                        
-                        // Refresh all label dropdowns
-                        refreshLabelDropdowns();
-                        
-                        // Hide the modal
-                        const addLabelModal = bootstrap.Modal.getInstance(document.getElementById('add-label-modal'));
-                        addLabelModal.hide();
-                        document.getElementById('new-label-name').value = '';
-                    } else {
-                        alert('Error: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    alert('Error: ' + error.message);
-                });
-            });
-
             // Salvataggio della nuova entità
             document.getElementById('save-new-entity').addEventListener('click', function() {
                 const text = document.getElementById('new-entity-text').value;

@@ -106,39 +106,47 @@ def add_label(
     api_key: str = Depends(get_api_key)
 ):
     """
-    Adds a new entity label to the system's configuration.
-    This is a critical operation and should be used with care.
+    Adds a new entity label to BOTH systems:
+    1. active_learning_config.yaml (BIO format for training)
+    2. Centralized label_mapping (standardized format for display/annotation/pipeline)
+
+    This ensures consistency across specialized_pipeline, admin panel, and annotation tasks.
     """
     log.info("Request to add new label", new_label=request.name)
-    
-    # Sanitize the new label name
-    new_label_core = request.name.strip().lower().replace(" ", "_")
-    if not new_label_core or not new_label_core.isidentifier():
+
+    # Sanitize - standardized format (uppercase with underscores)
+    new_label_standard = request.name.strip().upper().replace(" ", "_")
+    # BIO format (lowercase with underscores)
+    new_label_bio = request.name.strip().lower().replace(" ", "_")
+
+    if not new_label_bio or not new_label_bio.replace("_", "").isalnum():
         raise HTTPException(status_code=400, detail=f"Invalid label name: '{request.name}'. Use letters, numbers, and underscores.")
 
     try:
-        # Read the existing YAML file to preserve comments and structure
+        # ===================================================================
+        # STEP 1: Add to active_learning_config.yaml (for training - BIO format)
+        # ===================================================================
         with open(ACTIVE_LEARNING_CONFIG_PATH, 'r') as f:
             config_data = yaml.safe_load(f)
 
         labels_config = config_data.get("labels", {})
         label_list = labels_config.get("label_list", [])
         label2id = labels_config.get("label2id", {})
-        
-        # Check if label already exists
-        if f"B-{new_label_core}" in label_list:
-            log.warning("Attempted to add a duplicate label", label=new_label_core)
-            raise HTTPException(status_code=409, detail=f"Label '{new_label_core}' already exists.")
 
-        # Add the new label to the list
-        label_list.append(f"B-{new_label_core}")
-        label_list.append(f"I-{new_label_core}")
-        
+        # Check if label already exists in BIO format
+        if f"B-{new_label_bio}" in label_list:
+            log.warning("Attempted to add a duplicate label", label=new_label_bio)
+            raise HTTPException(status_code=409, detail=f"Label '{new_label_bio}' already exists.")
+
+        # Add the new label to the list (BIO format)
+        label_list.append(f"B-{new_label_bio}")
+        label_list.append(f"I-{new_label_bio}")
+
         # Update the ID mappings
         max_id = max(label2id.values()) if label2id else 0
-        label2id[f"B-{new_label_core}"] = max_id + 1
-        label2id[f"I-{new_label_core}"] = max_id + 2
-        
+        label2id[f"B-{new_label_bio}"] = max_id + 1
+        label2id[f"I-{new_label_bio}"] = max_id + 2
+
         # Rebuild id2label map for consistency
         id2label = {v: k for k, v in label2id.items()}
         labels_config["id2label"] = id2label
@@ -149,8 +157,30 @@ def add_label(
         with open(ACTIVE_LEARNING_CONFIG_PATH, 'w') as f:
             yaml.dump(config_data, f, sort_keys=False, default_flow_style=False, allow_unicode=True)
 
-        log.info("Successfully added new label", new_label=new_label_core)
-        return {"status": "success", "new_label": new_label_core}
+        log.info("Added label to active_learning_config.yaml", label_bio=new_label_bio)
+
+        # ===================================================================
+        # STEP 2: Add to centralized label_mapping (standardized format)
+        # ===================================================================
+        # This ensures the label is available in:
+        # - specialized_pipeline (when it classifies entities)
+        # - annotation UI (when users select labels)
+        # - admin panel (when viewing label statistics)
+        update_label_mapping(
+            act_type=new_label_bio,          # Internal act_type (lowercase)
+            label=new_label_standard,        # Display label (uppercase)
+            category="Custom"                # Custom category for user-added labels
+        )
+
+        log.info("Added label to centralized label_mapping", label_standard=new_label_standard)
+
+        # Return standardized format (what users will see)
+        return {
+            "status": "success",
+            "new_label": new_label_standard,
+            "bio_labels": [f"B-{new_label_bio}", f"I-{new_label_bio}"],
+            "message": f"Label '{new_label_standard}' added to both systems"
+        }
 
     except HTTPException:
         raise
