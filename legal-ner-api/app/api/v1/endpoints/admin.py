@@ -63,6 +63,11 @@ class SystemHealthResponse(BaseModel):
     memory_usage_percent: float
     cpu_usage_percent: float
 
+class ReapplyNERRequest(BaseModel):
+    task_ids: Optional[List[int]] = None  # None = all tasks
+    model_version: Optional[str] = None  # None = use legacy pipeline
+    replace_existing: bool = True  # Replace existing entities or add new ones
+
 # ============================================================================
 # DATABASE MANAGEMENT
 # ============================================================================
@@ -279,8 +284,11 @@ async def vacuum_database(
     try:
         log.info("Running database vacuum")
 
-        db.execute(text("VACUUM ANALYZE"))
-        db.commit()
+        # VACUUM must run outside transaction
+        db.commit()  # Commit any pending transaction
+        connection = db.connection()
+        connection.execution_options(isolation_level="AUTOCOMMIT")
+        connection.execute(text("VACUUM ANALYZE"))
 
         log.info("Database vacuum completed")
 
@@ -352,53 +360,8 @@ async def list_labels(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/labels/add")
-async def add_label(
-    label: str,
-    api_key: str = Depends(get_api_key)
-):
-    """Add new label to configuration."""
-    try:
-        log.info("Adding new label", label=label)
-
-        # Validate IOB format
-        if not (label.startswith("B-") or label.startswith("I-") or label == "O"):
-            raise HTTPException(
-                status_code=400,
-                detail="Label must follow IOB format (B-*, I-*, or O)"
-            )
-
-        # Load config
-        config_path = get_active_learning_config().__dict__
-        config_file = "config/active_learning_config.yaml"
-
-        with open(config_file, 'r', encoding='utf-8') as f:
-            config_data = yaml.safe_load(f)
-
-        # Check if label already exists
-        if label in config_data['labels']['label_list']:
-            raise HTTPException(status_code=400, detail=f"Label {label} already exists")
-
-        # Add label
-        config_data['labels']['label_list'].append(label)
-
-        # Save config
-        with open(config_file, 'w', encoding='utf-8') as f:
-            yaml.dump(config_data, f, default_flow_style=False, allow_unicode=True)
-
-        log.info("Label added successfully", label=label)
-
-        return {
-            "status": "success",
-            "message": f"Label {label} added",
-            "label": label
-        }
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        log.error("Error adding label", error=str(e))
-        raise HTTPException(status_code=500, detail=str(e))
+# NOTE: Label adding is handled by /api/v1/labels endpoint (labels.py)
+# This ensures consistency with the annotation UI
 
 
 # ============================================================================
@@ -693,3 +656,196 @@ async def delete_dataset(
         db.rollback()
         log.error("Error deleting dataset", error=str(e))
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# NER REAPPLICATION
+# ============================================================================
+
+@router.post("/reapply-ner")
+async def reapply_ner(
+    request: ReapplyNERRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    api_key: str = Depends(get_api_key)
+):
+    """
+    Reapply NER to tasks using legacy pipeline or a trained model.
+
+    - task_ids: List of task IDs to reprocess (None = all pending tasks)
+    - model_version: Model version to use (None = legacy pipeline)
+    - replace_existing: Delete existing entities and create new ones
+    """
+    try:
+        log.info("Reapplying NER",
+                 task_count=len(request.task_ids) if request.task_ids else "all",
+                 model_version=request.model_version or "legacy",
+                 replace_existing=request.replace_existing)
+
+        # Get tasks to process
+        if request.task_ids:
+            tasks = db.query(models.AnnotationTask).filter(
+                models.AnnotationTask.id.in_(request.task_ids)
+            ).all()
+        else:
+            # Get all pending tasks
+            tasks = db.query(models.AnnotationTask).filter(
+                models.AnnotationTask.status == "pending"
+            ).all()
+
+        if not tasks:
+            raise HTTPException(status_code=404, detail="No tasks found to process")
+
+        # Load pipeline or model
+        if request.model_version:
+            # Use trained model
+            model = db.query(models.TrainedModel).filter(
+                models.TrainedModel.version == request.model_version
+            ).first()
+
+            if not model:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Model version {request.model_version} not found"
+                )
+
+            # Activate model temporarily
+            ModelManager.activate_model(db, request.model_version)
+            pipeline = ModelManager.get_pipeline()
+            log.info("Using trained model", version=request.model_version)
+        else:
+            # Use legacy rule-based pipeline - usa la stessa pipeline di /predict
+            from app.core.dependencies import get_legal_pipeline
+            pipeline = get_legal_pipeline()
+            log.info("Using specialized pipeline (Italian Legal NER) from get_legal_pipeline")
+
+        # Process all tasks synchronously for now to debug
+        if tasks:
+            log.info("Processing tasks synchronously for debugging")
+            try:
+                # Crea una nuova sessione per il processing sincrono
+                from app.database.database import SessionLocal
+                processing_db = SessionLocal()
+                await _reapply_ner_background(tasks, pipeline, request.replace_existing, processing_db)
+                processing_db.close()
+                log.info("All tasks processed successfully")
+            except Exception as e:
+                log.error("Error processing tasks", error=str(e))
+                raise HTTPException(status_code=500, detail=f"Error processing tasks: {str(e)}")
+
+        return {
+            "status": "success",
+            "message": f"Started NER reapplication for {len(tasks)} tasks",
+            "task_count": len(tasks),
+            "model": request.model_version or "specialized_pipeline",
+            "processing": "background"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("Error reapplying NER", error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def _reapply_ner_background(
+    tasks: List[models.AnnotationTask],
+    pipeline,
+    replace_existing: bool,
+    db: Session
+):
+    """Background task to reapply NER."""
+    log.info("Starting background NER reapplication", task_count=len(tasks))
+
+    processed = 0
+    errors = 0
+
+    for task in tasks:
+        try:
+            # Get document
+            document = db.query(models.Document).filter(
+                models.Document.id == task.document_id
+            ).first()
+
+            if not document:
+                log.warning("Document not found for task", task_id=task.id)
+                continue
+
+            # Delete existing entities if requested
+            if replace_existing:
+                db.query(models.Entity).filter(
+                    models.Entity.document_id == document.id
+                ).delete()
+                log.info("Deleted existing entities", document_id=document.id)
+
+            # Run NER pipeline
+            entities = await pipeline.extract_legal_sources(document.text)
+            log.info("Pipeline extracted entities", entity_count=len(entities), entities_preview=entities[:2] if entities else "none")
+
+            # Save new entities
+            entities_saved = 0
+
+            # Usa la mappatura centralizzata
+            from app.core.label_mapping import act_type_to_label as convert_act_type_to_label
+
+            for entity_data in entities:
+                act_type = entity_data.get("act_type", "unknown")
+                label = convert_act_type_to_label(act_type)
+
+                # Converti valori a tipi Python nativi per evitare errori con PostgreSQL
+                start_char_val = entity_data.get("start_char", 0)
+                end_char_val = entity_data.get("end_char", 0)
+                confidence_val = entity_data.get("confidence", 0.0)
+
+                # Converti tensori/numpy a int/float Python nativi
+                import torch
+                import numpy as np
+
+                if isinstance(start_char_val, (torch.Tensor, np.integer)):
+                    start_char_val = int(start_char_val.item() if hasattr(start_char_val, 'item') else start_char_val)
+                else:
+                    start_char_val = int(start_char_val)
+
+                if isinstance(end_char_val, (torch.Tensor, np.integer)):
+                    end_char_val = int(end_char_val.item() if hasattr(end_char_val, 'item') else end_char_val)
+                else:
+                    end_char_val = int(end_char_val)
+
+                if isinstance(confidence_val, (torch.Tensor, np.floating, np.integer)):
+                    confidence_val = float(confidence_val.item() if hasattr(confidence_val, 'item') else confidence_val)
+                else:
+                    confidence_val = float(confidence_val)
+
+                log.debug("Saving entity", text=entity_data.get("text"), act_type=act_type, label=label, confidence=confidence_val)
+                entity = models.Entity(
+                    document_id=document.id,
+                    text=entity_data.get("text", ""),
+                    label=label,
+                    start_char=start_char_val,
+                    end_char=end_char_val,
+                    confidence=confidence_val,
+                    model="specialized_pipeline"
+                )
+                db.add(entity)
+                entities_saved += 1
+            
+            log.info("Entities saved to database", entities_saved=entities_saved)
+
+            db.commit()
+            processed += 1
+
+            log.info("Task reprocessed successfully",
+                     task_id=task.id,
+                     entities_found=len(entities))
+
+        except Exception as e:
+            db.rollback()
+            errors += 1
+            log.error("Error reprocessing task",
+                     task_id=task.id,
+                     error=str(e))
+
+    log.info("NER reapplication completed",
+             processed=processed,
+             errors=errors,
+             total=len(tasks))

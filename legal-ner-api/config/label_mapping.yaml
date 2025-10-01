@@ -1,0 +1,88 @@
+act_type_to_label:
+  decreto_legislativo: D.LGS
+  decreto_legge: D.L
+  decreto_presidente_repubblica: D.P.R
+  decreto_ministeriale: D.M
+  decreto_presidente_consiglio: D.P.C.M
+  dpcm: D.P.C.M
+  decreto_dirigenziale: D.D
+  decreto_assessore_regionale: D.A.R
+  legge: LEGGE
+  legge_costituzionale: LEGGE_COST
+  legge_regionale: L.R
+  legge_provinciale: L.P
+  legge_fallimentare: LEGGE_FALLIMENTARE
+  costituzione: COSTITUZIONE
+  codice_civile: CODICE_CIVILE
+  codice_penale: CODICE_PENALE
+  codice_procedura_civile: CODICE_PROCEDURA_CIVILE
+  codice_procedura_penale: CODICE_PROCEDURA_PENALE
+  codice_crisi_impresa: CODICE_CRISI_IMPRESA
+  codice_beni_culturali: CODICE_BENI_CULTURALI
+  generic_codes: CODICE
+  testo_unico: T.U
+  testo_unico_bancario: T.U.B
+  testo_unico_enti_locali: T.U.E.L
+  testo_unico_finanza: T.U.F
+  testo_unico_lavoro_pubblica_sicurezza: T.U.L.P.S
+  testo_unico_pubblica_sicurezza: T.U.P.S
+  direttiva_ue: DIR_UE
+  regolamento_ue: REG_UE
+  decisione_ue: DEC_UE
+  raccomandazione_ue: RAC_UE
+  trattato: TRATTATO
+  trattato_ue: TRATTATO_UE
+  trattato_funzionamento_ue: TFUE
+  convenzione_europea_diritti: CEDU
+  convention: CONVENTION
+  circolare: CIRCOLARE
+  institution: ISTITUZIONE
+  unknown: UNKNOWN
+  fonte non identificata: UNKNOWN
+label_categories:
+  Decreti:
+  - D.LGS
+  - D.L
+  - D.P.R
+  - D.M
+  - D.P.C.M
+  - D.D
+  - D.A.R
+  Leggi:
+  - LEGGE
+  - LEGGE_COST
+  - L.R
+  - L.P
+  - LEGGE_FALLIMENTARE
+  Codici:
+  - CODICE_CIVILE
+  - CODICE_PENALE
+  - CODICE_PROCEDURA_CIVILE
+  - CODICE_PROCEDURA_PENALE
+  - CODICE_CRISI_IMPRESA
+  - CODICE_BENI_CULTURALI
+  - CODICE
+  Testi Unici:
+  - T.U
+  - T.U.B
+  - T.U.E.L
+  - T.U.F
+  - T.U.L.P.S
+  - T.U.P.S
+  Normativa UE:
+  - DIR_UE
+  - REG_UE
+  - DEC_UE
+  - RAC_UE
+  - TRATTATO_UE
+  - TFUE
+  Trattati:
+  - TRATTATO
+  - CONVENTION
+  - CEDU
+  Costituzione:
+  - COSTITUZIONE
+  Altro:
+  - CIRCOLARE
+  - ISTITUZIONE
+  - UNKNOWN

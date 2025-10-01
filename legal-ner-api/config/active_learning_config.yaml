@@ -1,213 +1,114 @@
-# ===================================
-# ACTIVE LEARNING CONFIGURATION
-# ===================================
-# Configurazione per il sistema di active learning e fine-tuning
-
-# --- Storage Paths ---
-paths:
-  # Directory base per modelli fine-tunati
-  models_base_dir: "models/active_learning"
-
-  # Directory per log di training
-  training_logs_dir: "logs/training"
-
-  # Directory per dataset temporanei
-  temp_datasets_dir: "temp/datasets"
-
-# --- MinIO Configuration ---
+active_learning:
+  default_batch_size: 10
+  fine_tuned_confidence_threshold: 0.7
+  high_confidence_threshold: 0.9
+  selection_strategy: uncertainty
+  uncertainty_threshold: 0.7
+  use_fine_tuned_if_available: true
+dataset:
+  max_sequence_length: 512
+  min_document_length: 20
+  min_entities_per_document: 1
+  require_validation: true
+feedback_loop:
+  auto_training_threshold: 100
+  check_interval_seconds: 3600
+  enabled: true
+  primary_evaluation_metric: f1_score
+labels:
+  label_list:
+  - O
+  - B-codice_civile
+  - I-codice_civile
+  - B-codice_penale
+  - I-codice_penale
+  - B-codice_procedura_civile
+  - I-codice_procedura_civile
+  - B-codice_procedura_penale
+  - I-codice_procedura_penale
+  - B-codice_beni_culturali
+  - I-codice_beni_culturali
+  - B-decreto_legislativo
+  - I-decreto_legislativo
+  - B-decreto_legge
+  - I-decreto_legge
+  - B-decreto_presidente_repubblica
+  - I-decreto_presidente_repubblica
+  - B-decreto_ministeriale
+  - I-decreto_ministeriale
+  - B-dpcm
+  - I-dpcm
+  - B-legge
+  - I-legge
+  - B-legge_costituzionale
+  - I-legge_costituzionale
+  - B-costituzione
+  - I-costituzione
+  - B-testo_unico
+  - I-testo_unico
+  - B-regolamento_ue
+  - I-regolamento_ue
+  - B-direttiva_ue
+  - I-direttiva_ue
+  - B-trattato_ue
+  - I-trattato_ue
+  - B-convenzione_europea_diritti
+  - I-convenzione_europea_diritti
+  - B-codice
+  - I-codice
+logging:
+  backup_count: 5
+  enabled: true
+  format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  level: INFO
+  log_file_path: logs/active_learning.log
+  log_to_console: true
+  log_to_file: true
+  max_bytes: 10485760
 minio:
-  endpoint: "localhost:9000"
-  access_key: "minioadmin"
-  secret_key: "minioadmin"
-  bucket: "legal-ner-datasets"
-  secure: false  # Use true for HTTPS
-
-# --- Training Hyperparameters ---
+  access_key: minioadmin
+  bucket: legal-ner-datasets
+  endpoint: localhost:9000
+  secret_key: minioadmin
+  secure: false
+monitoring:
+  alert_if_eval_loss_above: 1.0
+  alert_if_f1_below: 0.8
+  track_metrics:
+  - precision
+  - recall
+  - f1
+  - loss
+paths:
+  models_base_dir: models/active_learning
+  temp_datasets_dir: temp/datasets
+  training_logs_dir: logs/training
 training:
-  # Base model per fine-tuning
-  # Options:
-  # - "dlicari/Italian-Legal-BERT" - Specialized for Italian legal texts (RECOMMENDED for legal NER)
-  # - "DeepMount00/Italian_NER_XXL_v2" - Pre-trained Italian NER (general purpose)
-  # - "dbmdz/bert-base-italian-xxl-cased" - General purpose Italian BERT
-  base_model: "dlicari/Italian-Legal-BERT"
-
-  # Training parameters
+  base_model: DeepMount00/Italian_NER_XXL_v2
+  eval_split: 0.2
+  evaluation_strategy: epoch
+  learning_rate: 2.0e-05
+  load_best_model_at_end: true
+  metric_for_best_model: eval_loss
+  min_training_samples: 50
   num_train_epochs: 5
-  per_device_train_batch_size: 8
   per_device_eval_batch_size: 8
-  learning_rate: 2.0e-5
+  per_device_train_batch_size: 8
+  save_strategy: epoch
+  save_total_limit: 2
   warmup_steps: 100
   weight_decay: 0.01
-
-  # Evaluation strategy
-  evaluation_strategy: "epoch"
-  save_strategy: "epoch"
-  load_best_model_at_end: true
-  metric_for_best_model: "eval_loss"
-  save_total_limit: 2
-
-  # Dataset split
-  eval_split: 0.2  # 20% for evaluation
-
-  # Minimum samples required for training
-  min_training_samples: 50
-
-# --- Active Learning Strategy ---
-active_learning:
-  # Strategy for sample selection
-  selection_strategy: "uncertainty"  # Options: uncertainty, random, margin
-
-  # Batch size for annotation tasks
-  default_batch_size: 10
-
-  # Confidence thresholds
-  uncertainty_threshold: 0.7  # Below this, sample is uncertain
-  high_confidence_threshold: 0.9  # Above this, auto-validate (future feature)
-
-  # Model switching
-  use_fine_tuned_if_available: true
-  fine_tuned_confidence_threshold: 0.7  # Fallback to rules if below
-
-# --- Automated Feedback Loop ---
-feedback_loop:
-  # Enable or disable the automated loop
-  enabled: true
-
-  # Number of new validated annotations required to trigger a new training run
-  auto_training_threshold: 100
-
-  # Interval in seconds to check for new annotations
-  check_interval_seconds: 3600  # 1 hour
-
-  # The primary metric to decide if a new model is "better" than the active one
-  primary_evaluation_metric: "f1_score" # Options: accuracy, f1_score, precision, recall
-
-# --- Label Configuration ---
-labels:
-  # Complete label set for Italian legal entities
-  # Format: IOB (Inside-Outside-Beginning)
-  label_list:
-    - "O"  # Outside any entity
-
-    # Codici
-    - "B-codice_civile"
-    - "I-codice_civile"
-    - "B-codice_penale"
-    - "I-codice_penale"
-    - "B-codice_procedura_civile"
-    - "I-codice_procedura_civile"
-    - "B-codice_procedura_penale"
-    - "I-codice_procedura_penale"
-    - "B-codice_beni_culturali"
-    - "I-codice_beni_culturali"
-
-    # Decreti
-    - "B-decreto_legislativo"
-    - "I-decreto_legislativo"
-    - "B-decreto_legge"
-    - "I-decreto_legge"
-    - "B-decreto_presidente_repubblica"
-    - "I-decreto_presidente_repubblica"
-    - "B-decreto_ministeriale"
-    - "I-decreto_ministeriale"
-    - "B-dpcm"
-    - "I-dpcm"
-
-    # Leggi
-    - "B-legge"
-    - "I-legge"
-    - "B-legge_costituzionale"
-    - "I-legge_costituzionale"
-
-    # Costituzione
-    - "B-costituzione"
-    - "I-costituzione"
-
-    # Testi Unici
-    - "B-testo_unico"
-    - "I-testo_unico"
-
-    # Normativa UE
-    - "B-regolamento_ue"
-    - "I-regolamento_ue"
-    - "B-direttiva_ue"
-    - "I-direttiva_ue"
-    - "B-trattato_ue"
-    - "I-trattato_ue"
-    - "B-convenzione_europea_diritti"
-    - "I-convenzione_europea_diritti"
-
-# --- Logging Configuration ---
-logging:
-  # Enable detailed logging
-  enabled: true
-
-  # Log level (DEBUG, INFO, WARNING, ERROR)
-  level: "INFO"
-
-  # Log format
-  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-
-  # Log to file
-  log_to_file: true
-  log_file_path: "logs/active_learning.log"
-
-  # Log to console
-  log_to_console: true
-
-  # Log rotation
-  max_bytes: 10485760  # 10MB
-  backup_count: 5
-
-# --- Dataset Building ---
-dataset:
-  # IOB tokenization
-  max_sequence_length: 512
-
-  # Quality filters
-  min_entities_per_document: 1
-  min_document_length: 20  # characters
-
-  # Include only validated annotations
-  require_validation: true
-
-# --- Model Versioning ---
-versioning:
-  # Naming convention: {prefix}_{timestamp}
-  version_prefix: "active_learning"
-  timestamp_format: "%Y%m%d_%H%M%S"
-
-  # Keep best N models
-  keep_best_n_models: 3
-
-  # Metadata to save with each model
-  save_metadata:
-    - "training_samples"
-    - "eval_loss"
-    - "dataset_version"
-    - "base_model"
-    - "training_duration"
-
-# --- Performance Monitoring ---
-monitoring:
-  # Track metrics
-  track_metrics:
-    - "precision"
-    - "recall"
-    - "f1"
-    - "loss"
-
-  # Alerting thresholds
-  alert_if_eval_loss_above: 1.0
-  alert_if_f1_below: 0.80
-
-# --- UI Configuration ---
 ui:
-  # Flask UI port
-  port: 5000
-
-  # Maximum entities to show per page
-  entities_per_page: 20
-
-  # Annotation timeout (minutes)
   annotation_timeout: 30
+  entities_per_page: 20
+  port: 5000
+versioning:
+  keep_best_n_models: 3
+  save_metadata:
+  - training_samples
+  - eval_loss
+  - dataset_version
+  - base_model
+  - training_duration
+  timestamp_format: '%Y%m%d_%H%M%S'
+  version_prefix: active_learning

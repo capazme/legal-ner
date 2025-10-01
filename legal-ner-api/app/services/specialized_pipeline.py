@@ -26,7 +26,7 @@ import numpy as np
 import json
 from pathlib import Path
 from datetime import datetime
-
+import os
 from app.core.config_loader import get_pipeline_config, PipelineConfig
 
 log = structlog.get_logger()
@@ -215,6 +215,12 @@ class EntityDetector:
         )
         self._log(log_file_path, "raw_entities_extracted", count=len(raw_entities), entities=[asdict(e) for e in raw_entities])
 
+        # FALLBACK: Se il modello BERT non trova entità, usa rilevamento rule-based
+        if not raw_entities:
+            self._log(log_file_path, "no_bert_entities_found", message="Using rule-based fallback detection")
+            raw_entities = self._detect_candidates_rule_based(text)
+            self._log(log_file_path, "rule_based_candidates_found", count=len(raw_entities), entities=[asdict(e) for e in raw_entities])
+
         # Filtra solo candidati legali potenziali
         legal_candidates = []
         for entity in raw_entities:
@@ -230,12 +236,94 @@ class EntityDetector:
 
         return cleaned_candidates
 
-    def _is_potential_legal_reference(self, entity_text: str, full_text: str) -> bool:
+    def _detect_candidates_rule_based(self, text: str) -> List[TextSpan]:
+        """
+        Fallback rule-based per trovare candidati legali quando il modello BERT non trova nulla.
+        Usa pattern regex per identificare riferimenti normativi comuni.
+        """
+        candidates = []
+        
+        # Pattern per riferimenti normativi italiani
+        patterns = [
+            # Articoli con numeri: art. 123, articolo 45, art 7-bis
+            r'\bart\.?\s*\d+[a-z]*(?:-[a-z]+)?\b',
+            r'\barticolo\s+\d+[a-z]*(?:-[a-z]+)?\b',
+            
+            # Codici: c.c., c.p., c.p.c., c.p.p.
+            r'\bc\.\s*c\.\b',
+            r'\bc\.\s*p\.\b', 
+            r'\bc\.\s*p\.\s*c\.\b',
+            r'\bc\.\s*p\.\s*p\.\b',
+            
+            # Decreti: d.lgs., d.l., d.p.r., d.m.
+            r'\bd\.\s*l\.\s*g\.?\s*s\.?\b',
+            r'\bd\.\s*l\.\b',
+            r'\bd\.\s*p\.\s*r\.\b',
+            r'\bd\.\s*m\.\b',
+            r'\bd\.\s*p\.\s*c\.\s*m\.\b',
+            
+            # Leggi generiche: legge, legge costituzionale
+            r'\blegge\s+\d+(?:\s+del\s+\d{4})?\b',
+            r'\blegge\s+costituzionale\b',
+            
+            # Testi unici: t.u., t.u.b., t.u.e.l.
+            r'\bt\.\s*u\.\b',
+            r'\bt\.\s*u\.\s*b\.\b',
+            r'\bt\.\s*u\.\s*e\.\s*l\.\b',
+            r'\bt\.\s*u\.\s*f\.\b',
+            r'\bt\.\s*u\.\s*l\.\s*p\.\s*s\.\b',
+            
+            # Riferimenti a normative europee
+            r'\bdirettiva\s+(?:europea|ue|ce)\b',
+            r'\bregolamento\s+(?:europeo|ue|ce)\b',
+            r'\btrattato\s+(?:europeo|ue|ce)\b',
+            
+            # Costituzione
+            r'\bcostituzione\b',
+            
+            # Pattern numerici per decreti: D.Lgs. 123/2023, D.P.R. 45/2021
+            r'\bd\.?\s*l\.?\s*g\.?\s*s\.?\s*\d+\s*/\s*\d{4}\b',
+            r'\bd\.?\s*p\.?\s*r\.?\s*\d+\s*/\s*\d{4}\b',
+            r'\bd\.?\s*l\.?\s*\d+\s*/\s*\d{4}\b',
+            r'\bd\.?\s*m\.?\s*\d+\s*/\s*\d{4}\b',
+        ]
+        
+        for pattern in patterns:
+            matches = re.finditer(pattern, text, re.IGNORECASE)
+            for match in matches:
+                candidates.append(TextSpan(
+                    text=match.group(),
+                    start_char=match.start(),
+                    end_char=match.end(),
+                    initial_confidence=0.7  # Confidence base per rule-based
+                ))
+        
+        # Rimuovi duplicati (sovrapposizioni)
+        unique_candidates = []
+        for candidate in candidates:
+            is_duplicate = False
+            for existing in unique_candidates:
+                if (candidate.start_char >= existing.start_char and 
+                    candidate.end_char <= existing.end_char):
+                    is_duplicate = True
+                    break
+                if (existing.start_char >= candidate.start_char and 
+                    existing.end_char <= candidate.end_char):
+                    # Il nuovo candidato contiene quello esistente, sostituiscilo
+                    unique_candidates.remove(existing)
+                    break
+            
+            if not is_duplicate:
+                unique_candidates.append(candidate)
+        
+        return unique_candidates
+
+    def _is_potential_legal_reference(self, text: str, full_text: str) -> bool:
         """
         Determina se un'entità potrebbe essere un riferimento normativo.
         Usa la mappatura NORMATTIVA configurabile + contesto specifico.
         """
-        entity_lower = entity_text.lower().strip()
+        entity_lower = text.lower().strip()
 
         # 1. Verifica diretta nella mappatura NORMATTIVA
         for abbrev in self.normattiva_mapping.keys():
@@ -253,7 +341,7 @@ class EntityDetector:
         if entity_pos != -1:
             # Finestra di contesto esteso
             start_context = max(0, entity_pos - self.config.context.extended_context)
-            end_context = min(len(full_text), entity_pos + len(entity_text) + self.config.context.extended_context)
+            end_context = min(len(full_text), entity_pos + len(text) + self.config.context.extended_context)
             context = full_text[start_context:end_context].lower()
 
             # Pattern contestuali dalla configurazione
@@ -263,11 +351,11 @@ class EntityDetector:
                     return True
 
         # 4. Pattern numerici isolati con contesto legale
-        if re.match(r'^\d+(?:/\d{4})?$', entity_text.strip()):
+        if re.match(r'^\d+(?:/\d{4})?$', text.strip()):
             if entity_pos != -1:
                 immediate_context = full_text[
                     max(0, entity_pos - self.config.context.immediate_context):
-                    min(len(full_text), entity_pos + len(entity_text) + self.config.context.immediate_context)
+                    min(len(full_text), entity_pos + len(text) + self.config.context.immediate_context)
                 ]
 
                 for word in self.config.legal_context_words:
@@ -281,8 +369,9 @@ class EntityDetector:
         Espande i confini dell'entità per catturare il riferimento normativo completo.
         Usa pattern configurabili per espansione.
         """
-        start_char = entity.start_char
-        end_char = entity.end_char
+        # Converti a int Python nativi se necessario
+        start_char = int(entity.start_char) if isinstance(entity.start_char, (torch.Tensor, np.integer)) else entity.start_char
+        end_char = int(entity.end_char) if isinstance(entity.end_char, (torch.Tensor, np.integer)) else entity.end_char
 
         # Espandi a sinistra per catturare tipo di atto
         window_start = max(0, start_char - self.config.context.left_window)
@@ -329,7 +418,7 @@ class EntityDetector:
             text=expanded_text,
             start_char=start_char,
             end_char=end_char,
-            initial_confidence=entity.initial_confidence,
+            initial_confidence=float(entity.initial_confidence) if isinstance(entity.initial_confidence, (np.floating, np.integer)) else entity.initial_confidence,
             context_window=full_text[
                 max(0, start_char - self.config.context.context_window):
                 min(len(full_text), end_char + self.config.context.context_window)
@@ -347,6 +436,17 @@ class EntityDetector:
 
             start_offset, end_offset = offset_mapping[i]
 
+            # Converti tensori a int Python nativi
+            if isinstance(start_offset, torch.Tensor):
+                start_offset = int(start_offset.item())
+            else:
+                start_offset = int(start_offset)
+
+            if isinstance(end_offset, torch.Tensor):
+                end_offset = int(end_offset.item())
+            else:
+                end_offset = int(end_offset)
+
             # Skip token speciali
             if start_offset == end_offset:
                 continue
@@ -354,6 +454,9 @@ class EntityDetector:
             # Converti ID token in label
             label = self.model.config.id2label.get(token_id.item(), 'O')
             confidence = torch.max(token_probs).item()
+
+            # Converti confidence a float Python nativo
+            confidence = float(confidence)
 
             # Gestione BIO encoding
             if label.startswith('B-'):
@@ -372,7 +475,7 @@ class EntityDetector:
                 # Estendi entità corrente
                 current_entity.text = text[current_entity.start_char:end_offset]
                 current_entity.end_char = end_offset
-                current_entity.initial_confidence = (current_entity.initial_confidence + confidence) / 2
+                current_entity.initial_confidence = float((current_entity.initial_confidence + confidence) / 2)
             else:
                 # O tag - fine entità
                 if current_entity:
@@ -990,16 +1093,26 @@ class LegalSourceExtractionPipeline:
         """
         Estrae fonti normative usando la pipeline specializzata configurabile.
         """
+        log.info("Starting legal source extraction", text_length=len(text))
+        
         # Stage 1: Detect candidates
         candidates = self.entity_detector.detect_candidates(text, log_file_path)
+        log.info("Entity detection completed", candidates_found=len(candidates))
         
         # Stage 2: Classify legal types + filter spurious entities
         classified_entities = []
         for candidate in candidates:
             if self._is_spurious_entity(candidate):
+                log.debug("Filtered spurious entity", text=candidate.text)
                 continue
             classification = self.legal_classifier.classify_legal_type(candidate, text, log_file_path)
-            classified_entities.append(classification)
+            if classification and classification.act_type != "UNKNOWN":
+                classified_entities.append(classification)
+                log.debug("Classified entity", text=candidate.text, act_type=classification.act_type, confidence=classification.confidence)
+            else:
+                log.debug("Skipped unknown classification", text=candidate.text)
+        
+        log.info("Legal classification completed", classified_count=len(classified_entities))
         
         # Stage 3: Parse normative components
         parsed_normatives = []
@@ -1019,5 +1132,9 @@ class LegalSourceExtractionPipeline:
             structured_output = self.structure_builder.build(resolved)
             if structured_output:
                 final_results.append(structured_output)
+                log.debug("Built structured output", text=resolved.text, act_type=resolved.act_type)
+            else:
+                log.debug("Filtered out structured output", text=resolved.text, act_type=resolved.act_type)
         
+        log.info("Extraction completed", final_results_count=len(final_results))
         return final_results

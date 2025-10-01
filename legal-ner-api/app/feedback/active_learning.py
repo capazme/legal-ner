@@ -100,14 +100,45 @@ class ActiveLearningManager:
                 session.flush() # Flush to get task.id for association
 
                 # Create entities from the pre-computed results
+                # Usa la mappatura centralizzata per le label
+                from app.core.label_mapping import act_type_to_label as convert_act_type_to_label
+
                 for entity_data in doc_data["entities"]:
+                    # Converti valori a tipi Python nativi per evitare errori con PostgreSQL
+                    import torch
+                    import numpy as np
+
+                    start_char_val = entity_data.get("start_char", 0)
+                    end_char_val = entity_data.get("end_char", 0)
+                    confidence_val = entity_data.get("confidence", 0.0)
+
+                    # Converti tensori/numpy a int/float Python nativi
+                    if isinstance(start_char_val, (torch.Tensor, np.integer)):
+                        start_char_val = int(start_char_val.item() if hasattr(start_char_val, 'item') else start_char_val)
+                    else:
+                        start_char_val = int(start_char_val)
+
+                    if isinstance(end_char_val, (torch.Tensor, np.integer)):
+                        end_char_val = int(end_char_val.item() if hasattr(end_char_val, 'item') else end_char_val)
+                    else:
+                        end_char_val = int(end_char_val)
+
+                    if isinstance(confidence_val, (torch.Tensor, np.floating, np.integer)):
+                        confidence_val = float(confidence_val.item() if hasattr(confidence_val, 'item') else confidence_val)
+                    else:
+                        confidence_val = float(confidence_val)
+
+                    # Converti act_type in label standardizzata
+                    act_type = entity_data.get("act_type", "unknown")
+                    label = convert_act_type_to_label(act_type)
+
                     entity = models.Entity(
                         document_id=doc_data["doc_id"],
                         text=entity_data.get("text", ""),
-                        label=entity_data.get("act_type", "unknown"),
-                        start_char=entity_data.get("start_char", 0),
-                        end_char=entity_data.get("end_char", 0),
-                        confidence=entity_data.get("confidence", 0.0),
+                        label=label,
+                        start_char=start_char_val,
+                        end_char=end_char_val,
+                        confidence=confidence_val,
                         model=self.pipeline.config.models.entity_detector_primary # Or a version string
                     )
                     session.add(entity)

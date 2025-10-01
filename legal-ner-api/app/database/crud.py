@@ -12,19 +12,42 @@ def create_document(db: Session, text: str) -> models.Document:
 
 def create_entities_for_document(db: Session, document_id: int, entities: list[schemas.Entity]):
     """Creates entity records for a given document."""
+    import torch
+    import numpy as np
+
     db_entities = []
     for entity in entities:
+        # Converti valori a tipi Python nativi per evitare errori con PostgreSQL
+        start_char_val = entity.start_char
+        end_char_val = entity.end_char
+        confidence_val = entity.confidence
+
+        if isinstance(start_char_val, (torch.Tensor, np.integer)):
+            start_char_val = int(start_char_val.item() if hasattr(start_char_val, 'item') else start_char_val)
+        else:
+            start_char_val = int(start_char_val)
+
+        if isinstance(end_char_val, (torch.Tensor, np.integer)):
+            end_char_val = int(end_char_val.item() if hasattr(end_char_val, 'item') else end_char_val)
+        else:
+            end_char_val = int(end_char_val)
+
+        if isinstance(confidence_val, (torch.Tensor, np.floating, np.integer)):
+            confidence_val = float(confidence_val.item() if hasattr(confidence_val, 'item') else confidence_val)
+        else:
+            confidence_val = float(confidence_val)
+
         db_entity = models.Entity(
             document_id=document_id,
             text=entity.text,
-            start_char=entity.start_char,
-            end_char=entity.end_char,
+            start_char=start_char_val,
+            end_char=end_char_val,
             label=entity.label,
-            confidence=entity.confidence,
+            confidence=confidence_val,
             model=entity.model
         )
         db_entities.append(db_entity)
-    
+
     db.add_all(db_entities)
     db.commit()
     return db_entities

@@ -55,6 +55,9 @@ async def process_document(
 
         log.info("Entities extracted", document_id=request.document_id, count=len(results))
 
+        # Usa la mappatura centralizzata per le label
+        from app.core.label_mapping import act_type_to_label as convert_act_type_to_label
+
         # Save entities to database
         entities_created = 0
         for result in results:
@@ -79,10 +82,14 @@ async def process_document(
             else:
                 confidence = float(confidence)
 
+            # Converti act_type in label standardizzata
+            act_type = result.get("act_type", "unknown")
+            label = convert_act_type_to_label(act_type)
+
             entity = models.Entity(
                 document_id=request.document_id,
                 text=result.get("text", ""),
-                label=result.get("act_type", "unknown"),
+                label=label,
                 start_char=start_char,
                 end_char=end_char,
                 confidence=confidence,

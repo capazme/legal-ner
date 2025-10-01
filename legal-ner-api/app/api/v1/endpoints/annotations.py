@@ -401,14 +401,36 @@ async def create_entity(
             log.warning("Document not found for entity creation", document_id=request.document_id)
             raise HTTPException(status_code=404, detail=f"Document {request.document_id} not found")
 
-        # Create entity
+        # Create entity - Convert values to Python native types
+        import torch
+        import numpy as np
+
+        start_char_val = request.start_char
+        end_char_val = request.end_char
+        confidence_val = request.confidence
+
+        if isinstance(start_char_val, (torch.Tensor, np.integer)):
+            start_char_val = int(start_char_val.item() if hasattr(start_char_val, 'item') else start_char_val)
+        else:
+            start_char_val = int(start_char_val)
+
+        if isinstance(end_char_val, (torch.Tensor, np.integer)):
+            end_char_val = int(end_char_val.item() if hasattr(end_char_val, 'item') else end_char_val)
+        else:
+            end_char_val = int(end_char_val)
+
+        if isinstance(confidence_val, (torch.Tensor, np.floating, np.integer)):
+            confidence_val = float(confidence_val.item() if hasattr(confidence_val, 'item') else confidence_val)
+        else:
+            confidence_val = float(confidence_val)
+
         entity = models.Entity(
             document_id=request.document_id,
             text=request.text,
             label=request.label,
-            start_char=request.start_char,
-            end_char=request.end_char,
-            confidence=request.confidence,
+            start_char=start_char_val,
+            end_char=end_char_val,
+            confidence=confidence_val,
             model=request.model
         )
 

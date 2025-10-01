@@ -6,12 +6,23 @@ Provides access to the NER model's label schema.
 
 from fastapi import APIRouter, Depends, HTTPException
 import structlog
-from typing import List
+from typing import List, Dict
 import yaml
 from pydantic import BaseModel
 
 from app.core.active_learning_config import get_active_learning_config, ACTIVE_LEARNING_CONFIG_PATH
 from app.core.dependencies import get_api_key
+from app.core.label_mapping import (
+    get_all_labels,
+    get_label_categories,
+    get_act_type_to_label_mapping,
+    act_type_to_label as convert_act_type_to_label,
+    label_to_act_type as convert_label_to_act_type,
+    get_label_category,
+    update_label_mapping,
+    remove_label_mapping,
+    reload_label_config
+)
 
 log = structlog.get_logger()
 router = APIRouter()
@@ -20,35 +31,74 @@ class NewLabelRequest(BaseModel):
     name: str
 
 @router.get("/labels", response_model=List[str])
-def get_labels(api_key: str = Depends(get_api_key)):
+def get_labels_endpoint(api_key: str = Depends(get_api_key)):
     """
-    Returns the list of unique entity labels used by the model.
-    
-    The labels are extracted from the active learning configuration,
-    and prefixes (B-, I-) are removed to get the core entity type.
+    Returns the list of standardized entity labels used by the system.
+
+    These are the display labels (e.g., 'D.LGS', 'CODICE_CIVILE')
+    that are shown to users, not the internal act_type values.
     """
     try:
-        log.info("Fetching NER labels")
-        config = get_active_learning_config()
-        
-        raw_labels = config.labels.label_list
-        
-        # Extract unique core labels (e.g., "codice_civile" from "B-codice_civile")
-        core_labels = set()
-        for label in raw_labels:
-            if label == "O":
-                continue
-            # Remove B- or I- prefix
-            core_label = label[2:]
-            core_labels.add(core_label)
-            
-        sorted_labels = sorted(list(core_labels))
-        log.info(f"Returning {len(sorted_labels)} core labels.")
+        log.info("Fetching standardized NER labels")
+
+        # Restituisci le label standardizzate dalla mappatura centralizzata
+        sorted_labels = get_all_labels()
+        log.info(f"Returning {len(sorted_labels)} standardized labels.")
         return sorted_labels
-        
+
     except Exception as e:
-        log.error("Failed to retrieve labels from configuration.", error=str(e))
+        log.error("Failed to retrieve labels.", error=str(e))
         return []
+
+@router.get("/labels/categories", response_model=Dict[str, List[str]])
+def get_labels_by_category_endpoint(api_key: str = Depends(get_api_key)):
+    """
+    Returns all labels organized by category.
+
+    Returns:
+        Dictionary with category names as keys and lists of labels as values.
+        Example: {"Decreti": ["D.LGS", "D.L", ...], "Leggi": ["LEGGE", ...]}
+    """
+    try:
+        log.info("Fetching labels organized by category")
+        return get_label_categories()
+
+    except Exception as e:
+        log.error("Failed to retrieve label categories.", error=str(e))
+        return {}
+
+@router.get("/labels/mapping", response_model=Dict[str, str])
+def get_label_mapping_endpoint(api_key: str = Depends(get_api_key)):
+    """
+    Returns the complete act_type -> label mapping.
+
+    Returns:
+        Dictionary mapping internal act_type values to display labels.
+        Example: {"decreto_legislativo": "D.LGS", "codice_civile": "CODICE_CIVILE", ...}
+    """
+    try:
+        log.info("Fetching label mapping")
+        return get_act_type_to_label_mapping()
+
+    except Exception as e:
+        log.error("Failed to retrieve label mapping.", error=str(e))
+        return {}
+
+@router.post("/labels/reload", status_code=200)
+def reload_labels(api_key: str = Depends(get_api_key)):
+    """
+    Ricarica la configurazione delle label dal file.
+
+    Utile dopo modifiche manuali al file di configurazione.
+    """
+    try:
+        log.info("Reloading label configuration")
+        reload_label_config()
+        return {"status": "success", "message": "Label configuration reloaded"}
+
+    except Exception as e:
+        log.error("Failed to reload label configuration.", error=str(e))
+        raise HTTPException(status_code=500, detail=f"Failed to reload: {str(e)}")
 
 @router.post("/labels", status_code=201)
 def add_label(

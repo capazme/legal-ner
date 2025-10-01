@@ -432,6 +432,33 @@
                 </div>
             </div>
 
+            <!-- NER Reapplication -->
+            <div class="section">
+                <h2>🔄 Reapply NER</h2>
+                <p style="color: #666; margin-bottom: 15px;">
+                    Rielabora le entità dei task usando la specialized pipeline (Italian Legal NER) o un modello addestrato
+                </p>
+
+                <div class="form-group">
+                    <label>Selezione Modello</label>
+                    <select id="ner-model-select">
+                        <option value="">🔧 Specialized Pipeline (Italian Legal NER)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="replace-entities" checked>
+                        Sostituisci entità esistenti
+                    </label>
+                </div>
+
+                <button class="btn btn-success" onclick="reapplyNERAll()">🔄 Reapply su TUTTI i Task Pendenti</button>
+                <button class="btn btn-warning" onclick="reapplyNERSelected()">📋 Reapply su Task Selezionati</button>
+
+                <div id="reapply-status" style="margin-top: 15px; color: #666;"></div>
+            </div>
+
             <!-- System Operations -->
             <div class="section">
                 <h2>🔧 System Operations</h2>
@@ -556,6 +583,22 @@
                     </div>
                 </div>
             `).join('');
+
+            // Populate model selector for NER reapplication
+            const modelSelect = document.getElementById('ner-model-select');
+            const currentOptions = modelSelect.innerHTML;
+
+            // Keep specialized pipeline option and add trained models
+            modelSelect.innerHTML = `
+                <option value="">🔧 Specialized Pipeline (Italian Legal NER)</option>
+                ${data.models.map(model => `
+                    <option value="${model.version}">
+                        🤖 ${model.version}
+                        ${model.is_active ? '⭐' : ''}
+                        (F1: ${model.f1_score?.toFixed(3) || 'N/A'})
+                    </option>
+                `).join('')}
+            `;
         }
 
         async function refreshModels() {
@@ -590,14 +633,24 @@
 
         // Labels
         async function loadLabels() {
-            const labels = await apiCall('/admin/labels/list');
+            // Get simple label list (core labels without B-/I- prefix)
+            const coreLabels = await apiCall('/labels');
+
+            // Get detailed stats from admin endpoint
+            const labelStats = await apiCall('/admin/labels/list');
+
             const labelsList = document.getElementById('labels-list');
 
-            labelsList.innerHTML = labels.map(label => `
+            if (labelStats.length === 0) {
+                labelsList.innerHTML = '<p style="color: #666; text-align: center;">No labels with data</p>';
+                return;
+            }
+
+            labelsList.innerHTML = labelStats.map(labelInfo => `
                 <div class="list-item">
                     <div class="list-item-info">
-                        <h4>${label.label}</h4>
-                        <p>Count: ${label.count} | Accuracy: ${label.accuracy ? (label.accuracy * 100).toFixed(1) + '%' : 'N/A'}</p>
+                        <h4>${labelInfo.label}</h4>
+                        <p>Count: ${labelInfo.count} | Accuracy: ${labelInfo.accuracy ? (labelInfo.accuracy * 100).toFixed(1) + '%' : 'N/A'}</p>
                     </div>
                 </div>
             `).join('');
@@ -612,8 +665,9 @@
                 return;
             }
 
-            await apiCall('/admin/labels/add?label=' + encodeURIComponent(label), 'POST');
-            showAlert(`Label ${label} added`);
+            // POST to /labels with JSON body {name: "label_name"}
+            await apiCall('/labels', 'POST', { name: label });
+            showAlert(`Label ${label} added (B-${label} and I-${label})`);
             labelInput.value = '';
             await loadLabels();
         }
@@ -731,6 +785,76 @@
             a.download = 'golden_dataset.json';
             a.click();
             showAlert('Golden dataset exported');
+        }
+
+        // NER Reapplication
+        async function reapplyNERAll() {
+            const modelVersion = document.getElementById('ner-model-select').value;
+            const replaceExisting = document.getElementById('replace-entities').checked;
+
+            const modelName = modelVersion || 'Specialized Pipeline (Italian Legal NER)';
+
+            if (!confirm(`Reapply NER usando "${modelName}" su TUTTI i task pendenti?\n\n${replaceExisting ? '⚠️ Le entità esistenti verranno SOSTITUITE!' : 'Le nuove entità verranno AGGIUNTE.'}`)) {
+                return;
+            }
+
+            const statusDiv = document.getElementById('reapply-status');
+            statusDiv.innerHTML = '⏳ Processing...';
+
+            try {
+                const result = await apiCall('/admin/reapply-ner', 'POST', {
+                    task_ids: null,  // null = all pending tasks
+                    model_version: modelVersion || null,
+                    replace_existing: replaceExisting
+                });
+
+                statusDiv.innerHTML = `✅ ${result.message}<br>Tasks: ${result.task_count} | Model: ${result.model}`;
+                showAlert(`NER reapplication started for ${result.task_count} tasks`);
+
+                // Refresh stats after a delay
+                setTimeout(() => loadDashboard(), 3000);
+            } catch (error) {
+                statusDiv.innerHTML = `❌ Error: ${error.message}`;
+            }
+        }
+
+        async function reapplyNERSelected() {
+            const modelVersion = document.getElementById('ner-model-select').value;
+            const replaceExisting = document.getElementById('replace-entities').checked;
+
+            const taskIdsInput = prompt('Enter task IDs separated by commas (e.g., 1,2,3):');
+            if (!taskIdsInput) return;
+
+            const taskIds = taskIdsInput.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+
+            if (taskIds.length === 0) {
+                showAlert('No valid task IDs provided', 'error');
+                return;
+            }
+
+            const modelName = modelVersion || 'Specialized Pipeline (Italian Legal NER)';
+
+            if (!confirm(`Reapply NER usando "${modelName}" su ${taskIds.length} task?\n\nTask IDs: ${taskIds.join(', ')}\n\n${replaceExisting ? '⚠️ Le entità esistenti verranno SOSTITUITE!' : 'Le nuove entità verranno AGGIUNTE.'}`)) {
+                return;
+            }
+
+            const statusDiv = document.getElementById('reapply-status');
+            statusDiv.innerHTML = '⏳ Processing...';
+
+            try {
+                const result = await apiCall('/admin/reapply-ner', 'POST', {
+                    task_ids: taskIds,
+                    model_version: modelVersion || null,
+                    replace_existing: replaceExisting
+                });
+
+                statusDiv.innerHTML = `✅ ${result.message}<br>Tasks: ${result.task_count} | Model: ${result.model}`;
+                showAlert(`NER reapplication started for ${result.task_count} tasks`);
+
+                setTimeout(() => loadDashboard(), 3000);
+            } catch (error) {
+                statusDiv.innerHTML = `❌ Error: ${error.message}`;
+            }
         }
 
         // Load dashboard on page load

@@ -1007,10 +1007,10 @@ def api_reapply_model():
 
             app.logger.info(f"Deleted {len(entities)} existing entities")
 
-        # Re-apply the model
+        # Re-apply the model - only send document_id parameter
         process_response = requests.post(
             f"{API_BASE_URL}/process",
-            json={"document_id": document_id},
+            json={"document_id": document_id},  # Only send document_id, no other parameters
             headers={"X-API-Key": API_KEY}
         )
 
@@ -1026,8 +1026,7 @@ def api_reapply_model():
     except Exception as e:
         app.logger.exception("Error re-applying model")
         return jsonify({"status": "error", "message": str(e)})
-
-
+    
 @app.route('/admin')
 def admin_panel():
     """Admin panel for system management."""
@@ -1035,4 +1034,4 @@ def admin_panel():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5001)

@@ -13,3 +13,6 @@ __pycache__/*
 CLAUDE.md
 GEMINI.md
 *.log
+*.meta
+*.bkp
+xl*
