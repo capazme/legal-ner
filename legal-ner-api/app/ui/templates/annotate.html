@@ -209,6 +209,21 @@
         .selection-popup .close-btn:hover {
             color: #333;
         }
+
+        /* Inline Edit Form */
+        .edit-view {
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            margin-top: 10px;
+        }
+        .edit-view .form-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--gray);
+        }
+        .edit-view .form-control, .edit-view .form-select {
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -244,24 +259,57 @@
                 {% else %}
                     {% for entity in entities %}
                     <div class="entity-card" id="entity-{{ entity.id }}" data-entity-id="{{ entity.id }}">
-                        <div>
-                            <strong>"{{ entity.text }}"</strong>
-                            <span class="badge bg-{% if entity.confidence > 0.8 %}success{% elif entity.confidence > 0.5 %}warning{% else %}danger{% endif %}">
-                                {{ entity.label }} ({{ "%.0f"|format(entity.confidence * 100) }}%)
-                            </span>
+                        <!-- Standard View -->
+                        <div class="view-mode">
+                            <div>
+                                <strong>"{{ entity.text }}"</strong>
+                                <span class="badge bg-{% if entity.confidence > 0.8 %}success{% elif entity.confidence > 0.5 %}warning{% else %}danger{% endif %}">
+                                    {{ entity.label }} ({{ "%.0f"|format(entity.confidence * 100) }}%)
+                                </span>
+                            </div>
+                            <small class="text-muted">{{ entity.start_char }}-{{ entity.end_char }}</small>
+                            
+                            <div class="quick-actions">
+                                <button class="quick-action-btn btn-accept" onclick="acceptEntity({{ entity.id }})">
+                                    ✓ Corretto
+                                </button>
+                                <button class="quick-action-btn btn-edit" onclick="showEditView({{ entity.id }})">
+                                    ✏ Correggi
+                                </button>
+                                <button class="quick-action-btn btn-reject" onclick="rejectEntity({{ entity.id }})">
+                                    ✗ Elimina
+                                </button>
+                            </div>
                         </div>
-                        <small class="text-muted">{{ entity.start_char }}-{{ entity.end_char }}</small>
-                        
-                        <div class="quick-actions">
-                            <button class="quick-action-btn btn-accept" onclick="acceptEntity({{ entity.id }})">
-                                ✓ Corretto
-                            </button>
-                            <button class="quick-action-btn btn-edit" onclick="editEntity({{ entity.id }})">
-                                ✏ Correggi
-                            </button>
-                            <button class="quick-action-btn btn-reject" onclick="rejectEntity({{ entity.id }})">
-                                ✗ Elimina
-                            </button>
+
+                        <!-- Edit View (hidden by default) -->
+                        <div class="edit-view d-none">
+                            <div class="mb-2">
+                                <label class="form-label">Etichetta</label>
+                                <select class="form-select form-select-sm">
+                                    {% for label in labels %}
+                                    <option value="{{ label }}" {% if entity.label == label %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Testo</label>
+                                <input type="text" class="form-control form-control-sm" value="{{ entity.text }}">
+                            </div>
+                            <div class="row g-2 mb-2">
+                                <div class="col">
+                                    <label class="form-label">Start</label>
+                                    <input type="number" class="form-control form-control-sm" value="{{ entity.start_char }}">
+                                </div>
+                                <div class="col">
+                                    <label class="form-label">End</label>
+                                    <input type="number" class="form-control form-control-sm" value="{{ entity.end_char }}">
+                                </div>
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-success" onclick="saveEntityChanges({{ entity.id }})">Salva</button>
+                                <button class="btn btn-sm btn-secondary" onclick="hideEditView({{ entity.id }})">Annulla</button>
+                            </div>
                         </div>
                     </div>
                     {% endfor %}
@@ -298,32 +346,21 @@
         
         function highlightEntitiesInText() {
             const docText = document.getElementById('document-text');
-            // Get the actual text content from the div (preserves original formatting)
             const originalText = docText.textContent;
-
-            // Sort entities by position (descending) to process from end to start
             const sortedEntities = [...entitiesData].sort((a, b) => b.start - a.start);
-
-            // Create array of text fragments with highlighting info
             let fragments = [];
             let lastEnd = originalText.length;
 
             sortedEntities.forEach(entity => {
-                // Validate positions
                 if (entity.start < 0 || entity.end > originalText.length || entity.start >= entity.end) {
                     console.warn('Invalid entity positions:', entity);
                     return;
                 }
-
                 const confidenceClass = entity.confidence > 0.8 ? 'confidence-high' :
                                        entity.confidence > 0.5 ? 'confidence-medium' : 'confidence-low';
-
-                // Text after this entity (until last processed position)
                 if (entity.end < lastEnd) {
                     fragments.unshift(escapeHtml(originalText.substring(entity.end, lastEnd)));
                 }
-
-                // The entity itself (highlighted)
                 const entityText = originalText.substring(entity.start, entity.end);
                 fragments.unshift(
                     `<mark class="entity-highlight ${confidenceClass}" ` +
@@ -331,15 +368,12 @@
                     `onclick="scrollToEntity(${entity.id})" ` +
                     `title="${escapeHtml(entity.label)} (${(entity.confidence * 100).toFixed(0)}%)">${escapeHtml(entityText)}</mark>`
                 );
-
                 lastEnd = entity.start;
             });
 
-            // Add remaining text at the beginning
             if (lastEnd > 0) {
                 fragments.unshift(escapeHtml(originalText.substring(0, lastEnd)));
             }
-
             docText.innerHTML = fragments.join('');
         }
 
@@ -373,86 +407,65 @@
             document.getElementById('reviewed-count').textContent = reviewedCount;
             showToast('Entità accettata', 'success');
         }
-        
-        function editEntity(entityId) {
-            const entity = entitiesData.find(e => e.id === entityId);
-            if (!entity) return;
 
-            // Populate modal with current entity data
-            document.getElementById('edit-entity-id').value = entityId;
-            document.getElementById('edit-entity-text').value = entity.text;
-            document.getElementById('edit-entity-start').value = entity.start;
-            document.getElementById('edit-entity-end').value = entity.end;
-
-            // Display entity text in modal header
-            const textDisplay = document.getElementById('edit-entity-text-display');
-            textDisplay.textContent = `"${entity.text.length > 50 ? entity.text.substring(0, 50) + '...' : entity.text}"`;
-
-            // Create label buttons
-            const buttonsContainer = document.getElementById('edit-label-buttons');
-            buttonsContainer.innerHTML = '';
-
-            availableLabels.forEach(label => {
-                const btn = document.createElement('button');
-                btn.className = 'label-btn' + (label === entity.label ? ' current' : '');
-                btn.textContent = label;
-                btn.onclick = () => saveEntityEdit(entityId, label);
-                buttonsContainer.appendChild(btn);
-            });
-
-            // Show modal
-            const modal = new bootstrap.Modal(document.getElementById('editEntityModal'));
-            modal.show();
+        function showEditView(entityId) {
+            const card = document.getElementById(`entity-${entityId}`);
+            card.querySelector('.view-mode').classList.add('d-none');
+            card.querySelector('.edit-view').classList.remove('d-none');
         }
 
-        function saveEntityEdit(entityId, newLabel) {
-            const text = document.getElementById('edit-entity-text').value;
-            const startChar = parseInt(document.getElementById('edit-entity-start').value);
-            const endChar = parseInt(document.getElementById('edit-entity-end').value);
+        function hideEditView(entityId) {
+            const card = document.getElementById(`entity-${entityId}`);
+            card.querySelector('.view-mode').classList.remove('d-none');
+            card.querySelector('.edit-view').classList.add('d-none');
+        }
 
-            const entity = entitiesData.find(e => e.id === entityId);
-            if (!entity) return;
+        function saveEntityChanges(entityId) {
+            const card = document.getElementById(`entity-${entityId}`);
+            const editView = card.querySelector('.edit-view');
+            
+            const newLabel = editView.querySelector('select').value;
+            const newText = editView.querySelector('input[type="text"]').value;
+            const numberInputs = editView.querySelectorAll('input[type="number"]');
+            const newStart = parseInt(numberInputs[0].value);
+            const newEnd = parseInt(numberInputs[1].value);
 
             const correctedEntity = {
-                text: text,
+                text: newText,
                 label: newLabel,
-                start_char: startChar,
-                end_char: endChar
+                start_char: newStart,
+                end_char: newEnd
             };
 
-            // Submit correction
             submitAnnotation(entityId, false, correctedEntity);
 
-            // Update local entity data
-            entity.label = newLabel;
-            entity.text = text;
-            entity.start = startChar;
-            entity.end = endChar;
+            // Update local data
+            const entityData = entitiesData.find(e => e.id === entityId);
+            entityData.label = newLabel;
+            entityData.text = newText;
+            entityData.start = newStart;
+            entityData.end = newEnd;
 
             // Update UI
-            const card = document.getElementById(`entity-${entityId}`);
-            const badge = card.querySelector('.badge');
-            badge.textContent = newLabel + ' (' + (entity.confidence * 100).toFixed(0) + '%)';
-
-            // Update badge color based on confidence
-            badge.className = 'badge bg-' + (entity.confidence > 0.8 ? 'success' : entity.confidence > 0.5 ? 'warning' : 'danger');
-
+            const viewMode = card.querySelector('.view-mode');
+            viewMode.querySelector('strong').textContent = `"${newText}"`;
+            const badge = viewMode.querySelector('.badge');
+            badge.textContent = `${newLabel} (${(entityData.confidence * 100).toFixed(0)}%)`;
+            viewMode.querySelector('small').textContent = `${newStart}-${newEnd}`;
+            
             card.classList.add('reviewed');
             updateHighlight(entityId, 'reviewed');
+            hideEditView(entityId);
+            highlightEntitiesInText(); // Re-render highlights to reflect text/position changes
 
             reviewedCount++;
             document.getElementById('reviewed-count').textContent = reviewedCount;
-
-            // Close modal
-            bootstrap.Modal.getInstance(document.getElementById('editEntityModal')).hide();
-
-            showToast(`Etichetta cambiata in: ${newLabel}`, 'success');
+            showToast('Entità modificata', 'success');
         }
 
         function rejectEntity(entityId) {
             if (!confirm('Eliminare questa entità?')) return;
 
-            // Delete entity from backend
             fetch('/api/delete-entity', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -461,16 +474,10 @@
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    // Remove from UI
                     document.getElementById(`entity-${entityId}`).remove();
-
-                    // Remove from entitiesData
                     const index = entitiesData.findIndex(e => e.id === entityId);
                     if (index > -1) entitiesData.splice(index, 1);
-
-                    // Update highlights
                     highlightEntitiesInText();
-
                     reviewedCount++;
                     document.getElementById('reviewed-count').textContent = reviewedCount;
                     showToast('Entità eliminata', 'success');
@@ -488,13 +495,11 @@
             const payload = {
                 entity_id: entityId,
                 is_correct: isCorrect,
-                task_id: {{ task.id }}
+                task_id: taskId
             };
-
             if (correctedEntity) {
                 payload.corrected_entity = correctedEntity;
             }
-
             fetch('/api/submit-annotation', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -517,7 +522,7 @@
             fetch('/api/complete-task', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ task_id: {{ task.id }} })
+                body: JSON.stringify({ task_id: taskId })
             })
             .then(r => r.json())
             .then(data => {
@@ -527,27 +532,21 @@
                 } else {
                     showToast('Errore completamento task', 'error');
                 }
-                });
+            });
         });
 
         // ========== TEXT SELECTION FOR NEW ENTITIES ==========
 
         function setupTextSelection() {
             const docText = document.getElementById('document-text');
-
-            // Handle text selection
             docText.addEventListener('mouseup', handleTextSelection);
             docText.addEventListener('touchend', handleTextSelection);
-
-            // Close popup when clicking outside
             document.addEventListener('click', function(e) {
                 const popup = document.getElementById('selection-popup');
                 if (!popup.contains(e.target) && !docText.contains(e.target)) {
                     closeSelectionPopup();
                 }
             });
-
-            // Populate label grid
             const labelGrid = document.getElementById('label-grid');
             availableLabels.forEach(label => {
                 const item = document.createElement('div');
@@ -561,54 +560,31 @@
         function handleTextSelection(e) {
             const selection = window.getSelection();
             const selectedText = selection.toString().trim();
-
             if (selectedText.length === 0) {
                 closeSelectionPopup();
                 return;
             }
-
-            // Get selection range
             const range = selection.getRangeAt(0);
-
-            // Calculate character positions in the original text
             const docText = document.getElementById('document-text');
-            const originalText = docText.textContent;
-
-            // Get text before selection to calculate start position
             const preSelectionRange = document.createRange();
             preSelectionRange.selectNodeContents(docText);
             preSelectionRange.setEnd(range.startContainer, range.startOffset);
             const startChar = preSelectionRange.toString().length;
             const endChar = startChar + selectedText.length;
 
-            // Validate positions
-            if (startChar < 0 || endChar > originalText.length) {
-                console.error('Invalid selection positions', {startChar, endChar, textLength: originalText.length});
+            if (startChar < 0 || endChar > docText.textContent.length) {
+                console.error('Invalid selection positions', {startChar, endChar, textLength: docText.textContent.length});
                 return;
             }
-
-            // Store current selection
-            currentSelection = {
-                text: selectedText,
-                start: startChar,
-                end: endChar
-            };
-
-            console.log('Selection:', currentSelection);
-
-            // Show popup near selection
+            currentSelection = { text: selectedText, start: startChar, end: endChar };
             showSelectionPopup(e.pageX, e.pageY);
         }
 
         function showSelectionPopup(x, y) {
             const popup = document.getElementById('selection-popup');
             popup.classList.add('active');
-
-            // Position popup
             popup.style.left = (x + 10) + 'px';
             popup.style.top = (y - 50) + 'px';
-
-            // Adjust if popup goes off screen
             setTimeout(() => {
                 const rect = popup.getBoundingClientRect();
                 if (rect.right > window.innerWidth) {
@@ -628,8 +604,6 @@
 
         function createEntityFromSelection(label) {
             if (!currentSelection) return;
-
-            // Create new entity via API
             fetch('/api/create-entity', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -645,24 +619,18 @@
             })
             .then(r => r.json())
             .then(data => {
-                if (data.status === 'success' || data.id) {
-                    // Add to entities array
+                if (data.status === 'success' && data.entity) {
                     const newEntity = {
-                        id: data.id || Date.now(),
-                        start: currentSelection.start,
-                        end: currentSelection.end,
-                        text: currentSelection.text,
-                        label: label,
+                        id: data.entity.id,
+                        start: data.entity.start_char,
+                        end: data.entity.end_char,
+                        text: data.entity.text,
+                        label: data.entity.label,
                         confidence: 1.0
                     };
                     entitiesData.push(newEntity);
-
-                    // Re-highlight text
                     highlightEntitiesInText();
-
-                    // Add entity card
-                    addEntityCard(newEntity);
-
+                    addEntityCard(data.entity);
                     showToast(`Entità "${label}" creata`, 'success');
                 } else {
                     showToast('Errore nella creazione', 'error');
@@ -677,42 +645,57 @@
         }
 
         function addEntityCard(entity) {
-            const container = document.querySelector('#entities-container');
-
-            if (!container) {
-                console.error('Entities container not found');
-                return;
-            }
-
-            // Remove "no entities" message if present
+            const container = document.getElementById('entities-container');
             const noEntitiesMsg = document.getElementById('no-entities-message');
-            if (noEntitiesMsg) {
-                noEntitiesMsg.remove();
-            }
+            if (noEntitiesMsg) noEntitiesMsg.remove();
 
             const card = document.createElement('div');
             card.className = 'entity-card';
             card.id = `entity-${entity.id}`;
             card.dataset.entityId = entity.id;
             card.innerHTML = `
-                <div>
-                    <strong>"${escapeHtml(entity.text)}"</strong>
-                    <span class="badge bg-success">${escapeHtml(entity.label)} (100%)</span>
+                <div class="view-mode">
+                    <div>
+                        <strong>"${escapeHtml(entity.text)}"</strong>
+                        <span class="badge bg-success">${escapeHtml(entity.label)} (100%)</span>
+                    </div>
+                    <small class="text-muted">${entity.start_char}-${entity.end_char}</small>
+                    <div class="quick-actions">
+                        <button class="quick-action-btn btn-accept" onclick="acceptEntity(${entity.id})">✓ Corretto</button>
+                        <button class="quick-action-btn btn-edit" onclick="showEditView(${entity.id})">✏ Correggi</button>
+                        <button class="quick-action-btn btn-reject" onclick="rejectEntity(${entity.id})">✗ Elimina</button>
+                    </div>
                 </div>
-                <small class="text-muted">${entity.start}-${entity.end}</small>
-                <div class="quick-actions">
-                    <button class="quick-action-btn btn-accept" onclick="acceptEntity(${entity.id})">
-                        ✓ Corretto
-                    </button>
-                    <button class="quick-action-btn btn-edit" onclick="editEntity(${entity.id})">
-                        ✏ Correggi
-                    </button>
-                    <button class="quick-action-btn btn-reject" onclick="rejectEntity(${entity.id})">
-                        ✗ Elimina
-                    </button>
+                <div class="edit-view d-none">
+                    <div class="mb-2">
+                        <label class="form-label">Etichetta</label>
+                        <select class="form-select form-select-sm">
+                            ${availableLabels.map(l => `<option value="${l}" ${l === entity.label ? 'selected' : ''}>${l}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Testo</label>
+                        <input type="text" class="form-control form-control-sm" value="${escapeHtml(entity.text)}">
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col">
+                            <label class="form-label">Start</label>
+                            <input type="number" class="form-control form-control-sm" value="${entity.start_char}">
+                        </div>
+                        <div class="col">
+                            <label class="form-label">End</label>
+                            <input type="number" class="form-control form-control-sm" value="${entity.end_char}">
+                        </div>
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-success" onclick="saveEntityChanges(${entity.id})">Salva</button>
+                        <button class="btn btn-sm btn-secondary" onclick="hideEditView(${entity.id})">Annulla</button>
+                    </div>
                 </div>
             `;
-            container.appendChild(card);
+            // Find the "mt-4" div and insert the new card before it
+            const buttonContainer = container.querySelector('.mt-4');
+            container.insertBefore(card, buttonContainer);
         }
 
         window.addEventListener('load', function() {
@@ -720,66 +703,5 @@
             setupTextSelection();
         });
     </script>
-
-    <!-- Edit Entity Modal -->
-    <div class="modal fade" id="editEntityModal" tabindex="-1" aria-labelledby="editEntityModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content" style="border: none; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
-                <div class="modal-header" style="border-bottom: 2px solid #f0f0f0; padding: 24px;">
-                    <div>
-                        <h5 class="modal-title mb-1" id="editEntityModalLabel" style="font-weight: 600; font-size: 1.3rem;">✏️ Correggi Etichetta</h5>
-                        <p class="text-muted mb-0" id="edit-entity-text-display" style="font-size: 0.9rem;"></p>
-                    </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" style="padding: 32px 24px;">
-                    <input type="hidden" id="edit-entity-id">
-                    <input type="hidden" id="edit-entity-text">
-                    <input type="hidden" id="edit-entity-start">
-                    <input type="hidden" id="edit-entity-end">
-
-                    <label class="form-label mb-3" style="font-weight: 500; font-size: 0.95rem;">Seleziona la nuova etichetta:</label>
-                    <div id="edit-label-buttons" class="d-grid gap-2">
-                        <!-- Label buttons will be inserted here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <style>
-        .label-btn {
-            padding: 16px 20px;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            background: white;
-            text-align: left;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: all 0.2s;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .label-btn:hover {
-            border-color: #3b82f6;
-            background: #eff6ff;
-            transform: translateX(4px);
-        }
-        .label-btn.current {
-            border-color: #10b981;
-            background: #f0fdf4;
-        }
-        .label-btn.current::after {
-            content: "✓ Attuale";
-            font-size: 0.85rem;
-            color: #10b981;
-            font-weight: 600;
-        }
-        .label-btn:active {
-            transform: scale(0.98);
-        }
-    </style>
 </body>
 </html>
