@@ -384,15 +384,18 @@
 
             <!-- Labels Management -->
             <div class="section">
-                <h2>🏷️ Labels</h2>
+                <h2>🏷️ Gestione Etichette</h2>
                 <div class="form-group">
-                    <label>Add New Label</label>
-                    <input type="text" id="new-label" placeholder="B-nuovo_codice">
-                    <button class="btn btn-success" onclick="addLabel()" style="margin-top: 10px;">➕ Add Label</button>
+                    <label>Aggiungi Nuova Etichetta</label>
+                    <input type="text" id="new-label" placeholder="es: D.M, LEGGE_REGIONALE">
+                    <button class="btn btn-success" onclick="addLabel()" style="margin-top: 10px;">➕ Aggiungi</button>
                 </div>
 
-                <div class="labels-list" id="labels-list">
-                    <div class="loading">Loading labels...</div>
+                <div style="margin-top: 25px;">
+                    <h3 style="color: #667eea; margin-bottom: 15px; font-size: 1.2em;">Etichette Disponibili</h3>
+                    <div class="labels-list" id="labels-list">
+                        <div class="loading">Caricamento etichette...</div>
+                    </div>
                 </div>
             </div>
 
@@ -633,27 +636,39 @@
 
         // Labels
         async function loadLabels() {
-            // Get simple label list (core labels without B-/I- prefix)
-            const coreLabels = await apiCall('/labels');
+            try {
+                // Get simple label list (core labels without B-/I- prefix)
+                const coreLabels = await apiCall('/labels');
 
-            // Get detailed stats from admin endpoint
-            const labelStats = await apiCall('/admin/labels/list');
+                // Get detailed stats from admin endpoint
+                const labelStats = await apiCall('/admin/labels/list');
 
-            const labelsList = document.getElementById('labels-list');
+                const labelsList = document.getElementById('labels-list');
 
-            if (labelStats.length === 0) {
-                labelsList.innerHTML = '<p style="color: #666; text-align: center;">No labels with data</p>';
-                return;
-            }
+                if (labelStats.length === 0) {
+                    labelsList.innerHTML = '<p style="color: #666; text-align: center;">Nessuna etichetta disponibile</p>';
+                    return;
+                }
 
-            labelsList.innerHTML = labelStats.map(labelInfo => `
-                <div class="list-item">
-                    <div class="list-item-info">
-                        <h4>${labelInfo.label}</h4>
-                        <p>Count: ${labelInfo.count} | Accuracy: ${labelInfo.accuracy ? (labelInfo.accuracy * 100).toFixed(1) + '%' : 'N/A'}</p>
+                labelsList.innerHTML = labelStats.map(labelInfo => `
+                    <div class="list-item">
+                        <div class="list-item-info">
+                            <h4 style="color: #667eea; font-size: 1.1em;">${labelInfo.label}</h4>
+                            <p style="margin: 5px 0;">
+                                <span class="badge badge-success">${labelInfo.count} entità</span>
+                                ${labelInfo.accuracy ? `<span class="badge badge-warning">${(labelInfo.accuracy * 100).toFixed(1)}% accuracy</span>` : ''}
+                            </p>
+                        </div>
+                        <div class="list-item-actions">
+                            <button class="btn" onclick="editLabel('${labelInfo.label}')" title="Modifica">✏️</button>
+                            <button class="btn btn-danger" onclick="deleteLabel('${labelInfo.label}')" title="Elimina">🗑️</button>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `).join('');
+            } catch (error) {
+                console.error('Error loading labels:', error);
+                document.getElementById('labels-list').innerHTML = '<p style="color: #e74c3c;">Errore nel caricamento delle etichette</p>';
+            }
         }
 
         async function addLabel() {
@@ -661,15 +676,97 @@
             const label = labelInput.value.trim();
 
             if (!label) {
-                showAlert('Please enter a label', 'error');
+                showAlert('Inserisci un nome per l\'etichetta', 'error');
                 return;
             }
 
-            // POST to /labels with JSON body {name: "label_name"}
-            await apiCall('/labels', 'POST', { name: label });
-            showAlert(`Label ${label} added (B-${label} and I-${label})`);
-            labelInput.value = '';
-            await loadLabels();
+            try {
+                const result = await fetch('/api/add-label', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: label })
+                }).then(r => r.json());
+
+                if (result.status === 'success') {
+                    showAlert(`✅ Etichetta "${result.result.new_label}" aggiunta con successo!`, 'success');
+                    labelInput.value = '';
+                    await loadLabels();
+                } else {
+                    showAlert(`❌ Errore: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`❌ Errore: ${error.message}`, 'error');
+            }
+        }
+
+        async function editLabel(oldLabel) {
+            const newLabel = prompt(`Modifica etichetta "${oldLabel}".\n\nInserisci il nuovo nome:`, oldLabel);
+
+            if (!newLabel || newLabel.trim() === '') {
+                return;
+            }
+
+            if (newLabel.trim() === oldLabel) {
+                showAlert('Il nuovo nome è uguale al vecchio', 'warning');
+                return;
+            }
+
+            const category = prompt('Categoria (opzionale - default: Altro):', 'Altro') || 'Altro';
+
+            if (!confirm(`Confermi la modifica?\n\nDa: ${oldLabel}\nA: ${newLabel}\nCategoria: ${category}\n\n⚠️ Tutte le entità con questa etichetta verranno aggiornate!`)) {
+                return;
+            }
+
+            try {
+                const result = await fetch('/api/update-label', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        old_label: oldLabel,
+                        new_label: newLabel.trim(),
+                        category: category
+                    })
+                }).then(r => r.json());
+
+                if (result.status === 'success') {
+                    showAlert(`✅ Etichetta aggiornata! ${result.result.entities_updated} entità modificate`, 'success');
+                    await loadLabels();
+                } else {
+                    showAlert(`❌ Errore: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`❌ Errore: ${error.message}`, 'error');
+            }
+        }
+
+        async function deleteLabel(label) {
+            if (!confirm(`⚠️ ATTENZIONE!\n\nConfermi l'eliminazione dell'etichetta "${label}"?\n\nQuesta operazione eliminerà PERMANENTEMENTE:\n- L'etichetta dal sistema\n- TUTTE le entità con questa etichetta dal database\n\nQuesta azione NON può essere annullata!`)) {
+                return;
+            }
+
+            // Double confirmation
+            const confirmText = prompt(`Per confermare, digita esattamente: ${label}`);
+            if (confirmText !== label) {
+                showAlert('Operazione annullata: nome etichetta non corretto', 'warning');
+                return;
+            }
+
+            try {
+                const result = await fetch('/api/delete-label', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ label: label })
+                }).then(r => r.json());
+
+                if (result.status === 'success') {
+                    showAlert(`✅ Etichetta eliminata! ${result.result.entities_deleted} entità rimosse dal database`, 'success');
+                    await loadLabels();
+                } else {
+                    showAlert(`❌ Errore: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`❌ Errore: ${error.message}`, 'error');
+            }
         }
 
         // Datasets

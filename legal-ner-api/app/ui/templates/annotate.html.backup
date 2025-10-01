@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Annotazione Documento</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <style>
+        .entity {
+            padding: 2px 5px;
+            margin: 0 2px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        .entity-container {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .document-text {
+            white-space: pre-wrap;
+            font-family: monospace;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .entity-highlight {
+            background-color: #ffeb3b;
+            padding: 2px 0;
+        }
+        
+        .confidence-high { background-color: #c8e6c9; }
+        .confidence-medium { background-color: #fff9c4; }
+        .confidence-low { background-color: #ffccbc; }
+        
+        .selection-info {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: none;
+        }
+        
+        .entity-label-btn {
+            margin: 2px;
+        }
+        
+        .entity-reviewed {
+            background-color: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>Annotazione Documento</h1>
+        <p>Task ID: {{ task.id }} | Document ID: {{ document.id }}</p>
+        
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Testo del Documento</span>
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary" id="toggle-selection-mode">Modalità Selezione</button>
+                    <span class="ms-2 badge bg-secondary" id="selection-mode-status">OFF</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="document-text" id="document-text">{{ document.text }}</div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Entità Rilevate</span>
+                <button class="btn btn-sm btn-primary" id="add-entity-btn">Aggiungi Entità</button>
+            </div>
+            <div class="card-body">
+                <div id="entities-container">
+                    {% if entities|length == 0 %}
+                        <p>Nessuna entità rilevata in questo documento.</p>
+                    {% else %}
+                        {% for entity in entities %}
+                        <div class="entity-container" id="entity-{{ entity.id }}">
+                            <h5>
+                                <span class="entity 
+                                    {% if entity.confidence > 0.8 %}confidence-high
+                                    {% elif entity.confidence > 0.5 %}confidence-medium
+                                    {% else %}confidence-low{% endif %}">
+                                    {{ entity.label }}
+                                </span>
+                            </h5>
+                            <p><strong>Testo:</strong> "{{ entity.text }}"</p>
+                            <p><strong>Posizione:</strong> {{ entity.start_char }}-{{ entity.end_char }}</p>
+                            <p><strong>Confidenza:</strong> {{ "%.2f"|format(entity.confidence * 100) }}%</p>
+                            
+                            <div class="correction-form">
+                                <div class="mb-3">
+                                    <label class="form-label">Questa entità è corretta?</label>
+                                    <div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="is-correct-{{ entity.id }}" id="correct-{{ entity.id }}" value="true">
+                                            <label class="form-check-label" for="correct-{{ entity.id }}">Sì</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="is-correct-{{ entity.id }}" id="incorrect-{{ entity.id }}" value="false">
+                                            <label class="form-check-label" for="incorrect-{{ entity.id }}">No</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="correction-details" style="display: none;">
+                                    <div class="mb-3">
+                                        <label for="corrected-text-{{ entity.id }}" class="form-label">Testo Corretto</label>
+                                        <input type="text" class="form-control" id="corrected-text-{{ entity.id }}" value="{{ entity.text }}">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="corrected-label-{{ entity.id }}" class="form-label">Etichetta Corretta</label>
+                                        <select class="form-control" id="corrected-label-{{ entity.id }}">
+                                            {% for label in labels %}
+                                            <option value="{{ label }}" {% if entity.label == label %}selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col">
+                                            <label for="corrected-start-{{ entity.id }}" class="form-label">Posizione Iniziale</label>
+                                            <input type="number" class="form-control" id="corrected-start-{{ entity.id }}" value="{{ entity.start_char }}">
+                                        </div>
+                                        <div class="col">
+                                            <label for="corrected-end-{{ entity.id }}" class="form-label">Posizione Finale</label>
+                                            <input type="number" class="form-control" id="corrected-end-{{ entity.id }}" value="{{ entity.end_char }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <button class="btn btn-primary mt-3 submit-correction" data-entity-id="{{ entity.id }}">Invia Correzione</button>
+                                <button class="btn btn-danger mt-3 ms-2 delete-entity" data-entity-id="{{ entity.id }}">Elimina Entità</button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <div class="mt-4">
+                    <button id="complete-task" class="btn btn-success">Completa Task</button>
+                    <a href="/" class="btn btn-secondary ms-2">Torna alla Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Selection Info Box -->
+    <div class="selection-info" id="selection-info">
+        <h5>Nuova Entità</h5>
+        <p><strong>Testo:</strong> <span id="selected-text"></span></p>
+        <p><strong>Posizione:</strong> <span id="selected-position"></span></p>
+        
+        <div class="mb-3">
+            <label class="form-label">Etichetta:</label>
+            <div class="d-flex flex-wrap">
+                {% for label in labels %}
+                <button class="btn btn-sm btn-outline-primary entity-label-btn" data-label="{{ label }}">{{ label }}</button>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <button class="btn btn-sm btn-secondary" id="cancel-selection">Annulla</button>
+    </div>
+    
+    <!-- Add New Label Modal -->
+    <div class="modal fade" id="add-label-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Aggiungi Nuova Etichetta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-label-form">
+                        <div class="mb-3">
+                            <label for="new-label-name" class="form-label">Nome Nuova Etichetta</label>
+                            <input type="text" class="form-control" id="new-label-name" placeholder="es. codice_della_strada" required>
+                            <div class="form-text">Usa lettere minuscole e underscore al posto degli spazi.</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-primary" id="save-new-label-btn">Salva Etichetta</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Entity Modal -->
+    <div class="modal fade" id="add-entity-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Aggiungi Nuova Entità</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-entity-form">
+                        <div class="mb-3">
+                            <label for="new-entity-text" class="form-label">Testo dell'Entità</label>
+                            <input type="text" class="form-control" id="new-entity-text" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="new-entity-label" class="form-label">Etichetta</label>
+                            <div class="input-group">
+                                <select class="form-control" id="new-entity-label">
+                                    {% for label in labels %}
+                                    <option value="{{ label }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button class="btn btn-outline-secondary" type="button" id="add-new-label-btn" data-bs-toggle="modal" data-bs-target="#add-label-modal">Nuova</button>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col">
+                                <label for="new-entity-start" class="form-label">Posizione Iniziale</label>
+                                <input type="number" class="form-control" id="new-entity-start" required>
+                            </div>
+                            <div class="col">
+                                <label for="new-entity-end" class="form-label">Posizione Finale</label>
+                                <input type="number" class="form-control" id="new-entity-end" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-primary" id="save-new-entity">Salva</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global variables
+        const availableLabels = {{ labels|tojson|safe }};
+        let selectionMode = false;
+        let entityCounter = 1000; // Per le nuove entità create manualmente
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inizializza i componenti UI
+            highlightEntities();
+            setupEventListeners();
+            
+            // Inizializza il modal per aggiungere entità
+            const addEntityModal = new bootstrap.Modal(document.getElementById('add-entity-modal'));
+            
+            // Gestione del pulsante per aggiungere entità
+            document.getElementById('add-entity-btn').addEventListener('click', function() {
+                addEntityModal.show();
+            });
+            
+            // Gestione del salvataggio della nuova etichetta
+            document.getElementById('save-new-label-btn').addEventListener('click', function() {
+                const newLabelName = document.getElementById('new-label-name').value;
+                if (!newLabelName) {
+                    alert('Il nome dell\'etichetta non può essere vuoto.');
+                    return;
+                }
+
+                fetch('/api/v1/labels', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': 'your-super-secret-api-key'
+                    },
+                    body: JSON.stringify({ name: newLabelName })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.detail || 'Failed to add label') });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Add to our JS array
+                        if (!availableLabels.includes(data.new_label)) {
+                            availableLabels.push(data.new_label);
+                            availableLabels.sort();
+                        }
+                        
+                        // Refresh all label dropdowns
+                        refreshLabelDropdowns();
+                        
+                        // Hide the modal
+                        const addLabelModal = bootstrap.Modal.getInstance(document.getElementById('add-label-modal'));
+                        addLabelModal.hide();
+                        document.getElementById('new-label-name').value = '';
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
+            });
+
+            // Salvataggio della nuova entità
+            document.getElementById('save-new-entity').addEventListener('click', function() {
+                const text = document.getElementById('new-entity-text').value;
+                const label = document.getElementById('new-entity-label').value;
+                const startChar = parseInt(document.getElementById('new-entity-start').value);
+                const endChar = parseInt(document.getElementById('new-entity-end').value);
+                
+                if (!text || isNaN(startChar) || isNaN(endChar)) {
+                    alert('Compila tutti i campi richiesti');
+                    return;
+                }
+                
+                addNewEntity({
+                    id: `new-${entityCounter++}`,
+                    text: text,
+                    label: label,
+                    start_char: startChar,
+                    end_char: endChar,
+                    confidence: 1.0
+                });
+                
+                addEntityModal.hide();
+            });
+        });
+        
+        function highlightEntities() {
+            const documentText = document.getElementById('document-text').innerText;
+            let highlightedText = documentText;
+            
+            // Ottieni le entità dal backend o usa quelle esistenti
+            const entities = Array.from({{ entities|tojson|safe }}).sort((a, b) => b.start_char - a.start_char);
+            
+            entities.forEach(entity => {
+                const start = entity.start_char;
+                const end = entity.end_char;
+                
+                if (start >= 0 && end <= highlightedText.length) {
+                    const before = highlightedText.substring(0, start);
+                    const entityText = highlightedText.substring(start, end);
+                    const after = highlightedText.substring(end);
+                    
+                    highlightedText = before + 
+                        `<span class="entity-highlight" data-entity-id="${entity.id}">` + 
+                        entityText + 
+                        '</span>' + 
+                        after;
+                }
+            });
+            
+            document.getElementById('document-text').innerHTML = highlightedText;
+        }
+        
+        function setupEventListeners() {
+            // Toggle della modalità selezione
+            document.getElementById('toggle-selection-mode').addEventListener('click', function() {
+                selectionMode = !selectionMode;
+                document.getElementById('selection-mode-status').textContent = selectionMode ? 'ON' : 'OFF';
+                document.getElementById('selection-mode-status').className = selectionMode ? 'ms-2 badge bg-success' : 'ms-2 badge bg-secondary';
+            });
+            
+            // Gestione della selezione del testo
+            document.getElementById('document-text').addEventListener('mouseup', function() {
+                if (!selectionMode) return;
+                
+                const selection = window.getSelection();
+                if (selection.toString().length > 0) {
+                    const range = selection.getRangeAt(0);
+                    const startOffset = getTextOffset(this, range.startContainer, range.startOffset);
+                    const endOffset = getTextOffset(this, range.endContainer, range.endOffset);
+                    
+                    document.getElementById('selected-text').textContent = selection.toString();
+                    document.getElementById('selected-position').textContent = `${startOffset}-${endOffset}`;
+                    
+                    // Mostra il box di selezione
+                    const selectionInfo = document.getElementById('selection-info');
+                    selectionInfo.style.display = 'block';
+                    
+                    // Gestione dei pulsanti delle etichette
+                    document.querySelectorAll('.entity-label-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const label = this.getAttribute('data-label');
+                            addNewEntity({
+                                id: `new-${entityCounter++}`,
+                                text: selection.toString(),
+                                label: label,
+                                start_char: startOffset,
+                                end_char: endOffset,
+                                confidence: 1.0
+                            });
+                            
+                            selectionInfo.style.display = 'none';
+                            window.getSelection().removeAllRanges();
+                        });
+                    });
+                }
+            });
+            
+            // Annulla selezione
+            document.getElementById('cancel-selection').addEventListener('click', function() {
+                document.getElementById('selection-info').style.display = 'none';
+                window.getSelection().removeAllRanges();
+            });
+            
+            // Gestione delle correzioni
+            setupCorrectionListeners();
+            
+            // Completamento della task
+            document.getElementById('complete-task').addEventListener('click', function() {
+                if (confirm('Sei sicuro di voler completare questa task?')) {
+                    fetch('/api/complete-task', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            task_id: {{ task.id }}
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert('Task completata con successo!');
+                            window.location.href = '/';
+                        } else {
+                            alert('Errore: ' + data.message);
+                        }
+                    });
+                }
+            });
+        }
+        
+        function setupCorrectionListeners() {
+            // Mostra/nascondi dettagli correzione
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const entityId = this.name.split('-')[2];
+                    const isCorrect = this.value === 'true';
+                    const correctionDetails = this.closest('.correction-form').querySelector('.correction-details');
+                    
+                    if (!isCorrect) {
+                        correctionDetails.style.display = 'block';
+                    } else {
+                        correctionDetails.style.display = 'none';
+                    }
+                });
+            });
+            
+            // Invio correzioni
+            document.querySelectorAll('.submit-correction').forEach(button => {
+                button.addEventListener('click', function() {
+                    const entityId = this.getAttribute('data-entity-id');
+                    const container = document.getElementById(`entity-${entityId}`);
+                    const checkedRadio = container.querySelector(`input[name="is-correct-${entityId}"]:checked`);
+
+                    if (!checkedRadio) {
+                        alert('Indica se l\'entità è corretta o meno prima di inviare');
+                        return;
+                    }
+
+                    const isCorrect = checkedRadio.value === 'true';
+
+                    let feedbackData = {
+                        entity_id: entityId,
+                        is_correct: isCorrect,
+                        task_id: {{ task.id }}
+                    };
+
+                    // Se NON è corretta, aggiungi i dati corretti
+                    if (!isCorrect) {
+                        const correctedText = container.querySelector(`#corrected-text-${entityId}`).value;
+                        const correctedLabel = container.querySelector(`#corrected-label-${entityId}`).value;
+                        const correctedStart = parseInt(container.querySelector(`#corrected-start-${entityId}`).value);
+                        const correctedEnd = parseInt(container.querySelector(`#corrected-end-${entityId}`).value);
+
+                        if (!correctedText || isNaN(correctedStart) || isNaN(correctedEnd)) {
+                            alert('Compila tutti i campi della correzione');
+                            return;
+                        }
+
+                        feedbackData.corrected_entity = {
+                            text: correctedText,
+                            label: correctedLabel,
+                            start_char: correctedStart,
+                            end_char: correctedEnd
+                        };
+                    }
+
+                    submitFeedback(feedbackData, container);
+                });
+            });
+            
+            // Eliminazione entità
+            document.querySelectorAll('.delete-entity').forEach(button => {
+                button.addEventListener('click', function() {
+                    if (confirm('Sei sicuro di voler eliminare questa entità?')) {
+                        const entityId = this.getAttribute('data-entity-id');
+                        const container = document.getElementById(`entity-${entityId}`);
+                        
+                        fetch('/api/delete-entity', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                entity_id: entityId,
+                                task_id: {{ task.id }}
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                container.remove();
+                                // Rimuovi anche l'highlight dal testo
+                                const highlight = document.querySelector(`.entity-highlight[data-entity-id="${entityId}"]`);
+                                if (highlight) {
+                                    const text = highlight.textContent;
+                                    highlight.replaceWith(text);
+                                }
+                            } else {
+                                alert('Errore: ' + data.message);
+                            }
+                        });
+                    }
+                });
+            });
+        }
+        
+        function submitFeedback(feedbackData, container) {
+            fetch('/api/submit-annotation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(feedbackData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    container.classList.add('entity-reviewed');
+                    alert('Feedback inviato con successo!');
+                } else {
+                    alert('Errore: ' + data.message);
+                }
+            });
+        }
+        
+        function addNewEntity(entity) {
+            // Aggiungi l'entità al backend
+            fetch('/api/add-entity', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    entity: entity,
+                    task_id: {{ task.id }},
+                    document_id: {{ document.id }}
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Aggiorna l'ID dell'entità con quello restituito dal backend
+                    entity.id = data.entity_id;
+                    
+                    // Aggiungi l'entità all'interfaccia
+                    const entitiesContainer = document.getElementById('entities-container');
+                    
+                    // Crea il container dell'entità
+                    const entityContainer = document.createElement('div');
+                    entityContainer.className = 'entity-container';
+                    entityContainer.id = `entity-${entity.id}`;
+                    
+                    entityContainer.innerHTML = `
+                        <h5>
+                            <span class="entity confidence-high">${entity.label}</span>
+                        </h5>
+                        <p><strong>Testo:</strong> "${entity.text}"</p>
+                        <p><strong>Posizione:</strong> ${entity.start_char}-${entity.end_char}</p>
+                        <p><strong>Confidenza:</strong> 100.00%</p>
+                        
+                        <div class="correction-form">
+                            <div class="mb-3">
+                                <label class="form-label">Questa entità è corretta?</label>
+                                <div>
+                                                                    <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="is-correct-${entity.id}" id="correct-${entity.id}" value="true">
+                                    <label class="form-check-label" for="correct-${entity.id}">Sì</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="is-correct-${entity.id}" id="incorrect-${entity.id}" value="false">
+                                    <label class="form-check-label" for="incorrect-${entity.id}">No</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="correction-details" style="display: none;">
+                            <div class="mb-3">
+                                <label for="corrected-text-${entity.id}" class="form-label">Testo Corretto</label>
+                                <input type="text" class="form-control" id="corrected-text-${entity.id}" value="${entity.text}">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="corrected-label-${entity.id}" class="form-label">Etichetta Corretta</label>
+                                <select class="form-control" id="corrected-label-${entity.id}">
+                                    ${availableLabels.map(label => `
+                                    <option value="${label}" ${entity.label === label ? 'selected' : ''}>${label}</option>
+                                    `).join('')}
+                                </select>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col">
+                                    <label for="corrected-start-${entity.id}" class="form-label">Posizione Iniziale</label>
+                                    <input type="number" class="form-control" id="corrected-start-${entity.id}" value="${entity.start_char}">
+                                </div>
+                                <div class="col">
+                                    <label for="corrected-end-${entity.id}" class="form-label">Posizione Finale</label>
+                                    <input type="number" class="form-control" id="corrected-end-${entity.id}" value="${entity.end_char}">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary mt-3 submit-correction" data-entity-id="${entity.id}">Invia Correzione</button>
+                        <button class="btn btn-danger mt-3 ms-2 delete-entity" data-entity-id="${entity.id}">Elimina Entità</button>
+                    `;
+                    
+                    // Aggiungi il container al DOM
+                    if (entitiesContainer.querySelector('p')) {
+                        // Rimuovi il messaggio "Nessuna entità rilevata"
+                        entitiesContainer.innerHTML = '';
+                    }
+                    entitiesContainer.appendChild(entityContainer);
+                    
+                    // Aggiungi l'highlight al testo
+                    highlightNewEntity(entity);
+                    
+                    // Aggiungi gli event listener
+                    setupCorrectionListeners();
+                } else {
+                    alert('Errore: ' + data.message);
+                }
+            });
+        }
+        
+        function refreshLabelDropdowns() {
+            const allSelects = document.querySelectorAll('select[id^="corrected-label-"], select#new-entity-label');
+            allSelects.forEach(select => {
+                const currentValue = select.value;
+                let optionsHtml = '';
+                availableLabels.forEach(label => {
+                    const selected = (currentValue === label) ? 'selected' : '';
+                    optionsHtml += `<option value="${label}" ${selected}>${label}</option>`;
+                });
+                select.innerHTML = optionsHtml;
+            });
+
+            const buttonContainer = document.querySelector('.selection-info .d-flex.flex-wrap');
+            if (buttonContainer) {
+                let buttonsHtml = '';
+                availableLabels.forEach(label => {
+                    buttonsHtml += `<button class="btn btn-sm btn-outline-primary entity-label-btn" data-label="${label}">${label}</button>`;
+                });
+                buttonContainer.innerHTML = buttonsHtml;
+                // Re-add event listeners to the new buttons
+                document.querySelectorAll('.entity-label-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const label = this.getAttribute('data-label');
+                        const selection = window.getSelection();
+                        const selectionInfo = document.getElementById('selection-info');
+                        const startOffset = parseInt(selectionInfo.querySelector('#selected-position').textContent.split('-')[0]);
+                        const endOffset = parseInt(selectionInfo.querySelector('#selected-position').textContent.split('-')[1]);
+
+                        addNewEntity({
+                            id: `new-${entityCounter++}`,
+                            text: selection.toString(),
+                            label: label,
+                            start_char: startOffset,
+                            end_char: endOffset,
+                            confidence: 1.0
+                        });
+                        
+                        selectionInfo.style.display = 'none';
+                        window.getSelection().removeAllRanges();
+                    });
+                });
+            }
+        }
+
+        function highlightNewEntity(entity) {
+            const documentText = document.getElementById('document-text');
+            const textContent = documentText.textContent;
+            
+            // Verifica che le posizioni siano valide
+            if (entity.start_char >= 0 && entity.end_char <= textContent.length) {
+                // Crea un nuovo contenuto HTML con l'entità evidenziata
+                const before = textContent.substring(0, entity.start_char);
+                const entityText = textContent.substring(entity.start_char, entity.end_char);
+                const after = textContent.substring(entity.end_char);
+                
+                // Preserva gli highlight esistenti
+                const currentHTML = documentText.innerHTML;
+                const newHTML = currentHTML.replace(
+                    textContent, 
+                    before + 
+                    `<span class="entity-highlight" data-entity-id="${entity.id}">` + 
+                    entityText + 
+                    '</span>' + 
+                    after
+                );
+                
+                documentText.innerHTML = newHTML;
+            }
+        }
+        
+        function refreshLabelDropdowns() {
+            const allSelects = document.querySelectorAll('select[id^="corrected-label-"], select#new-entity-label');
+            allSelects.forEach(select => {
+                const currentValue = select.value;
+                let optionsHtml = '';
+                availableLabels.forEach(label => {
+                    const selected = (currentValue === label) ? 'selected' : '';
+                    optionsHtml += `<option value="${label}" ${selected}>${label}</option>`;
+                });
+                select.innerHTML = optionsHtml;
+            });
+
+            const buttonContainer = document.querySelector('.selection-info .d-flex.flex-wrap');
+            if (buttonContainer) {
+                let buttonsHtml = '';
+                availableLabels.forEach(label => {
+                    buttonsHtml += `<button class="btn btn-sm btn-outline-primary entity-label-btn" data-label="${label}">${label}</button>`;
+                });
+                buttonContainer.innerHTML = buttonsHtml;
+                // Re-add event listeners to the new buttons
+                document.querySelectorAll('.entity-label-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const label = this.getAttribute('data-label');
+                        const selection = window.getSelection();
+                        const selectionInfo = document.getElementById('selection-info');
+                        const startOffset = parseInt(selectionInfo.querySelector('#selected-position').textContent.split('-')[0]);
+                        const endOffset = parseInt(selectionInfo.querySelector('#selected-position').textContent.split('-')[1]);
+
+                        addNewEntity({
+                            id: `new-${entityCounter++}`,
+                            text: selection.toString(),
+                            label: label,
+                            start_char: startOffset,
+                            end_char: endOffset,
+                            confidence: 1.0
+                        });
+                        
+                        selectionInfo.style.display = 'none';
+                        window.getSelection().removeAllRanges();
+                    });
+                });
+            }
+        }
+
+        function getTextOffset(container, node, offset) {
+            // Calcola l'offset assoluto nel testo del documento
+            let totalOffset = 0;
+            
+            // Funzione ricorsiva per attraversare il DOM
+            function traverseNodes(currentNode, targetNode, targetOffset) {
+                if (currentNode === targetNode) {
+                    return totalOffset + targetOffset;
+                }
+                
+                if (currentNode.nodeType === Node.TEXT_NODE) {
+                    totalOffset += currentNode.length;
+                } else {
+                    for (let i = 0; i < currentNode.childNodes.length; i++) {
+                        const childNode = currentNode.childNodes[i];
+                        const result = traverseNodes(childNode, targetNode, targetOffset);
+                        if (result !== -1) {
+                            return result;
+                        }
+                    }
+                }
+                
+                return -1;
+            }
+            
+            return traverseNodes(container, node, offset);
+        }
+    </script>
+</body>
+</html>

@@ -3,250 +3,273 @@
 <head>
     <title>Annotazione Documento</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
-        .entity {
-            padding: 2px 5px;
-            margin: 0 2px;
+        :root {
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --gray: #6b7280;
+        }
+        body { background-color: #f9fafb; }
+        .container { max-width: 1400px; }
+        
+        /* Document text with highlights */
+        .document-text {
+            background: white;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.8;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .entity-highlight {
+            background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+            padding: 2px 4px;
             border-radius: 3px;
             cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 2px solid #3b82f6;
+        }
+        .entity-highlight:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .entity-highlight.confidence-high {
+            background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+            border-bottom-color: var(--success);
+        }
+        .entity-highlight.confidence-medium {
+            background: linear-gradient(120deg, #ffeaa7 0%, #fdcb6e 100%);
+            border-bottom-color: var(--warning);
+        }
+        .entity-highlight.confidence-low {
+            background: linear-gradient(120deg, #fab1a0 0%, #fd79a8 100%);
+            border-bottom-color: var(--danger);
+        }
+        .entity-highlight.reviewed {
+            background: #d1fae5;
+            opacity: 0.7;
+        }
+        .entity-highlight.rejected {
+            background: #fee2e2;
+            opacity: 0.5;
+            text-decoration: line-through;
         }
         
-        .entity-container {
-            margin-bottom: 15px;
+        /* Entity cards */
+        .entity-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            transition: all 0.2s ease;
+        }
+        .entity-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+        }
+        .entity-card.reviewed {
+            background: #f0fdf4;
+            border-color: var(--success);
+        }
+        .entity-card.rejected {
+            background: #fef2f2;
+            border-color: var(--danger);
+            opacity: 0.6;
+        }
+        
+        /* Quick actions */
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .quick-action-btn {
+            flex: 1;
             padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            border: 2px solid;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-accept {
+            background: white;
+            border-color: var(--success);
+            color: var(--success);
+        }
+        .btn-accept:hover {
+            background: var(--success);
+            color: white;
+        }
+        .btn-edit {
+            background: white;
+            border-color: var(--warning);
+            color: var(--warning);
+        }
+        .btn-edit:hover {
+            background: var(--warning);
+            color: white;
+        }
+        .btn-reject {
+            background: white;
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+        .btn-reject:hover {
+            background: var(--danger);
+            color: white;
         }
         
-        .document-text {
-            white-space: pre-wrap;
-            font-family: monospace;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-bottom: 20px;
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+        }
+        .toast-custom {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast-success { border-left: 4px solid var(--success); }
+        .toast-error { border-left: 4px solid var(--danger); }
+
+        /* Selection popup */
+        .selection-popup {
+            position: absolute;
+            background: white;
+            border: 2px solid var(--info);
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            z-index: 1500;
+            display: none;
+            max-width: 400px;
+        }
+        .selection-popup.active {
+            display: block;
+        }
+        .selection-popup h6 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .label-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 6px;
             max-height: 300px;
             overflow-y: auto;
-            position: relative;
         }
-        
-        .entity-highlight {
-            background-color: #ffeb3b;
-            padding: 2px 0;
+        .label-grid-item {
+            padding: 8px 12px;
+            background: #f3f4f6;
+            border: 2px solid transparent;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
         }
-        
-        .confidence-high { background-color: #c8e6c9; }
-        .confidence-medium { background-color: #fff9c4; }
-        .confidence-low { background-color: #ffccbc; }
-        
-        .selection-info {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            z-index: 1000;
-            display: none;
+        .label-grid-item:hover {
+            background: var(--info);
+            color: white;
+            border-color: var(--info);
         }
-        
-        .entity-label-btn {
-            margin: 2px;
+        .selection-popup .close-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #999;
         }
-        
-        .entity-reviewed {
-            background-color: #e8f5e9;
-            border-left: 4px solid #4caf50;
+        .selection-popup .close-btn:hover {
+            color: #333;
         }
     </style>
 </head>
 <body>
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Selection popup for creating new entities -->
+    <div class="selection-popup" id="selection-popup">
+        <button class="close-btn" onclick="closeSelectionPopup()">&times;</button>
+        <h6>🏷️ Seleziona Etichetta</h6>
+        <div class="label-grid" id="label-grid"></div>
+    </div>
+    
     <div class="container mt-4">
-        <h1>Annotazione Documento</h1>
-        <p>Task ID: {{ task.id }} | Document ID: {{ document.id }}</p>
+        <h2>📝 Annotazione Documento</h2>
+        <p>Task #{{ task.id }} | {{ entities|length }} entità | <span id="reviewed-count">0</span> revisionate</p>
         
         <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <span>Testo del Documento</span>
-                <div>
-                    <button class="btn btn-sm btn-outline-secondary" id="toggle-selection-mode">Modalità Selezione</button>
-                    <span class="ms-2 badge bg-secondary" id="selection-mode-status">OFF</span>
-                </div>
+            <div class="card-header">
+                <strong>Testo del Documento</strong>
             </div>
-            <div class="card-body">
+            <div class="card-body p-0">
                 <div class="document-text" id="document-text">{{ document.text }}</div>
             </div>
         </div>
         
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <span>Entità Rilevate</span>
-                <button class="btn btn-sm btn-primary" id="add-entity-btn">Aggiungi Entità</button>
+        <div class="card">
+            <div class="card-header">
+                <strong>Entità Rilevate</strong>
             </div>
-            <div class="card-body">
-                <div id="entities-container">
-                    {% if entities|length == 0 %}
-                        <p>Nessuna entità rilevata in questo documento.</p>
-                    {% else %}
-                        {% for entity in entities %}
-                        <div class="entity-container" id="entity-{{ entity.id }}">
-                            <h5>
-                                <span class="entity 
-                                    {% if entity.confidence > 0.8 %}confidence-high
-                                    {% elif entity.confidence > 0.5 %}confidence-medium
-                                    {% else %}confidence-low{% endif %}">
-                                    {{ entity.label }}
-                                </span>
-                            </h5>
-                            <p><strong>Testo:</strong> "{{ entity.text }}"</p>
-                            <p><strong>Posizione:</strong> {{ entity.start_char }}-{{ entity.end_char }}</p>
-                            <p><strong>Confidenza:</strong> {{ "%.2f"|format(entity.confidence * 100) }}%</p>
-                            
-                            <div class="correction-form">
-                                <div class="mb-3">
-                                    <label class="form-label">Questa entità è corretta?</label>
-                                    <div>
-                                        <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="is-correct-{{ entity.id }}" id="correct-{{ entity.id }}" value="true">
-                                            <label class="form-check-label" for="correct-{{ entity.id }}">Sì</label>
-                                        </div>
-                                        <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="is-correct-{{ entity.id }}" id="incorrect-{{ entity.id }}" value="false">
-                                            <label class="form-check-label" for="incorrect-{{ entity.id }}">No</label>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="correction-details" style="display: none;">
-                                    <div class="mb-3">
-                                        <label for="corrected-text-{{ entity.id }}" class="form-label">Testo Corretto</label>
-                                        <input type="text" class="form-control" id="corrected-text-{{ entity.id }}" value="{{ entity.text }}">
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        <label for="corrected-label-{{ entity.id }}" class="form-label">Etichetta Corretta</label>
-                                        <select class="form-control" id="corrected-label-{{ entity.id }}">
-                                            {% for label in labels %}
-                                            <option value="{{ label }}" {% if entity.label == label %}selected{% endif %}>{{ label }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    
-                                    <div class="row">
-                                        <div class="col">
-                                            <label for="corrected-start-{{ entity.id }}" class="form-label">Posizione Iniziale</label>
-                                            <input type="number" class="form-control" id="corrected-start-{{ entity.id }}" value="{{ entity.start_char }}">
-                                        </div>
-                                        <div class="col">
-                                            <label for="corrected-end-{{ entity.id }}" class="form-label">Posizione Finale</label>
-                                            <input type="number" class="form-control" id="corrected-end-{{ entity.id }}" value="{{ entity.end_char }}">
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <button class="btn btn-primary mt-3 submit-correction" data-entity-id="{{ entity.id }}">Invia Correzione</button>
-                                <button class="btn btn-danger mt-3 ms-2 delete-entity" data-entity-id="{{ entity.id }}">Elimina Entità</button>
-                            </div>
+            <div class="card-body" id="entities-container">
+                {% if entities|length == 0 %}
+                    <p id="no-entities-message">Nessuna entità rilevata.</p>
+                {% else %}
+                    {% for entity in entities %}
+                    <div class="entity-card" id="entity-{{ entity.id }}" data-entity-id="{{ entity.id }}">
+                        <div>
+                            <strong>"{{ entity.text }}"</strong>
+                            <span class="badge bg-{% if entity.confidence > 0.8 %}success{% elif entity.confidence > 0.5 %}warning{% else %}danger{% endif %}">
+                                {{ entity.label }} ({{ "%.0f"|format(entity.confidence * 100) }}%)
+                            </span>
                         </div>
-                        {% endfor %}
-                    {% endif %}
-                </div>
+                        <small class="text-muted">{{ entity.start_char }}-{{ entity.end_char }}</small>
+                        
+                        <div class="quick-actions">
+                            <button class="quick-action-btn btn-accept" onclick="acceptEntity({{ entity.id }})">
+                                ✓ Corretto
+                            </button>
+                            <button class="quick-action-btn btn-edit" onclick="editEntity({{ entity.id }})">
+                                ✏ Correggi
+                            </button>
+                            <button class="quick-action-btn btn-reject" onclick="rejectEntity({{ entity.id }})">
+                                ✗ Elimina
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% endif %}
                 
                 <div class="mt-4">
                     <button id="complete-task" class="btn btn-success">Completa Task</button>
-                    <a href="/" class="btn btn-secondary ms-2">Torna alla Dashboard</a>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Selection Info Box -->
-    <div class="selection-info" id="selection-info">
-        <h5>Nuova Entità</h5>
-        <p><strong>Testo:</strong> <span id="selected-text"></span></p>
-        <p><strong>Posizione:</strong> <span id="selected-position"></span></p>
-        
-        <div class="mb-3">
-            <label class="form-label">Etichetta:</label>
-            <div class="d-flex flex-wrap">
-                {% for label in labels %}
-                <button class="btn btn-sm btn-outline-primary entity-label-btn" data-label="{{ label }}">{{ label }}</button>
-                {% endfor %}
-            </div>
-        </div>
-        
-        <button class="btn btn-sm btn-secondary" id="cancel-selection">Annulla</button>
-    </div>
-    
-    <!-- Add New Label Modal -->
-    <div class="modal fade" id="add-label-modal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Aggiungi Nuova Etichetta</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="add-label-form">
-                        <div class="mb-3">
-                            <label for="new-label-name" class="form-label">Nome Nuova Etichetta</label>
-                            <input type="text" class="form-control" id="new-label-name" placeholder="es. codice_della_strada" required>
-                            <div class="form-text">Usa lettere minuscole e underscore al posto degli spazi.</div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
-                    <button type="button" class="btn btn-primary" id="save-new-label-btn">Salva Etichetta</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add Entity Modal -->
-    <div class="modal fade" id="add-entity-modal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Aggiungi Nuova Entità</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="add-entity-form">
-                        <div class="mb-3">
-                            <label for="new-entity-text" class="form-label">Testo dell'Entità</label>
-                            <input type="text" class="form-control" id="new-entity-text" required>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="new-entity-label" class="form-label">Etichetta</label>
-                            <div class="input-group">
-                                <select class="form-control" id="new-entity-label">
-                                    {% for label in labels %}
-                                    <option value="{{ label }}">{{ label }}</option>
-                                    {% endfor %}
-                                </select>
-                                <button class="btn btn-outline-secondary" type="button" id="add-new-label-btn" data-bs-toggle="modal" data-bs-target="#add-label-modal">Nuova</button>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col">
-                                <label for="new-entity-start" class="form-label">Posizione Iniziale</label>
-                                <input type="number" class="form-control" id="new-entity-start" required>
-                            </div>
-                            <div class="col">
-                                <label for="new-entity-end" class="form-label">Posizione Finale</label>
-                                <input type="number" class="form-control" id="new-entity-end" required>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
-                    <button type="button" class="btn btn-primary" id="save-new-entity">Salva</button>
+                    <a href="/" class="btn btn-secondary">Dashboard</a>
                 </div>
             </div>
         </div>
@@ -254,556 +277,509 @@
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Global variables
+        const entitiesData = [
+            {% for entity in entities %}
+            {id: {{ entity.id }}, start: {{ entity.start_char }}, end: {{ entity.end_char }}, text: '{{ entity.text|replace("'", "\\'") }}', label: '{{ entity.label }}', confidence: {{ entity.confidence }}}{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ];
         const availableLabels = {{ labels|tojson|safe }};
-        let selectionMode = false;
-        let entityCounter = 1000; // Per le nuove entità create manualmente
+        const documentId = {{ document.id }};
+        const taskId = {{ task.id }};
+        let reviewedCount = 0;
+        let currentSelection = null;
         
-        document.addEventListener('DOMContentLoaded', function() {
-            // Inizializza i componenti UI
-            highlightEntities();
-            setupEventListeners();
-            
-            // Inizializza il modal per aggiungere entità
-            const addEntityModal = new bootstrap.Modal(document.getElementById('add-entity-modal'));
-            
-            // Gestione del pulsante per aggiungere entità
-            document.getElementById('add-entity-btn').addEventListener('click', function() {
-                addEntityModal.show();
-            });
-            
-            // Gestione del salvataggio della nuova etichetta
-            document.getElementById('save-new-label-btn').addEventListener('click', function() {
-                const newLabelName = document.getElementById('new-label-name').value;
-                if (!newLabelName) {
-                    alert('Il nome dell\'etichetta non può essere vuoto.');
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast-custom toast-${type}`;
+            toast.innerHTML = `<i class="bi bi-${type === 'success' ? 'check-circle-fill' : 'x-circle-fill'}"></i><span>${message}</span>`;
+            document.getElementById('toast-container').appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        function highlightEntitiesInText() {
+            const docText = document.getElementById('document-text');
+            // Get the actual text content from the div (preserves original formatting)
+            const originalText = docText.textContent;
+
+            // Sort entities by position (descending) to process from end to start
+            const sortedEntities = [...entitiesData].sort((a, b) => b.start - a.start);
+
+            // Create array of text fragments with highlighting info
+            let fragments = [];
+            let lastEnd = originalText.length;
+
+            sortedEntities.forEach(entity => {
+                // Validate positions
+                if (entity.start < 0 || entity.end > originalText.length || entity.start >= entity.end) {
+                    console.warn('Invalid entity positions:', entity);
                     return;
                 }
 
-                fetch('/api/v1/labels', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-API-Key': 'your-super-secret-api-key'
-                    },
-                    body: JSON.stringify({ name: newLabelName })
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(err => { throw new Error(err.detail || 'Failed to add label') });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.status === 'success') {
-                        // Add to our JS array
-                        if (!availableLabels.includes(data.new_label)) {
-                            availableLabels.push(data.new_label);
-                            availableLabels.sort();
-                        }
-                        
-                        // Refresh all label dropdowns
-                        refreshLabelDropdowns();
-                        
-                        // Hide the modal
-                        const addLabelModal = bootstrap.Modal.getInstance(document.getElementById('add-label-modal'));
-                        addLabelModal.hide();
-                        document.getElementById('new-label-name').value = '';
-                    } else {
-                        alert('Error: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    alert('Error: ' + error.message);
-                });
+                const confidenceClass = entity.confidence > 0.8 ? 'confidence-high' :
+                                       entity.confidence > 0.5 ? 'confidence-medium' : 'confidence-low';
+
+                // Text after this entity (until last processed position)
+                if (entity.end < lastEnd) {
+                    fragments.unshift(escapeHtml(originalText.substring(entity.end, lastEnd)));
+                }
+
+                // The entity itself (highlighted)
+                const entityText = originalText.substring(entity.start, entity.end);
+                fragments.unshift(
+                    `<mark class="entity-highlight ${confidenceClass}" ` +
+                    `data-entity-id="${entity.id}" ` +
+                    `onclick="scrollToEntity(${entity.id})" ` +
+                    `title="${escapeHtml(entity.label)} (${(entity.confidence * 100).toFixed(0)}%)">${escapeHtml(entityText)}</mark>`
+                );
+
+                lastEnd = entity.start;
             });
 
-            // Salvataggio della nuova entità
-            document.getElementById('save-new-entity').addEventListener('click', function() {
-                const text = document.getElementById('new-entity-text').value;
-                const label = document.getElementById('new-entity-label').value;
-                const startChar = parseInt(document.getElementById('new-entity-start').value);
-                const endChar = parseInt(document.getElementById('new-entity-end').value);
-                
-                if (!text || isNaN(startChar) || isNaN(endChar)) {
-                    alert('Compila tutti i campi richiesti');
-                    return;
-                }
-                
-                addNewEntity({
-                    id: `new-${entityCounter++}`,
-                    text: text,
-                    label: label,
-                    start_char: startChar,
-                    end_char: endChar,
-                    confidence: 1.0
-                });
-                
-                addEntityModal.hide();
-            });
-        });
-        
-        function highlightEntities() {
-            const documentText = document.getElementById('document-text').innerText;
-            let highlightedText = documentText;
-            
-            // Ottieni le entità dal backend o usa quelle esistenti
-            const entities = Array.from({{ entities|tojson|safe }}).sort((a, b) => b.start_char - a.start_char);
-            
-            entities.forEach(entity => {
-                const start = entity.start_char;
-                const end = entity.end_char;
-                
-                if (start >= 0 && end <= highlightedText.length) {
-                    const before = highlightedText.substring(0, start);
-                    const entityText = highlightedText.substring(start, end);
-                    const after = highlightedText.substring(end);
-                    
-                    highlightedText = before + 
-                        `<span class="entity-highlight" data-entity-id="${entity.id}">` + 
-                        entityText + 
-                        '</span>' + 
-                        after;
-                }
-            });
-            
-            document.getElementById('document-text').innerHTML = highlightedText;
+            // Add remaining text at the beginning
+            if (lastEnd > 0) {
+                fragments.unshift(escapeHtml(originalText.substring(0, lastEnd)));
+            }
+
+            docText.innerHTML = fragments.join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
         
-        function setupEventListeners() {
-            // Toggle della modalità selezione
-            document.getElementById('toggle-selection-mode').addEventListener('click', function() {
-                selectionMode = !selectionMode;
-                document.getElementById('selection-mode-status').textContent = selectionMode ? 'ON' : 'OFF';
-                document.getElementById('selection-mode-status').className = selectionMode ? 'ms-2 badge bg-success' : 'ms-2 badge bg-secondary';
-            });
-            
-            // Gestione della selezione del testo
-            document.getElementById('document-text').addEventListener('mouseup', function() {
-                if (!selectionMode) return;
-                
-                const selection = window.getSelection();
-                if (selection.toString().length > 0) {
-                    const range = selection.getRangeAt(0);
-                    const startOffset = getTextOffset(this, range.startContainer, range.startOffset);
-                    const endOffset = getTextOffset(this, range.endContainer, range.endOffset);
-                    
-                    document.getElementById('selected-text').textContent = selection.toString();
-                    document.getElementById('selected-position').textContent = `${startOffset}-${endOffset}`;
-                    
-                    // Mostra il box di selezione
-                    const selectionInfo = document.getElementById('selection-info');
-                    selectionInfo.style.display = 'block';
-                    
-                    // Gestione dei pulsanti delle etichette
-                    document.querySelectorAll('.entity-label-btn').forEach(btn => {
-                        btn.addEventListener('click', function() {
-                            const label = this.getAttribute('data-label');
-                            addNewEntity({
-                                id: `new-${entityCounter++}`,
-                                text: selection.toString(),
-                                label: label,
-                                start_char: startOffset,
-                                end_char: endOffset,
-                                confidence: 1.0
-                            });
-                            
-                            selectionInfo.style.display = 'none';
-                            window.getSelection().removeAllRanges();
-                        });
-                    });
-                }
-            });
-            
-            // Annulla selezione
-            document.getElementById('cancel-selection').addEventListener('click', function() {
-                document.getElementById('selection-info').style.display = 'none';
-                window.getSelection().removeAllRanges();
-            });
-            
-            // Gestione delle correzioni
-            setupCorrectionListeners();
-            
-            // Completamento della task
-            document.getElementById('complete-task').addEventListener('click', function() {
-                if (confirm('Sei sicuro di voler completare questa task?')) {
-                    fetch('/api/complete-task', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            task_id: {{ task.id }}
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            alert('Task completata con successo!');
-                            window.location.href = '/';
-                        } else {
-                            alert('Errore: ' + data.message);
-                        }
-                    });
-                }
+        function scrollToEntity(entityId) {
+            const card = document.getElementById(`entity-${entityId}`);
+            if (card) {
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                card.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.5)';
+                setTimeout(() => card.style.boxShadow = '', 1000);
+            }
+        }
+        
+        function updateHighlight(entityId, status) {
+            document.querySelectorAll(`[data-entity-id="${entityId}"]`).forEach(highlight => {
+                highlight.classList.remove('reviewed', 'rejected');
+                if (status) highlight.classList.add(status);
             });
         }
         
-        function setupCorrectionListeners() {
-            // Mostra/nascondi dettagli correzione
-            document.querySelectorAll('input[type="radio"]').forEach(radio => {
-                radio.addEventListener('change', function() {
-                    const entityId = this.name.split('-')[2];
-                    const isCorrect = this.value === 'true';
-                    const correctionDetails = this.closest('.correction-form').querySelector('.correction-details');
-                    
-                    if (!isCorrect) {
-                        correctionDetails.style.display = 'block';
-                    } else {
-                        correctionDetails.style.display = 'none';
-                    }
-                });
+        function acceptEntity(entityId) {
+            document.getElementById(`entity-${entityId}`).classList.add('reviewed');
+            updateHighlight(entityId, 'reviewed');
+            submitAnnotation(entityId, true, null);
+            reviewedCount++;
+            document.getElementById('reviewed-count').textContent = reviewedCount;
+            showToast('Entità accettata', 'success');
+        }
+        
+        function editEntity(entityId) {
+            const entity = entitiesData.find(e => e.id === entityId);
+            if (!entity) return;
+
+            // Populate modal with current entity data
+            document.getElementById('edit-entity-id').value = entityId;
+            document.getElementById('edit-entity-text').value = entity.text;
+            document.getElementById('edit-entity-start').value = entity.start;
+            document.getElementById('edit-entity-end').value = entity.end;
+
+            // Display entity text in modal header
+            const textDisplay = document.getElementById('edit-entity-text-display');
+            textDisplay.textContent = `"${entity.text.length > 50 ? entity.text.substring(0, 50) + '...' : entity.text}"`;
+
+            // Create label buttons
+            const buttonsContainer = document.getElementById('edit-label-buttons');
+            buttonsContainer.innerHTML = '';
+
+            availableLabels.forEach(label => {
+                const btn = document.createElement('button');
+                btn.className = 'label-btn' + (label === entity.label ? ' current' : '');
+                btn.textContent = label;
+                btn.onclick = () => saveEntityEdit(entityId, label);
+                buttonsContainer.appendChild(btn);
             });
-            
-            // Invio correzioni
-            document.querySelectorAll('.submit-correction').forEach(button => {
-                button.addEventListener('click', function() {
-                    const entityId = this.getAttribute('data-entity-id');
-                    const container = document.getElementById(`entity-${entityId}`);
-                    const checkedRadio = container.querySelector(`input[name="is-correct-${entityId}"]:checked`);
 
-                    if (!checkedRadio) {
-                        alert('Indica se l\'entità è corretta o meno prima di inviare');
-                        return;
-                    }
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('editEntityModal'));
+            modal.show();
+        }
 
-                    const isCorrect = checkedRadio.value === 'true';
+        function saveEntityEdit(entityId, newLabel) {
+            const text = document.getElementById('edit-entity-text').value;
+            const startChar = parseInt(document.getElementById('edit-entity-start').value);
+            const endChar = parseInt(document.getElementById('edit-entity-end').value);
 
-                    let feedbackData = {
-                        entity_id: entityId,
-                        is_correct: isCorrect,
-                        task_id: {{ task.id }}
-                    };
+            const entity = entitiesData.find(e => e.id === entityId);
+            if (!entity) return;
 
-                    // Se NON è corretta, aggiungi i dati corretti
-                    if (!isCorrect) {
-                        const correctedText = container.querySelector(`#corrected-text-${entityId}`).value;
-                        const correctedLabel = container.querySelector(`#corrected-label-${entityId}`).value;
-                        const correctedStart = parseInt(container.querySelector(`#corrected-start-${entityId}`).value);
-                        const correctedEnd = parseInt(container.querySelector(`#corrected-end-${entityId}`).value);
+            const correctedEntity = {
+                text: text,
+                label: newLabel,
+                start_char: startChar,
+                end_char: endChar
+            };
 
-                        if (!correctedText || isNaN(correctedStart) || isNaN(correctedEnd)) {
-                            alert('Compila tutti i campi della correzione');
-                            return;
-                        }
+            // Submit correction
+            submitAnnotation(entityId, false, correctedEntity);
 
-                        feedbackData.corrected_entity = {
-                            text: correctedText,
-                            label: correctedLabel,
-                            start_char: correctedStart,
-                            end_char: correctedEnd
-                        };
-                    }
+            // Update local entity data
+            entity.label = newLabel;
+            entity.text = text;
+            entity.start = startChar;
+            entity.end = endChar;
 
-                    submitFeedback(feedbackData, container);
-                });
-            });
-            
-            // Eliminazione entità
-            document.querySelectorAll('.delete-entity').forEach(button => {
-                button.addEventListener('click', function() {
-                    if (confirm('Sei sicuro di voler eliminare questa entità?')) {
-                        const entityId = this.getAttribute('data-entity-id');
-                        const container = document.getElementById(`entity-${entityId}`);
-                        
-                        fetch('/api/delete-entity', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                entity_id: entityId,
-                                task_id: {{ task.id }}
-                            })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.status === 'success') {
-                                container.remove();
-                                // Rimuovi anche l'highlight dal testo
-                                const highlight = document.querySelector(`.entity-highlight[data-entity-id="${entityId}"]`);
-                                if (highlight) {
-                                    const text = highlight.textContent;
-                                    highlight.replaceWith(text);
-                                }
-                            } else {
-                                alert('Errore: ' + data.message);
-                            }
-                        });
-                    }
-                });
+            // Update UI
+            const card = document.getElementById(`entity-${entityId}`);
+            const badge = card.querySelector('.badge');
+            badge.textContent = newLabel + ' (' + (entity.confidence * 100).toFixed(0) + '%)';
+
+            // Update badge color based on confidence
+            badge.className = 'badge bg-' + (entity.confidence > 0.8 ? 'success' : entity.confidence > 0.5 ? 'warning' : 'danger');
+
+            card.classList.add('reviewed');
+            updateHighlight(entityId, 'reviewed');
+
+            reviewedCount++;
+            document.getElementById('reviewed-count').textContent = reviewedCount;
+
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('editEntityModal')).hide();
+
+            showToast(`Etichetta cambiata in: ${newLabel}`, 'success');
+        }
+
+        function rejectEntity(entityId) {
+            if (!confirm('Eliminare questa entità?')) return;
+
+            // Delete entity from backend
+            fetch('/api/delete-entity', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ entity_id: entityId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Remove from UI
+                    document.getElementById(`entity-${entityId}`).remove();
+
+                    // Remove from entitiesData
+                    const index = entitiesData.findIndex(e => e.id === entityId);
+                    if (index > -1) entitiesData.splice(index, 1);
+
+                    // Update highlights
+                    highlightEntitiesInText();
+
+                    reviewedCount++;
+                    document.getElementById('reviewed-count').textContent = reviewedCount;
+                    showToast('Entità eliminata', 'success');
+                } else {
+                    showToast('Errore durante l\'eliminazione', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Errore durante l\'eliminazione', 'error');
             });
         }
         
-        function submitFeedback(feedbackData, container) {
+        function submitAnnotation(entityId, isCorrect, correctedEntity) {
+            const payload = {
+                entity_id: entityId,
+                is_correct: isCorrect,
+                task_id: {{ task.id }}
+            };
+
+            if (correctedEntity) {
+                payload.corrected_entity = correctedEntity;
+            }
+
             fetch('/api/submit-annotation', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(feedbackData)
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
             })
-            .then(response => response.json())
+            .then(r => r.json())
             .then(data => {
-                if (data.status === 'success') {
-                    container.classList.add('entity-reviewed');
-                    alert('Feedback inviato con successo!');
-                } else {
-                    alert('Errore: ' + data.message);
+                if (data.status !== 'success') {
+                    console.error('Annotation submission failed:', data);
+                    showToast('Errore salvataggio', 'error');
                 }
+            })
+            .catch(error => {
+                console.error('Error submitting annotation:', error);
+                showToast('Errore salvataggio', 'error');
             });
         }
         
-        function addNewEntity(entity) {
-            // Aggiungi l'entità al backend
-            fetch('/api/add-entity', {
+        document.getElementById('complete-task').addEventListener('click', function() {
+            fetch('/api/complete-task', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ task_id: {{ task.id }} })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showToast('Task completato!', 'success');
+                    setTimeout(() => window.location.href = '/', 1000);
+                } else {
+                    showToast('Errore completamento task', 'error');
+                }
+                });
+        });
+
+        // ========== TEXT SELECTION FOR NEW ENTITIES ==========
+
+        function setupTextSelection() {
+            const docText = document.getElementById('document-text');
+
+            // Handle text selection
+            docText.addEventListener('mouseup', handleTextSelection);
+            docText.addEventListener('touchend', handleTextSelection);
+
+            // Close popup when clicking outside
+            document.addEventListener('click', function(e) {
+                const popup = document.getElementById('selection-popup');
+                if (!popup.contains(e.target) && !docText.contains(e.target)) {
+                    closeSelectionPopup();
+                }
+            });
+
+            // Populate label grid
+            const labelGrid = document.getElementById('label-grid');
+            availableLabels.forEach(label => {
+                const item = document.createElement('div');
+                item.className = 'label-grid-item';
+                item.textContent = label;
+                item.onclick = () => createEntityFromSelection(label);
+                labelGrid.appendChild(item);
+            });
+        }
+
+        function handleTextSelection(e) {
+            const selection = window.getSelection();
+            const selectedText = selection.toString().trim();
+
+            if (selectedText.length === 0) {
+                closeSelectionPopup();
+                return;
+            }
+
+            // Get selection range
+            const range = selection.getRangeAt(0);
+
+            // Calculate character positions in the original text
+            const docText = document.getElementById('document-text');
+            const originalText = docText.textContent;
+
+            // Get text before selection to calculate start position
+            const preSelectionRange = document.createRange();
+            preSelectionRange.selectNodeContents(docText);
+            preSelectionRange.setEnd(range.startContainer, range.startOffset);
+            const startChar = preSelectionRange.toString().length;
+            const endChar = startChar + selectedText.length;
+
+            // Validate positions
+            if (startChar < 0 || endChar > originalText.length) {
+                console.error('Invalid selection positions', {startChar, endChar, textLength: originalText.length});
+                return;
+            }
+
+            // Store current selection
+            currentSelection = {
+                text: selectedText,
+                start: startChar,
+                end: endChar
+            };
+
+            console.log('Selection:', currentSelection);
+
+            // Show popup near selection
+            showSelectionPopup(e.pageX, e.pageY);
+        }
+
+        function showSelectionPopup(x, y) {
+            const popup = document.getElementById('selection-popup');
+            popup.classList.add('active');
+
+            // Position popup
+            popup.style.left = (x + 10) + 'px';
+            popup.style.top = (y - 50) + 'px';
+
+            // Adjust if popup goes off screen
+            setTimeout(() => {
+                const rect = popup.getBoundingClientRect();
+                if (rect.right > window.innerWidth) {
+                    popup.style.left = (window.innerWidth - rect.width - 10) + 'px';
+                }
+                if (rect.bottom > window.innerHeight) {
+                    popup.style.top = (y - rect.height - 10) + 'px';
+                }
+            }, 10);
+        }
+
+        function closeSelectionPopup() {
+            document.getElementById('selection-popup').classList.remove('active');
+            currentSelection = null;
+            window.getSelection().removeAllRanges();
+        }
+
+        function createEntityFromSelection(label) {
+            if (!currentSelection) return;
+
+            // Create new entity via API
+            fetch('/api/create-entity', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
-                    entity: entity,
-                    task_id: {{ task.id }},
-                    document_id: {{ document.id }}
+                    document_id: documentId,
+                    text: currentSelection.text,
+                    label: label,
+                    start_char: currentSelection.start,
+                    end_char: currentSelection.end,
+                    confidence: 1.0,
+                    model: 'manual'
                 })
             })
-            .then(response => response.json())
+            .then(r => r.json())
             .then(data => {
-                if (data.status === 'success') {
-                    // Aggiorna l'ID dell'entità con quello restituito dal backend
-                    entity.id = data.entity_id;
-                    
-                    // Aggiungi l'entità all'interfaccia
-                    const entitiesContainer = document.getElementById('entities-container');
-                    
-                    // Crea il container dell'entità
-                    const entityContainer = document.createElement('div');
-                    entityContainer.className = 'entity-container';
-                    entityContainer.id = `entity-${entity.id}`;
-                    
-                    entityContainer.innerHTML = `
-                        <h5>
-                            <span class="entity confidence-high">${entity.label}</span>
-                        </h5>
-                        <p><strong>Testo:</strong> "${entity.text}"</p>
-                        <p><strong>Posizione:</strong> ${entity.start_char}-${entity.end_char}</p>
-                        <p><strong>Confidenza:</strong> 100.00%</p>
-                        
-                        <div class="correction-form">
-                            <div class="mb-3">
-                                <label class="form-label">Questa entità è corretta?</label>
-                                <div>
-                                                                    <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="is-correct-${entity.id}" id="correct-${entity.id}" value="true">
-                                    <label class="form-check-label" for="correct-${entity.id}">Sì</label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="is-correct-${entity.id}" id="incorrect-${entity.id}" value="false">
-                                    <label class="form-check-label" for="incorrect-${entity.id}">No</label>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="correction-details" style="display: none;">
-                            <div class="mb-3">
-                                <label for="corrected-text-${entity.id}" class="form-label">Testo Corretto</label>
-                                <input type="text" class="form-control" id="corrected-text-${entity.id}" value="${entity.text}">
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="corrected-label-${entity.id}" class="form-label">Etichetta Corretta</label>
-                                <select class="form-control" id="corrected-label-${entity.id}">
-                                    ${availableLabels.map(label => `
-                                    <option value="${label}" ${entity.label === label ? 'selected' : ''}>${label}</option>
-                                    `).join('')}
-                                </select>
-                            </div>
-                            
-                            <div class="row">
-                                <div class="col">
-                                    <label for="corrected-start-${entity.id}" class="form-label">Posizione Iniziale</label>
-                                    <input type="number" class="form-control" id="corrected-start-${entity.id}" value="${entity.start_char}">
-                                </div>
-                                <div class="col">
-                                    <label for="corrected-end-${entity.id}" class="form-label">Posizione Finale</label>
-                                    <input type="number" class="form-control" id="corrected-end-${entity.id}" value="${entity.end_char}">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <button class="btn btn-primary mt-3 submit-correction" data-entity-id="${entity.id}">Invia Correzione</button>
-                        <button class="btn btn-danger mt-3 ms-2 delete-entity" data-entity-id="${entity.id}">Elimina Entità</button>
-                    `;
-                    
-                    // Aggiungi il container al DOM
-                    if (entitiesContainer.querySelector('p')) {
-                        // Rimuovi il messaggio "Nessuna entità rilevata"
-                        entitiesContainer.innerHTML = '';
-                    }
-                    entitiesContainer.appendChild(entityContainer);
-                    
-                    // Aggiungi l'highlight al testo
-                    highlightNewEntity(entity);
-                    
-                    // Aggiungi gli event listener
-                    setupCorrectionListeners();
+                if (data.status === 'success' || data.id) {
+                    // Add to entities array
+                    const newEntity = {
+                        id: data.id || Date.now(),
+                        start: currentSelection.start,
+                        end: currentSelection.end,
+                        text: currentSelection.text,
+                        label: label,
+                        confidence: 1.0
+                    };
+                    entitiesData.push(newEntity);
+
+                    // Re-highlight text
+                    highlightEntitiesInText();
+
+                    // Add entity card
+                    addEntityCard(newEntity);
+
+                    showToast(`Entità "${label}" creata`, 'success');
                 } else {
-                    alert('Errore: ' + data.message);
+                    showToast('Errore nella creazione', 'error');
                 }
+                closeSelectionPopup();
+            })
+            .catch(err => {
+                console.error('Error creating entity:', err);
+                showToast('Errore nella creazione', 'error');
+                closeSelectionPopup();
             });
         }
-        
-        function refreshLabelDropdowns() {
-            const allSelects = document.querySelectorAll('select[id^="corrected-label-"], select#new-entity-label');
-            allSelects.forEach(select => {
-                const currentValue = select.value;
-                let optionsHtml = '';
-                availableLabels.forEach(label => {
-                    const selected = (currentValue === label) ? 'selected' : '';
-                    optionsHtml += `<option value="${label}" ${selected}>${label}</option>`;
-                });
-                select.innerHTML = optionsHtml;
-            });
 
-            const buttonContainer = document.querySelector('.selection-info .d-flex.flex-wrap');
-            if (buttonContainer) {
-                let buttonsHtml = '';
-                availableLabels.forEach(label => {
-                    buttonsHtml += `<button class="btn btn-sm btn-outline-primary entity-label-btn" data-label="${label}">${label}</button>`;
-                });
-                buttonContainer.innerHTML = buttonsHtml;
-                // Re-add event listeners to the new buttons
-                document.querySelectorAll('.entity-label-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const label = this.getAttribute('data-label');
-                        const selection = window.getSelection();
-                        const selectionInfo = document.getElementById('selection-info');
-                        const startOffset = parseInt(selectionInfo.querySelector('#selected-position').textContent.split('-')[0]);
-                        const endOffset = parseInt(selectionInfo.querySelector('#selected-position').textContent.split('-')[1]);
+        function addEntityCard(entity) {
+            const container = document.querySelector('#entities-container');
 
-                        addNewEntity({
-                            id: `new-${entityCounter++}`,
-                            text: selection.toString(),
-                            label: label,
-                            start_char: startOffset,
-                            end_char: endOffset,
-                            confidence: 1.0
-                        });
-                        
-                        selectionInfo.style.display = 'none';
-                        window.getSelection().removeAllRanges();
-                    });
-                });
+            if (!container) {
+                console.error('Entities container not found');
+                return;
             }
+
+            // Remove "no entities" message if present
+            const noEntitiesMsg = document.getElementById('no-entities-message');
+            if (noEntitiesMsg) {
+                noEntitiesMsg.remove();
+            }
+
+            const card = document.createElement('div');
+            card.className = 'entity-card';
+            card.id = `entity-${entity.id}`;
+            card.dataset.entityId = entity.id;
+            card.innerHTML = `
+                <div>
+                    <strong>"${escapeHtml(entity.text)}"</strong>
+                    <span class="badge bg-success">${escapeHtml(entity.label)} (100%)</span>
+                </div>
+                <small class="text-muted">${entity.start}-${entity.end}</small>
+                <div class="quick-actions">
+                    <button class="quick-action-btn btn-accept" onclick="acceptEntity(${entity.id})">
+                        ✓ Corretto
+                    </button>
+                    <button class="quick-action-btn btn-edit" onclick="editEntity(${entity.id})">
+                        ✏ Correggi
+                    </button>
+                    <button class="quick-action-btn btn-reject" onclick="rejectEntity(${entity.id})">
+                        ✗ Elimina
+                    </button>
+                </div>
+            `;
+            container.appendChild(card);
         }
 
-        function highlightNewEntity(entity) {
-            const documentText = document.getElementById('document-text');
-            const textContent = documentText.textContent;
-            
-            // Verifica che le posizioni siano valide
-            if (entity.start_char >= 0 && entity.end_char <= textContent.length) {
-                // Crea un nuovo contenuto HTML con l'entità evidenziata
-                const before = textContent.substring(0, entity.start_char);
-                const entityText = textContent.substring(entity.start_char, entity.end_char);
-                const after = textContent.substring(entity.end_char);
-                
-                // Preserva gli highlight esistenti
-                const currentHTML = documentText.innerHTML;
-                const newHTML = currentHTML.replace(
-                    textContent, 
-                    before + 
-                    `<span class="entity-highlight" data-entity-id="${entity.id}">` + 
-                    entityText + 
-                    '</span>' + 
-                    after
-                );
-                
-                documentText.innerHTML = newHTML;
-            }
-        }
-        
-        function refreshLabelDropdowns() {
-            const allSelects = document.querySelectorAll('select[id^="corrected-label-"], select#new-entity-label');
-            allSelects.forEach(select => {
-                const currentValue = select.value;
-                let optionsHtml = '';
-                availableLabels.forEach(label => {
-                    const selected = (currentValue === label) ? 'selected' : '';
-                    optionsHtml += `<option value="${label}" ${selected}>${label}</option>`;
-                });
-                select.innerHTML = optionsHtml;
-            });
-
-            const buttonContainer = document.querySelector('.selection-info .d-flex.flex-wrap');
-            if (buttonContainer) {
-                let buttonsHtml = '';
-                availableLabels.forEach(label => {
-                    buttonsHtml += `<button class="btn btn-sm btn-outline-primary entity-label-btn" data-label="${label}">${label}</button>`;
-                });
-                buttonContainer.innerHTML = buttonsHtml;
-                // Re-add event listeners to the new buttons
-                document.querySelectorAll('.entity-label-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const label = this.getAttribute('data-label');
-                        const selection = window.getSelection();
-                        const selectionInfo = document.getElementById('selection-info');
-                        const startOffset = parseInt(selectionInfo.querySelector('#selected-position').textContent.split('-')[0]);
-                        const endOffset = parseInt(selectionInfo.querySelector('#selected-position').textContent.split('-')[1]);
-
-                        addNewEntity({
-                            id: `new-${entityCounter++}`,
-                            text: selection.toString(),
-                            label: label,
-                            start_char: startOffset,
-                            end_char: endOffset,
-                            confidence: 1.0
-                        });
-                        
-                        selectionInfo.style.display = 'none';
-                        window.getSelection().removeAllRanges();
-                    });
-                });
-            }
-        }
-
-        function getTextOffset(container, node, offset) {
-            // Calcola l'offset assoluto nel testo del documento
-            let totalOffset = 0;
-            
-            // Funzione ricorsiva per attraversare il DOM
-            function traverseNodes(currentNode, targetNode, targetOffset) {
-                if (currentNode === targetNode) {
-                    return totalOffset + targetOffset;
-                }
-                
-                if (currentNode.nodeType === Node.TEXT_NODE) {
-                    totalOffset += currentNode.length;
-                } else {
-                    for (let i = 0; i < currentNode.childNodes.length; i++) {
-                        const childNode = currentNode.childNodes[i];
-                        const result = traverseNodes(childNode, targetNode, targetOffset);
-                        if (result !== -1) {
-                            return result;
-                        }
-                    }
-                }
-                
-                return -1;
-            }
-            
-            return traverseNodes(container, node, offset);
-        }
+        window.addEventListener('load', function() {
+            highlightEntitiesInText();
+            setupTextSelection();
+        });
     </script>
+
+    <!-- Edit Entity Modal -->
+    <div class="modal fade" id="editEntityModal" tabindex="-1" aria-labelledby="editEntityModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border: none; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+                <div class="modal-header" style="border-bottom: 2px solid #f0f0f0; padding: 24px;">
+                    <div>
+                        <h5 class="modal-title mb-1" id="editEntityModalLabel" style="font-weight: 600; font-size: 1.3rem;">✏️ Correggi Etichetta</h5>
+                        <p class="text-muted mb-0" id="edit-entity-text-display" style="font-size: 0.9rem;"></p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="padding: 32px 24px;">
+                    <input type="hidden" id="edit-entity-id">
+                    <input type="hidden" id="edit-entity-text">
+                    <input type="hidden" id="edit-entity-start">
+                    <input type="hidden" id="edit-entity-end">
+
+                    <label class="form-label mb-3" style="font-weight: 500; font-size: 0.95rem;">Seleziona la nuova etichetta:</label>
+                    <div id="edit-label-buttons" class="d-grid gap-2">
+                        <!-- Label buttons will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .label-btn {
+            padding: 16px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: white;
+            text-align: left;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .label-btn:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            transform: translateX(4px);
+        }
+        .label-btn.current {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+        .label-btn.current::after {
+            content: "✓ Attuale";
+            font-size: 0.85rem;
+            color: #10b981;
+            font-weight: 600;
+        }
+        .label-btn:active {
+            transform: scale(0.98);
+        }
+    </style>
 </body>
 </html>

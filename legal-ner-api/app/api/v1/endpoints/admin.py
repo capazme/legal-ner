@@ -783,7 +783,17 @@ async def _reapply_ner_background(
 
             # Run NER pipeline
             entities = await pipeline.extract_legal_sources(document.text)
-            log.info("Pipeline extracted entities", entity_count=len(entities), entities_preview=entities[:2] if entities else "none")
+            log.info("Pipeline extracted entities",
+                    entity_count=len(entities),
+                    entities_sample=entities[:1] if entities else "none")
+
+            if not entities:
+                log.warning("No entities extracted from document",
+                          document_id=document.id,
+                          text_length=len(document.text))
+                # Skip to next task if no entities found
+                processed += 1
+                continue
 
             # Save new entities
             entities_saved = 0
@@ -792,6 +802,7 @@ async def _reapply_ner_background(
             from app.core.label_mapping import act_type_to_label as convert_act_type_to_label
 
             for entity_data in entities:
+                log.debug("Processing entity", entity_data=entity_data)
                 act_type = entity_data.get("act_type", "unknown")
                 label = convert_act_type_to_label(act_type)
 
@@ -819,7 +830,6 @@ async def _reapply_ner_background(
                 else:
                     confidence_val = float(confidence_val)
 
-                log.debug("Saving entity", text=entity_data.get("text"), act_type=act_type, label=label, confidence=confidence_val)
                 entity = models.Entity(
                     document_id=document.id,
                     text=entity_data.get("text", ""),
@@ -831,15 +841,25 @@ async def _reapply_ner_background(
                 )
                 db.add(entity)
                 entities_saved += 1
-            
-            log.info("Entities saved to database", entities_saved=entities_saved)
+                log.debug("Entity added to session",
+                         text=entity_data.get("text"),
+                         label=label,
+                         start=start_char_val,
+                         end=end_char_val)
 
+            # Commit dopo aver aggiunto tutte le entità
             db.commit()
+            log.info("Entities saved to database",
+                    document_id=document.id,
+                    entities_saved=entities_saved,
+                    entities_expected=len(entities))
+
             processed += 1
 
             log.info("Task reprocessed successfully",
                      task_id=task.id,
-                     entities_found=len(entities))
+                     entities_found=len(entities),
+                     entities_saved=entities_saved)
 
         except Exception as e:
             db.rollback()

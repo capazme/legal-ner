@@ -1,0 +1,1002 @@
+[
+    {
+      "task": { "id": 1, "document_id": 1, "status": "pending", "created_at": "2024-10-01T12:00:01.000000+02:00", "priority": 0.9 },
+      "document": { "id": 1, "text": "Si analizzi l'istituto della transazione (Art. 1965 c.c.) e i suoi limiti di validità, in particolare quando verte su una lite relativa a un contratto nullo per illiceità della causa o dell'oggetto (Art. 1418 c.c.). Si discuta la differenza tra la nullità (Art. 1419 c.c.) e l'annullabilità (Art. 1441 c.c.) di una transazione, e la sua impugnabilità per errore di diritto (Art. 1969 c.c.), coordinando tale disciplina con la giurisprudenza in materia di risarcimento del danno (Art. 2043 c.c.) per atti dolosi o colposi che hanno generato la lite originaria.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 2, "document_id": 2, "status": "pending", "created_at": "2024-10-01T12:00:02.000000+02:00", "priority": 0.9 },
+      "document": { "id": 2, "text": "Un amministratore di una società in crisi ritarda la presentazione dell'istanza di liquidazione giudiziale (ex D.Lgs. 14/2019, CCII). Si esamini la responsabilità per danno da continuazione illegittima dell'attività d'impresa (Art. 2486 c.c.), e come questa si coordini con l'azione di responsabilità promossa dal curatore (Art. 378 CCII). Si discuta la configurabilità della bancarotta impropria (Art. 329 CCII) e il regime probatorio del nesso causale tra la condotta omissiva e il dissesto, in relazione all'Art. 2697 c.c.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 3, "document_id": 3, "status": "pending", "created_at": "2024-10-01T12:00:03.000000+02:00", "priority": 0.9 },
+      "document": { "id": 3, "text": "Quali sono i limiti di applicazione della riserva di legge assoluta in materia di libertà personale (Art. 13 Cost.) in caso di urgenza, come la decretazione governativa (Art. 77 Cost.) che introduce restrizioni alla circolazione (Art. 16 Cost.)? Si consideri la validità costituzionale dei DPCM, atti amministrativi, che limitano i diritti fondamentali, alla luce della riserva di legge, e il bilanciamento con il diritto alla salute (Art. 32 Cost.), interpretato come interesse della collettività.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 4, "document_id": 4, "status": "pending", "created_at": "2024-10-01T12:00:04.000000+02:00", "priority": 0.9 },
+      "document": { "id": 4, "text": "Si analizzi la differenza tra dolo specifico e dolo generico in relazione al reato di associazione a delinquere (Art. 416 c.p.). In che modo la prova dell'esistenza dell'associazione si collega alla prova del 'programma criminoso indeterminato' richiesto dalla giurisprudenza? Si consideri il concorso di reati tra l'associazione e i reati fine commessi (Art. 81 c.p.) e l'istituto della confisca obbligatoria dei beni (Art. 240 c.p.) in caso di condanna per reati associativi, richiamando l'Art. 12-sexies del D.L. 306/1992.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 5, "document_id": 5, "status": "pending", "created_at": "2024-10-01T12:00:05.000000+02:00", "priority": 0.9 },
+      "document": { "id": 5, "text": "La mancata impugnazione di un atto impositivo da parte di un contribuente entro i termini previsti dal D.Lgs. 546/1992 può essere considerata acquiescenza tacita? Si analizzi la differenza tra acquiescenza (Art. 329 c.p.c.) e la decadenza dal potere di impugnazione (Art. 38 del D.P.R. 600/1973). Si valuti inoltre il potere di autotutela dell'Amministrazione finanziaria (Legge 212/2000, Statuto del Contribuente, Art. 2-quater del D.L. 564/1994) anche in assenza di ricorso del contribuente.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 6, "document_id": 6, "status": "pending", "created_at": "2024-10-01T12:00:06.000000+02:00", "priority": 0.9 },
+      "document": { "id": 6, "text": "Come si articola la responsabilità penale per i reati omissivi impropri (Art. 40, co. 2, c.p.) in materia di sicurezza sul lavoro, con particolare riferimento alla posizione di garanzia del datore di lavoro e del preposto (D.Lgs. 81/2008, Art. 18)? Si discuta l'applicazione del principio dell'affidamento tra i diversi soggetti garanti e se la delega di funzioni (Art. 16, D.Lgs. 81/2008) possa escludere la colpa del delegante in caso di infortunio (Art. 590 c.p.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 7, "document_id": 7, "status": "pending", "created_at": "2024-10-01T12:00:07.000000+02:00", "priority": 0.9 },
+      "document": { "id": 7, "text": "Analizzare la differenza tra la simulazione assoluta e relativa di un contratto (Art. 1414 c.c.). Quali sono gli strumenti probatori a disposizione delle parti (Art. 1417 c.c.) e dei terzi creditori (Art. 2722 c.c.) per far valere la simulazione? Si valuti, in particolare, l'efficacia della simulazione nei confronti dei terzi che hanno acquistato diritti dal simulato acquirente (Art. 1415 c.c.) e il ruolo della trascrizione (Art. 2643 c.c.) nel dirimere i conflitti tra gli aventi causa dal simulato alienante e i terzi protetti.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 8, "document_id": 8, "status": "pending", "created_at": "2024-10-01T12:00:08.000000+02:00", "priority": 0.9 },
+      "document": { "id": 8, "text": "Si discuta la natura giuridica della servitù di passaggio coattivo (Art. 1051 c.c.) e le condizioni per la sua costituzione, distinguendola dalla servitù volontaria (Art. 1058 c.c.). In che modo l'indennità dovuta al proprietario del fondo servente (Art. 1053 c.c.) viene quantificata in caso di mancato accordo? Si valuti l'azione confessoria *servitutis* (Art. 1079 c.c.) e il relativo onere probatorio per chi intende far valere il diritto.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 9, "document_id": 9, "status": "pending", "created_at": "2024-10-01T12:00:09.000000+02:00", "priority": 0.9 },
+      "document": { "id": 9, "text": "Quali sono i limiti all'uso della decretazione d'urgenza (Art. 77 Cost.) che incidono sull'ordinamento degli enti locali (Art. 117, co. 6, Cost.)? Si esamini la riserva di legge rinforzata in materia di elezioni e organi degli enti territoriali, e il ruolo del Consiglio delle Autonomie Locali (CAL) nei procedimenti legislativi regionali. Si faccia riferimento all'Art. 127 della Costituzione sui ricorsi governativi contro le leggi regionali.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 10, "document_id": 10, "status": "pending", "created_at": "2024-10-01T12:00:10.000000+02:00", "priority": 0.9 },
+      "document": { "id": 10, "text": "Analisi del reato di ostacolo all'esercizio delle funzioni di vigilanza (Art. 2638 c.c.). Quali enti di vigilanza sono tutelati (CONSOB, Banca d'Italia, IVASS) e in che modo il reato si distingue dal mero rifiuto di fornire informazioni? Si discuta la responsabilità dell'ente ai sensi del D.Lgs. 231/2001 (Art. 25-ter) e come l'adozione di un Modello Organizzativo (Art. 6 D.Lgs. 231/2001) possa incidere sulla sua esenzione dalla responsabilità.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 11, "document_id": 11, "status": "pending", "created_at": "2024-10-01T12:00:11.000000+02:00", "priority": 0.9 },
+      "document": { "id": 11, "text": "Si valuti l'efficacia probatoria delle registrazioni informatiche (come log di sistema o messaggi di posta elettronica certificata, PEC) nel processo civile. Come si applica l'Art. 2712 c.c. (riproduzioni meccaniche) e la disciplina sul documento informatico (D.Lgs. 82/2005, Codice dell'Amministrazione Digitale, Art. 20)? Si discuta l'onere di disconoscimento della controparte (Art. 214 c.p.c.) e i limiti di ammissibilità della prova testimoniale (Art. 2721 c.c.) in presenza di tali documenti digitali.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 12, "document_id": 12, "status": "pending", "created_at": "2024-10-01T12:00:12.000000+02:00", "priority": 0.9 },
+      "document": { "id": 12, "text": "In caso di un mutuo a tasso variabile, si analizzi l'eccezione di usura sopravvenuta e la sua ammissibilità alla luce della Legge 108/1996. Si valuti l'Art. 1815, co. 2, c.c. e la sua applicazione per la nullità della clausola sugli interessi. Si discuta come il T.U.B. (D.Lgs. 385/1993, Art. 117) imponga la forma scritta e la trasparenza contrattuale, e se la violazione di tali norme comporti la nullità del contratto o la sola sanzione amministrativa, secondo la giurisprudenza di Cassazione a Sezioni Unite.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 13, "document_id": 13, "status": "pending", "created_at": "2024-10-01T12:00:13.000000+02:00", "priority": 0.9 },
+      "document": { "id": 13, "text": "Si esamini la disciplina dei consorzi (Art. 2602 c.c.) e dei consorzi con attività esterna (Art. 2612 c.c.). Qual è il regime di responsabilità per le obbligazioni assunte dagli organi consortili, e in che misura il patrimonio del consorzio (Art. 2615-bis c.c.) risponde verso i terzi? Si valuti l'applicabilità delle norme sulla pubblicità (Art. 2613 c.c.) e il ruolo del registro delle imprese nel garantire l'opponibilità degli atti ai terzi (Art. 2193 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 14, "document_id": 14, "status": "pending", "created_at": "2024-10-01T12:00:14.000000+02:00", "priority": 0.9 },
+      "document": { "id": 14, "text": "Analisi della giurisdizione amministrativa esclusiva in materia di servizi pubblici (Art. 133, co. 1, lett. c), CPA). In che misura rientra in tale giurisdizione la controversia relativa al risarcimento del danno per inadempimento contrattuale della P.A. (Art. 30 CPA)? Si discuta il sindacato del G.A. sull'atto amministrativo presupposto e la distinzione tra risarcimento per lesione di interessi legittimi e risarcimento per danno da inadempimento contrattuale (Art. 1218 c.c.) nel diritto amministrativo.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 15, "document_id": 15, "status": "pending", "created_at": "2024-10-01T12:00:15.000000+02:00", "priority": 0.9 },
+      "document": { "id": 15, "text": "Si esamini il reato di peculato (Art. 314 c.p.) commesso dal pubblico ufficiale o dall'incaricato di pubblico servizio (Art. 357 e 358 c.p.) su beni non materiali (es. fondi pubblici veicolati elettronicamente). In che modo la riforma del 2012 ha influito sulla qualificazione del fatto? Si valuti l'istituto della riparazione pecuniaria come causa di non punibilità (Art. 323-bis c.p.) per i reati contro la P.A. e i limiti della sua applicazione.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 16, "document_id": 16, "status": "pending", "created_at": "2024-10-01T12:00:16.000000+02:00", "priority": 0.9 },
+      "document": { "id": 16, "text": "Quali sono gli obblighi del *data controller* (titolare del trattamento) nel caso di trasferimento di dati personali verso paesi terzi, alla luce del Capitolo V del GDPR (Reg. UE 2016/679)? Si discuta l'uso delle Clausole Contrattuali Standard (SCC) e le decisioni di adeguatezza della Commissione Europea (Art. 45 GDPR). Si consideri l'impatto della sentenza Schrems II della CGUE (Causa C-311/18) sull'uso del Privacy Shield e l'obbligo di effettuare la valutazione d'impatto sul trasferimento (Art. 35 GDPR).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 17, "document_id": 17, "status": "pending", "created_at": "2024-10-01T12:00:17.000000+02:00", "priority": 0.9 },
+      "document": { "id": 17, "text": "Analisi della disciplina sul ritardo nei pagamenti nelle transazioni commerciali (D.Lgs. 231/2002). Qual è il tasso d'interesse legale applicabile in caso di mora e il termine di decorrenza (Art. 4, D.Lgs. 231/2002)? Si valuti la nullità delle clausole che escludono o modificano la decorrenza degli interessi (Art. 7 D.Lgs. 231/2002) e il ruolo del giudice nel sindacare l'abusività di tali clausole alla luce dei principi di buona fede (Art. 1337 c.c. e Art. 1375 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 18, "document_id": 18, "status": "pending", "created_at": "2024-10-01T12:00:18.000000+02:00", "priority": 0.9 },
+      "document": { "id": 18, "text": "Si esamini il regime di responsabilità del notaio per l'atto pubblico (Art. 2699 c.c.), distinguendo tra responsabilità per falsità ideologica e materiale (Art. 476 c.p. e Art. 483 c.p.). Quali sono gli obblighi di verifica ipotecaria e catastale del notaio (Legge Notarile 89/1913, Art. 29) e in che misura la loro violazione comporta responsabilità professionale per negligenza (Art. 1176 c.c.) e risarcimento del danno (Art. 2043 c.c.)?", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 19, "document_id": 19, "status": "pending", "created_at": "2024-10-01T12:00:19.000000+02:00", "priority": 0.9 },
+      "document": { "id": 19, "text": "Analisi dei criteri di riparto della giurisdizione tra Giudice Ordinario (G.O.) e Giudice Amministrativo (G.A.) in materia di sanzioni amministrative pecuniarie comminate dalla P.A. (es. multe stradali, sanzioni edilizie). Si discuta l'ambito di applicazione della Legge 689/1981 e le eccezioni previste dal Codice del Processo Amministrativo (CPA, Art. 133), in particolare per le sanzioni irrogate dalle Autorità Indipendenti (AGCM, ANAC).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 20, "document_id": 20, "status": "pending", "created_at": "2024-10-01T12:00:20.000000+02:00", "priority": 0.9 },
+      "document": { "id": 20, "text": "Quali sono le conseguenze della revoca della procura alle liti (Art. 85 c.p.c.) nel processo civile e come si differenzia dalla rinuncia al mandato da parte del difensore (Art. 82 c.p.c.)? Si valuti l'efficacia degli atti compiuti dal difensore precedentemente revocato e l'obbligo di notifica della revoca alla controparte (Art. 301 c.p.c.). Si discuta inoltre la responsabilità del difensore per colpa professionale (Art. 1176 c.c. e Art. 2236 c.c.) in caso di tardiva o mancata costituzione in giudizio.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 21, "document_id": 21, "status": "pending", "created_at": "2024-10-01T12:00:21.000000+02:00", "priority": 0.9 },
+      "document": { "id": 21, "text": "Si esamini la disciplina dei patti parasociali (Art. 2341-bis c.c.) nelle società per azioni quotate. Quali sono gli obblighi di pubblicità e deposito (Art. 122, TUF) e le sanzioni per la loro inosservanza (Art. 143, TUF)? Si valuti la nullità del patto (Art. 1418 c.c.) o la sua inefficacia verso la società e i terzi, alla luce della giurisprudenza in materia societaria e finanziaria.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 22, "document_id": 22, "status": "pending", "created_at": "2024-10-01T12:00:22.000000+02:00", "priority": 0.9 },
+      "document": { "id": 22, "text": "Analisi del sequestro preventivo finalizzato alla confisca per equivalente (Art. 321, co. 2-bis, c.p.p.) in relazione ai reati tributari (D.Lgs. 74/2000). Si discuta la nozione di 'profitto del reato' confiscabile, distinguendo tra profitto diretto e indiretto, e i limiti del sequestro sui beni dell'ente ai sensi dell'Art. 53 D.Lgs. 231/2001, quando il reato è commesso dagli amministratori. Si consideri la priorità del credito erariale nel procedimento di esecuzione (Art. 2741 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 23, "document_id": 23, "status": "pending", "created_at": "2024-10-01T12:00:23.000000+02:00", "priority": 0.9 },
+      "document": { "id": 23, "text": "Come si bilanciano il diritto alla salute (Art. 32 Cost.) e la libertà di culto (Art. 19 Cost.) in situazioni di emergenza sanitaria? Si esamini la legittimità dei provvedimenti amministrativi restrittivi delle cerimonie religiose, alla luce del principio di proporzionalità e della riserva di legge (Art. 13 Cost.). Si valuti il ruolo delle intese con le confessioni religiose (Art. 8 Cost.) nel contesto della regolamentazione emergenziale.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 24, "document_id": 24, "status": "pending", "created_at": "2024-10-01T12:00:24.000000+02:00", "priority": 0.9 },
+      "document": { "id": 24, "text": "Si esamini la responsabilità del proprietario per i danni causati da cose in custodia (Art. 2051 c.c.), in particolare per la caduta di alberi su strada pubblica. Si discuta la differenza tra la responsabilità oggettiva del custode e la responsabilità per danno cagionato da rovina di edificio (Art. 2053 c.c.). Qual è l'onere della prova per il danneggiato e come si configura il 'caso fortuito' come esimente per il custode (Art. 1218 c.c.)?", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 25, "document_id": 25, "status": "pending", "created_at": "2024-10-01T12:00:25.000000+02:00", "priority": 0.9 },
+      "document": { "id": 25, "text": "Analisi della disciplina sul c.d. 'mobbing' lavorativo e i rimedi legali esperibili. Si valuti il risarcimento del danno biologico e morale (Art. 2059 c.c. e Art. 32 Cost.) e la responsabilità contrattuale del datore di lavoro per inadempimento all'obbligo di protezione dell'integrità psicofisica (Art. 2087 c.c.). Si discuta la giurisdizione del Giudice del Lavoro in queste controversie, richiamando l'Art. 409 c.p.c.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 26, "document_id": 26, "status": "pending", "created_at": "2024-10-01T12:00:26.000000+02:00", "priority": 0.9 },
+      "document": { "id": 26, "text": "Quali sono i presupposti per la concessione di una misura cautelare reale (sequestro conservativo) nel processo civile (Art. 671 c.p.c.)? Si discuta la prova del *fumus boni iuris* (esistenza del credito) e del *periculum in mora* (rischio di dispersione del patrimonio). Si valuti come il sequestro si coordini con l'azione esecutiva (Art. 474 c.p.c.) e l'effetto di indisponibilità dei beni sequestrati (Art. 2905 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 27, "document_id": 27, "status": "pending", "created_at": "2024-10-01T12:00:27.000000+02:00", "priority": 0.9 },
+      "document": { "id": 27, "text": "Si esamini la responsabilità del soggetto che ha ceduto un bene viziato in caso di risoluzione del contratto (Art. 1490 c.c.). Si analizzi l'azione redibitoria (risoluzione) e l'azione estimatoria (riduzione del prezzo), distinguendole dall'azione di risarcimento del danno (Art. 1494 c.c.). Si valuti il termine di decadenza (otto giorni, Art. 1495 c.c.) e la prescrizione annuale, e l'applicabilità di tale regime alla vendita di beni di consumo (D.Lgs. 206/2005, Codice del Consumo, Art. 128 ss.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 28, "document_id": 28, "status": "pending", "created_at": "2024-10-01T12:00:28.000000+02:00", "priority": 0.9 },
+      "document": { "id": 28, "text": "Analisi dei requisiti di costituzionalità di una legge tributaria alla luce dell'Art. 23 Cost. (riserva di legge relativa) e dell'Art. 53 Cost. (capacità contributiva). Si discuta la differenza tra tributi e prestazioni patrimoniali imposte, e l'impatto delle sentenze della Corte Costituzionale sull'istituto del condono fiscale. Si valuti inoltre il principio di irretroattività della legge tributaria (Art. 3 Legge 212/2000, Statuto del Contribuente).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 29, "document_id": 29, "status": "pending", "created_at": "2024-10-01T12:00:29.000000+02:00", "priority": 0.9 },
+      "document": { "id": 29, "text": "Quali sono i limiti di ammissibilità della clausola compromissoria negli statuti societari (Art. 34 D.Lgs. 5/2003) e le eccezioni alla devoluzione della lite ad arbitri (Art. 2383 c.c.)? Si discuta la validità del compromesso arbitrale in materia di impugnazione delle delibere assembleari (Art. 2377 c.c.) e l'ambito di applicazione della disciplina sulla competenza territoriale del tribunale in materia societaria (Art. 44 c.p.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 30, "document_id": 30, "status": "pending", "created_at": "2024-10-01T12:00:30.000000+02:00", "priority": 0.9 },
+      "document": { "id": 30, "text": "Si esamini l'istituto dell'immunità giurisdizionale degli Stati stranieri (Convenzione di New York 2004) e i limiti all'esecuzione forzata sui beni dello Stato estero, in particolare sui beni destinati a funzioni pubbliche non commerciali. Si valuti l'impatto dell'Art. 11 Cost. e l'eventuale disapplicazione delle norme internazionali che contrastano con principi fondamentali della Costituzione.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 31, "document_id": 31, "status": "pending", "created_at": "2024-10-01T12:00:31.000000+02:00", "priority": 0.9 },
+      "document": { "id": 31, "text": "Analisi del reato di dichiarazione infedele (Art. 4 D.Lgs. 74/2000) e la rilevanza della soglia di punibilità (30% dell'imposta evasa). Si discuta la differenza con la dichiarazione omessa (Art. 5 D.Lgs. 74/2000) e la punibilità della condotta a titolo di dolo specifico (fine di evadere le imposte). Si consideri la possibilità di applicare la causa di non punibilità per ravvedimento operoso (Art. 13 D.Lgs. 472/1997) anche dopo l'inizio di verifiche fiscali.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 32, "document_id": 32, "status": "pending", "created_at": "2024-10-01T12:00:32.000000+02:00", "priority": 0.9 },
+      "document": { "id": 32, "text": "Quali sono i limiti di ammissibilità della prova per presunzioni (Art. 2727 c.c.) in materia di danno non patrimoniale da lesione di diritti inviolabili (Art. 2059 c.c. e Art. 2 Cost.)? Si esamini la liquidazione equitativa del danno (Art. 1226 c.c.) e l'uso delle tabelle risarcitorie (es. Tabelle di Milano). Si valuti la distinzione tra danno morale e danno esistenziale alla luce delle Sezioni Unite 2008 e la sua successiva rilettura.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 33, "document_id": 33, "status": "pending", "created_at": "2024-10-01T12:00:33.000000+02:00", "priority": 0.9 },
+      "document": { "id": 33, "text": "Analisi della disciplina sul c.d. *favor rei* nel diritto penale (Art. 2 c.p.) in caso di successione di leggi penali nel tempo. Come si applica il principio della retroattività della legge più favorevole in caso di abrogazione (Art. 2, co. 2, c.p.) o modifica (Art. 2, co. 3, c.p.) della fattispecie? Si consideri l'istituto dell'obbligatorietà dell'azione penale (Art. 112 Cost.) e i limiti posti dal divieto di pena di morte (Art. 27 Cost.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 34, "document_id": 34, "status": "pending", "created_at": "2024-10-01T12:00:34.000000+02:00", "priority": 0.9 },
+      "document": { "id": 34, "text": "Si esamini la tutela del contraente debole nei contratti standard (Art. 1341 c.c.) e le clausole vessatorie (Art. 1342 c.c.). Qual è il requisito della specifica approvazione per iscritto (Art. 1341, co. 2, c.c.) e la sua interpretazione giurisprudenziale? Si valuti, nel contesto dei contratti tra professionisti e consumatori, la disciplina dell'abusività delle clausole (Art. 33 D.Lgs. 206/2005, Codice del Consumo) e la nullità di protezione (Art. 36 Codice del Consumo).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 35, "document_id": 35, "status": "pending", "created_at": "2024-10-01T12:00:35.000000+02:00", "priority": 0.9 },
+      "document": { "id": 35, "text": "Analisi della figura del curatore speciale (Art. 78 c.p.c.) nel processo civile, con particolare riferimento ai casi di conflitto di interessi tra rappresentante e rappresentato. Quando è necessaria la sua nomina e quali sono i suoi poteri (Art. 320 c.c.)? Si discuta la nullità del procedimento in caso di omessa nomina, in relazione all'Art. 156 c.p.c., e la distinzione tra capacità processuale (Art. 75 c.p.c.) e legittimazione processuale.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 36, "document_id": 36, "status": "pending", "created_at": "2024-10-01T12:00:36.000000+02:00", "priority": 0.9 },
+      "document": { "id": 36, "text": "Come si gestisce la competenza legislativa residuale delle Regioni (Art. 117, co. 4, Cost.) in settori non espressamente riservati allo Stato? Si esamini il concetto di 'materia trasversale' e la sua delimitazione rispetto alle competenze esclusive (Art. 117, co. 2, Cost.), con particolare riferimento alla materia del 'governo del territorio' (Art. 117, co. 3, Cost.). Si valuti il ricorso per conflitto di attribuzione (Art. 134 Cost.) tra Stato e Regioni.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 37, "document_id": 37, "status": "pending", "created_at": "2024-10-01T12:00:37.000000+02:00", "priority": 0.9 },
+      "document": { "id": 37, "text": "Si analizzi il reato di truffa aggravata per il conseguimento di erogazioni pubbliche (Art. 640-bis c.p.), distinguendolo dal reato di malversazione (Art. 316-bis c.p.). Quali sono le procedure di revoca e recupero delle somme erogate indebitamente da parte della P.A. (Legge 241/1990)? Si valuti l'applicazione della responsabilità amministrativa dell'ente (D.Lgs. 231/2001, Art. 24) in caso di commissione di tali reati da parte dei vertici aziendali.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 38, "document_id": 38, "status": "pending", "created_at": "2024-10-01T12:00:38.000000+02:00", "priority": 0.9 },
+      "document": { "id": 38, "text": "Analisi della tutela del consumatore nel caso di contratti a distanza negoziati fuori dei locali commerciali (D.Lgs. 206/2005, Codice del Consumo, Art. 45 ss.). Si discuta l'esercizio del diritto di recesso (Art. 52 Codice del Consumo) e le eccezioni previste (Art. 59 Codice del Consumo). Si valuti l'onere probatorio a carico del professionista in caso di contestazione sull'avvenuta informazione precontrattuale (Art. 49 Codice del Consumo) e le relative sanzioni.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 39, "document_id": 39, "status": "pending", "created_at": "2024-10-01T12:00:39.000000+02:00", "priority": 0.9 },
+      "document": { "id": 39, "text": "Quali sono i presupposti per la nomina del curatore speciale della società in caso di azione di responsabilità contro gli amministratori (Art. 2393, co. 4, c.c.)? Si analizzi la legittimazione attiva del curatore e i limiti del suo mandato, confrontandolo con il ruolo del collegio sindacale (Art. 2403 c.c.) e con l'azione di responsabilità promossa dai creditori sociali (Art. 2394 c.c.). Si valuti l'effetto transattivo della rinunzia all'azione di responsabilità da parte dell'assemblea (Art. 2393, co. 6, c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 40, "document_id": 40, "status": "pending", "created_at": "2024-10-01T12:00:40.000000+02:00", "priority": 0.9 },
+      "document": { "id": 40, "text": "Si esamini la disciplina dei beni mobili registrati (Art. 815 c.c.) e le loro differenze rispetto ai beni mobili non registrati (Art. 1153 c.c.). In che modo l'iscrizione nei registri (es. R.I.D.) influisce sulla pubblicità e sull'opponibilità degli atti ai terzi (Art. 2683 c.c.)? Si valuti il regime di responsabilità oggettiva del proprietario del veicolo per i danni derivanti dalla circolazione (Art. 2054 c.c.) e l'istituto della responsabilità solidale del conducente.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 41, "document_id": 41, "status": "pending", "created_at": "2024-10-01T12:00:41.000000+02:00", "priority": 0.9 },
+      "document": { "id": 41, "text": "Analisi dell'istituto del patteggiamento (Art. 444 c.p.p.) e i suoi limiti di applicazione in relazione a reati gravi (Art. 444, co. 1-bis, c.p.p.). Quali sono le conseguenze civili della sentenza di patteggiamento (Art. 653 c.p.p.) e il suo valore nel giudizio disciplinare? Si discuta la differenza tra patteggiamento allargato e patteggiamento semplice, e l'esclusione della pena accessoria della confisca (Art. 445 c.p.p.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 42, "document_id": 42, "status": "pending", "created_at": "2024-10-01T12:00:42.000000+02:00", "priority": 0.9 },
+      "document": { "id": 42, "text": "Si esamini la disciplina dei licenziamenti collettivi (Legge 223/1991, Art. 4) e l'obbligo di consultazione sindacale. Quali sono le sanzioni per la violazione delle procedure sindacali (Art. 18, Statuto dei Lavoratori)? Si discuta l'istituto della 'messa in mobilità' e la sua sostituzione con i nuovi ammortizzatori sociali (D.Lgs. 148/2015). Si valuti il ruolo dell'ANPAL (Art. 1 D.Lgs. 150/2015) nella gestione delle politiche attive del lavoro.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 43, "document_id": 43, "status": "pending", "created_at": "2024-10-01T12:00:43.000000+02:00", "priority": 0.9 },
+      "document": { "id": 43, "text": "Analisi della giurisdizione del Giudice di Pace in materia civile (Art. 7 c.p.c.) e i limiti di valore e materia (es. controversie condominiali, Art. 113 c.p.c.). Quali sono le eccezioni alla sua competenza per materia (es. cause ereditarie, Art. 17 c.p.c.)? Si discuta l'appellabilità delle sentenze del Giudice di Pace (Art. 339 c.p.c.) e l'applicazione del principio di diritto (Art. 113 c.p.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 44, "document_id": 44, "status": "pending", "created_at": "2024-10-01T12:00:44.000000+02:00", "priority": 0.9 },
+      "document": { "id": 44, "text": "Si esamini il regime di responsabilità del titolare per l'uso di un marchio notorio non registrato (Art. 2577 c.c. e Art. 1 comma 1, lett. c), Codice della Proprietà Industriale, D.Lgs. 30/2005). In che modo si differenzia la tutela offerta rispetto al marchio registrato (Art. 20 CPI)? Si valuti l'azione di contraffazione (Art. 124 CPI) e l'azione di concorrenza sleale (Art. 2598 c.c.) per la tutela del segno distintivo.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 45, "document_id": 45, "status": "pending", "created_at": "2024-10-01T12:00:45.000000+02:00", "priority": 0.9 },
+      "document": { "id": 45, "text": "Analisi della disciplina dell'istituto del 'congelamento' dei rapporti pendenti nella liquidazione giudiziale (ex D.Lgs. 14/2019, CCII, Art. 172). Quali contratti continuano automaticamente (es. locazione, Art. 194 CCII) e quali richiedono l'autorizzazione del curatore? Si discuta la sorte del contratto preliminare di vendita immobiliare (Art. 195 CCII) e la sua opponibilità al fallimento in caso di trascrizione (Art. 2645-bis c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 46, "document_id": 46, "status": "pending", "created_at": "2024-10-01T12:00:46.000000+02:00", "priority": 0.9 },
+      "document": { "id": 46, "text": "Si esamini il reato di peculato d'uso (Art. 314, co. 2, c.p.) e la sua distinzione dal peculato ordinario. Quando l'uso momentaneo della cosa pubblica da parte del pubblico ufficiale è punibile? Si valuti l'applicazione della causa di giustificazione dello stato di necessità (Art. 54 c.p.) in relazione ai reati contro la P.A. e il regime di procedibilità (Art. 336 c.p.p.) per tali reati.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 47, "document_id": 47, "status": "pending", "created_at": "2024-10-01T12:00:47.000000+02:00", "priority": 0.9 },
+      "document": { "id": 47, "text": "Quali sono le condizioni per la costituzione in mora del debitore (Art. 1219 c.c.)? Si discuta la differenza tra *mora ex persona* e *mora ex re* e gli effetti della mora (risarcimento del danno, Art. 1223 c.c., e passaggio del rischio, Art. 1221 c.c.). Si valuti l'istituto della purgazione della mora e la sua incidenza sulla prescrizione (Art. 2934 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 48, "document_id": 48, "status": "pending", "created_at": "2024-10-01T12:00:48.000000+02:00", "priority": 0.9 },
+      "document": { "id": 48, "text": "Analisi della tutela dell'acquirente di immobili da costruire in caso di fallimento del costruttore (D.Lgs. 122/2005). Si esamini l'obbligo di rilascio della fideiussione (Art. 2, D.Lgs. 122/2005) e la nullità del contratto in caso di sua mancanza. Si valuti l'opponibilità del contratto preliminare trascritto (Art. 2645-bis c.c.) rispetto alla liquidazione giudiziale del venditore (Art. 195 CCII).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 49, "document_id": 49, "status": "pending", "created_at": "2024-10-01T12:00:49.000000+02:00", "priority": 0.9 },
+      "document": { "id": 49, "text": "Si esamini l'istituto della querela (Art. 336 c.p.p.) e il termine per la sua presentazione (tre mesi, Art. 124 c.p.). Quali reati sono procedibili a querela e in che modo la remissione della querela (Art. 340 c.p.p.) estingue il reato? Si discuta la differenza tra la querela di parte e la denuncia (Art. 331 c.p.p.) e l'obbligo di denuncia da parte del pubblico ufficiale (Art. 361 c.p.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 50, "document_id": 50, "status": "pending", "created_at": "2024-10-01T12:00:50.000000+02:00", "priority": 0.9 },
+      "document": { "id": 50, "text": "Analisi della disciplina sul c.d. *bail-in* (risoluzione interna) degli enti creditizi (D.Lgs. 180/2015, attuazione Direttiva BRRD). Quali categorie di creditori sono escluse dal salvataggio interno (Art. 49 D.Lgs. 180/2015)? Si discuta il ruolo della Banca d'Italia come autorità di risoluzione e la tutela del principio *no creditor worse off* (NCWO), confrontando il trattamento del creditore con quello che avrebbe avuto in una procedura concorsuale ordinaria (Art. 149 CCII).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 51, "document_id": 51, "status": "pending", "created_at": "2024-10-01T12:00:51.000000+02:00", "priority": 0.9 },
+      "document": { "id": 51, "text": "Si esamini la nozione di 'pubblico impiego contrattualizzato' (D.Lgs. 165/2001, TUPI) e il riparto di giurisdizione tra Giudice Ordinario e Giudice Amministrativo (Art. 63 TUPI). Quando la controversia relativa alla progressione di carriera resta nella giurisdizione esclusiva (Art. 133, CPA)? Si valuti l'applicazione del regime di nullità e annullabilità del contratto di lavoro privato (Art. 1418 c.c.) al rapporto di lavoro pubblico, con le eccezioni previste dal TUPI.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 52, "document_id": 52, "status": "pending", "created_at": "2024-10-01T12:00:52.000000+02:00", "priority": 0.9 },
+      "document": { "id": 52, "text": "Analisi della disciplina dell'abuso del diritto in materia tributaria (Art. 10-bis Legge 212/2000, Statuto del Contribuente). Quali sono i presupposti per la contestazione dell'abuso (assenza di sostanza economica e vantaggio fiscale indebito)? Si discuta l'onere della prova a carico dell'Amministrazione finanziaria (Art. 2697 c.c.) e le tutele del contribuente, inclusa la procedura di interpello (Art. 11 Legge 212/2000).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 53, "document_id": 53, "status": "pending", "created_at": "2024-10-01T12:00:53.000000+02:00", "priority": 0.9 },
+      "document": { "id": 53, "text": "Si esamini il regime di responsabilità del revisore legale (D.Lgs. 39/2010, Art. 15) per l'attestazione di bilanci falsi (Art. 2622 c.c.). Si discuta la responsabilità solidale con gli amministratori (Art. 2407 c.c.) e la prova della colpa grave. Si valuti l'azione di risarcimento del danno promossa dal curatore fallimentare (Art. 378 CCII) e l'interazione con la sanzione penale per l'impedito controllo (Art. 2629 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 54, "document_id": 54, "status": "pending", "created_at": "2024-10-01T12:00:54.000000+02:00", "priority": 0.9 },
+      "document": { "id": 54, "text": "Analisi della sospensione necessaria del processo civile (Art. 295 c.p.c.) in attesa della definizione di una controversia amministrativa o penale pregiudiziale. Quali sono i limiti di applicazione della sospensione, alla luce del principio di autonomia dei giudizi? Si discuta la differenza tra sospensione legale e facoltativa e l'impugnabilità del provvedimento che dispone la sospensione (Art. 42 c.p.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 55, "document_id": 55, "status": "pending", "created_at": "2024-10-01T12:00:55.000000+02:00", "priority": 0.9 },
+      "document": { "id": 55, "text": "Si esamini la disciplina dei poteri ispettivi dell'ANAC (Autorità Nazionale Anticorruzione, Legge 190/2012) in materia di contratti pubblici. In che modo i poteri dell'ANAC si coordinano con quelli dell'Autorità Giudiziaria? Si valuti il ricorso giurisdizionale contro le determinazioni dell'ANAC (Art. 133 CPA) e il regime di responsabilità per le false dichiarazioni rese in sede di gara (Art. 80 D.Lgs. 50/2016, ora Art. 94 D.Lgs. 36/2023).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 56, "document_id": 56, "status": "pending", "created_at": "2024-10-01T12:00:56.000000+02:00", "priority": 0.9 },
+      "document": { "id": 56, "text": "Quali sono le condizioni per la declaratoria di incostituzionalità di una legge regionale per violazione dei vincoli derivanti dall'ordinamento comunitario (Art. 117, co. 1, Cost.)? Si discuta il ruolo del giudice comune nel sollevare la questione di legittimità costituzionale (Art. 1 Legge Cost. 1/1948) e il giudizio di rinvio pregiudiziale alla CGUE (Art. 267 TFUE) per la corretta interpretazione del diritto UE.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 57, "document_id": 57, "status": "pending", "created_at": "2024-10-01T12:00:57.000000+02:00", "priority": 0.9 },
+      "document": { "id": 57, "text": "Si esamini il reato di concussione (Art. 317 c.p.) e la sua distinzione dalla induzione indebita a dare o promettere utilità (Art. 319-quater c.p.), alla luce della riforma del 2012. Si analizzi il nesso teleologico tra la condotta del pubblico ufficiale e l'ottenimento dell'indebita utilità. Si valuti l'istituto della confisca allargata (Art. 240-bis c.p., ex Art. 12-sexies D.L. 306/1992) per i proventi di tali reati.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 58, "document_id": 58, "status": "pending", "created_at": "2024-10-01T12:00:58.000000+02:00", "priority": 0.9 },
+      "document": { "id": 58, "text": "Analisi della responsabilità precontrattuale (Art. 1337 c.c.) per recesso ingiustificato dalle trattative. In che modo si quantifica il danno (interesse negativo) e quali voci di danno sono risarcibili (spese sostenute, perdita di occasioni alternative)? Si discuta l'interazione tra l'Art. 1337 c.c. e la responsabilità per informazione falsa o omessa in fase precontrattuale, anche alla luce dell'Art. 1338 c.c. (conoscenza delle cause di invalidità).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 59, "document_id": 59, "status": "pending", "created_at": "2024-10-01T12:00:59.000000+02:00", "priority": 0.9 },
+      "document": { "id": 59, "text": "Quali sono le condizioni per la risoluzione del contratto per eccessiva onerosità sopravvenuta (Art. 1467 c.c.)? Si discuta la differenza rispetto all'impossibilità sopravvenuta (Art. 1463 c.c.) e alla presupposizione (istituto giurisprudenziale). Si valuti l'applicabilità di tali rimedi ai contratti ad esecuzione continuata o periodica e l'esclusione per i contratti aleatori (Art. 1469 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 60, "document_id": 60, "status": "pending", "created_at": "2024-10-01T12:01:00.000000+02:00", "priority": 0.9 },
+      "document": { "id": 60, "text": "Si esamini la disciplina dell'assegno divorzile (Legge 898/1970, Art. 5, co. 6) e i criteri per la sua determinazione (criterio assistenziale e perequativo-compensativo). Quali sono le cause di revisione (Art. 9 Legge 898/1970)? Si valuti la differenza tra assegno di divorzio e assegno di mantenimento (Art. 156 c.c.) e l'istituto dell'assegno *una tantum*.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 61, "document_id": 61, "status": "pending", "created_at": "2024-10-01T12:01:01.000000+02:00", "priority": 0.9 },
+      "document": { "id": 61, "text": "Analisi della disciplina dei patti di non concorrenza nel contratto di lavoro subordinato (Art. 2125 c.c.). Quali sono i requisiti di validità del patto (limite di oggetto, tempo e corrispettivo)? Si valuti la nullità del patto in caso di mancata indicazione del corrispettivo (Art. 1418 c.c.) e le conseguenze in caso di violazione del patto da parte del lavoratore (risarcimento del danno, Art. 1218 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 62, "document_id": 62, "status": "pending", "created_at": "2024-10-01T12:01:02.000000+02:00", "priority": 0.9 },
+      "document": { "id": 62, "text": "Si esamini l'istituto dell'accertamento con adesione (D.Lgs. 218/1997) in materia tributaria. Quali sono gli effetti sulla sanzione amministrativa (riduzione a un terzo, Art. 2 D.Lgs. 218/1997) e sull'azione penale per i reati tributari (Art. 13 D.Lgs. 74/2000)? Si valuti la differenza con la conciliazione giudiziale (Art. 48 D.Lgs. 546/1992) e il regime di sospensione dei termini di impugnazione (Art. 6 D.Lgs. 218/1997).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 63, "document_id": 63, "status": "pending", "created_at": "2024-10-01T12:01:03.000000+02:00", "priority": 0.9 },
+      "document": { "id": 63, "text": "Analisi dei criteri per la delimitazione dei poteri normativi secondari (regolamenti) del Governo e delle P.A. (Art. 17 Legge 400/1988). In che modo tali regolamenti si pongono rispetto alla riserva di legge assoluta o relativa (Art. 13 e Art. 23 Cost.)? Si discuta la sindacabilità del regolamento illegittimo da parte del giudice ordinario (Art. 4 Legge 2248/1865, All. E) e l'azione di annullamento dinanzi al giudice amministrativo (Art. 29 CPA).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 64, "document_id": 64, "status": "pending", "created_at": "2024-10-01T12:01:04.000000+02:00", "priority": 0.9 },
+      "document": { "id": 64, "text": "Si esamini l'istituto del fallimento transfrontaliero (Regolamento UE 2015/848). Quali sono i criteri per l'individuazione del COMI (Centro degli Interessi Principali del debitore) e l'effetto universale della procedura principale (Art. 20, Reg. UE 2015/848)? Si discuta il riconoscimento e l'esecuzione delle decisioni di insolvenza in altri Stati membri e l'interazione con la liquidazione giudiziale italiana (CCII, D.Lgs. 14/2019).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 65, "document_id": 65, "status": "pending", "created_at": "2024-10-01T12:01:05.000000+02:00", "priority": 0.9 },
+      "document": { "id": 65, "text": "Analisi della tutela risarcitoria per il danno da ritardo della P.A. (Art. 2-bis Legge 241/1990). In che modo si prova il nesso causale tra il ritardo e il danno ingiusto (Art. 2043 c.c.)? Si discuta la giurisdizione del Giudice Amministrativo in materia di danno da ritardo (Art. 30 CPA) e i limiti di quantificazione del danno (interessi moratori) rispetto alla disciplina generale dell'Art. 1224 c.c.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 66, "document_id": 66, "status": "pending", "created_at": "2024-10-01T12:01:06.000000+02:00", "priority": 0.9 },
+      "document": { "id": 66, "text": "Quali sono i presupposti e i limiti dell'azione surrogatoria (Art. 2900 c.c.) e dell'azione revocatoria ordinaria (Art. 2901 c.c.) promosse da un creditore? Si valuti la prova dell'*eventus damni* e della *scientia fraudis* e il termine di prescrizione quinquennale (Art. 2903 c.c.). Si discuta la differenza tra la revocatoria ordinaria e quella fallimentare (Art. 166 CCII).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 67, "document_id": 67, "status": "pending", "created_at": "2024-10-01T12:01:07.000000+02:00", "priority": 0.9 },
+      "document": { "id": 67, "text": "Si esamini la disciplina delle prove 'atipiche' nel processo penale (Art. 189 c.p.p.), come i risultati delle indagini scientifiche o le intercettazioni ambientali. Quali sono i limiti di utilizzabilità della prova acquisita in violazione di legge (Art. 191 c.p.p.) e il regime di nullità (Art. 178 c.p.p.) e inutilizzabilità? Si valuti il principio di immediatezza nella formazione della prova (Art. 526 c.p.p.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 68, "document_id": 68, "status": "pending", "created_at": "2024-10-01T12:01:08.000000+02:00", "priority": 0.9 },
+      "document": { "id": 68, "text": "Analisi della tutela giurisdizionale contro i licenziamenti nulli o discriminatori (Art. 15 Statuto dei Lavoratori). Qual è il regime sanzionatorio per il licenziamento discriminatorio (Art. 18, co. 2, Statuto dei Lavoratori) e il diritto alla reintegra piena? Si discuta l'onere probatorio agevolato (Art. 40 D.Lgs. 198/2006) e la giurisdizione del Giudice del Lavoro (Art. 409 c.p.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 69, "document_id": 69, "status": "pending", "created_at": "2024-10-01T12:01:09.000000+02:00", "priority": 0.9 },
+      "document": { "id": 69, "text": "Si esamini il regime della responsabilità solidale del committente nell'appalto (Art. 1676 c.c.) per i crediti dei dipendenti dell'appaltatore. In che modo tale responsabilità si coordina con l'Art. 29 D.Lgs. 276/2003 (Legge Biagi) e le sue modifiche? Si valuti il termine di decadenza per l'esercizio dell'azione (Art. 1676 c.c.) e l'effetto dell'accettazione dell'opera (Art. 1665 c.c.) sulla garanzia per vizi.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 70, "document_id": 70, "status": "pending", "created_at": "2024-10-01T12:01:10.000000+02:00", "priority": 0.9 },
+      "document": { "id": 70, "text": "Analisi delle condizioni per la validità di un testamento segreto (Art. 604 c.c.). Quali sono le conseguenze della sua invalidità e la possibilità di conversione in testamento olografo (Art. 607 c.c.)? Si discuta la differenza tra nullità per vizi formali (Art. 606 c.c.) e annullabilità (Art. 624 c.c.) per violenza, dolo o errore. Si valuti l'azione di riduzione (Art. 553 c.c.) promossa dai legittimari.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 71, "document_id": 71, "status": "pending", "created_at": "2024-10-01T12:01:11.000000+02:00", "priority": 0.9 },
+      "document": { "id": 71, "text": "Quali sono i presupposti per l'applicazione della responsabilità della P.A. per danno da attività vincolata, superando la tradizionale distinzione tra diritti soggettivi e interessi legittimi (Art. 2043 c.c.)? Si esamini la rilevanza della violazione delle norme di diritto europeo e la responsabilità dello Stato per danno da mancata attuazione di direttive (sentenza Francovich). Si valuti il termine di prescrizione quinquennale (Art. 2947 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 72, "document_id": 72, "status": "pending", "created_at": "2024-10-01T12:01:12.000000+02:00", "priority": 0.9 },
+      "document": { "id": 72, "text": "Si esamini la disciplina dei contratti *derivati* e la validità del contratto di *swap* in assenza di un'adeguata informazione da parte dell'intermediario finanziario (Art. 21, TUF). Quali sono i limiti alla giurisdizione del giudice ordinario e l'eventuale giurisdizione del TAR in controversie che coinvolgono enti pubblici? Si valuti la nullità del contratto per violazione di norme imperative (Art. 1418 c.c.) e la possibilità di ottenere il risarcimento del danno (Art. 2043 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 73, "document_id": 73, "status": "pending", "created_at": "2024-10-01T12:01:13.000000+02:00", "priority": 0.9 },
+      "document": { "id": 73, "text": "Analisi della disciplina sui reati di falso in bilancio (Art. 2621 c.c. e Art. 2622 c.c.) e la loro rilevanza penale solo se 'concretamente lesivi'. Si discuta la differenza tra il falso per dolo specifico (Art. 2621 c.c.) e il falso in comunicazione sociale (Art. 2622 c.c.). Si valuti l'estensione della responsabilità amministrativa dell'ente (D.Lgs. 231/2001, Art. 25-ter) e la possibilità di confisca del profitto (Art. 240 c.p.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 74, "document_id": 74, "status": "pending", "created_at": "2024-10-01T12:01:14.000000+02:00", "priority": 0.9 },
+      "document": { "id": 74, "text": "Quali sono i presupposti per l'azione di manutenzione del possesso (Art. 1170 c.c.) e in che modo si differenzia dall'azione di reintegrazione (Art. 1168 c.c.)? Si discuta la tutela possessoria contro le molestie e le turbative, e la sua inammissibilità contro la P.A. (Art. 7 CPA). Si valuti il termine di decadenza per l'esercizio dell'azione (un anno).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 75, "document_id": 75, "status": "pending", "created_at": "2024-10-01T12:01:15.000000+02:00", "priority": 0.9 },
+      "document": { "id": 75, "text": "Si esamini l'istituto dell'immunità parlamentare (Art. 68 Cost.) e i limiti della sua applicazione per gli atti compiuti nell'esercizio delle funzioni. Si valuti il ruolo della Camera di appartenenza nel concedere l'autorizzazione a procedere per l'arresto (Art. 68, co. 2, Cost.) e l'impatto della giurisprudenza della Corte Costituzionale sull'uso delle intercettazioni (Art. 68, co. 3, Cost.) nei confronti dei parlamentari.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 76, "document_id": 76, "status": "pending", "created_at": "2024-10-01T12:01:16.000000+02:00", "priority": 0.9 },
+      "document": { "id": 76, "text": "Analisi del sequestro probatorio (Art. 253 c.p.p.) e il suo fine di assicurare la prova per il giudizio. Si discuta la differenza con il sequestro preventivo (Art. 321 c.p.p.) e la disciplina della restituzione delle cose sequestrate (Art. 262 c.p.p.). Si valuti l'impugnazione del decreto di sequestro (riesame, Art. 324 c.p.p.) e il regime di nullità in caso di violazione delle garanzie difensive (Art. 178 c.p.p.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 77, "document_id": 77, "status": "pending", "created_at": "2024-10-01T12:01:17.000000+02:00", "priority": 0.9 },
+      "document": { "id": 77, "text": "Si esamini la disciplina dei licenziamenti individuali per giustificato motivo oggettivo (Art. 3 Legge 604/1966) e il controllo del giudice sulla effettiva sussistenza del motivo e sul nesso causale con la riorganizzazione aziendale. Si valuti l'obbligo di *repêchage* del lavoratore e le conseguenze in caso di illegittimità del licenziamento (Art. 18 Statuto dei Lavoratori, come modificato da D.Lgs. 23/2015). Si discuta la distinzione tra tutela reale e tutela indennitaria.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 78, "document_id": 78, "status": "pending", "created_at": "2024-10-01T12:01:18.000000+02:00", "priority": 0.9 },
+      "document": { "id": 78, "text": "Analisi del regime di responsabilità per l'attività pericolosa (Art. 2050 c.c.), con particolare riferimento all'uso di droni o sistemi di IA. Qual è l'onere della prova a carico dell'esercente e in che modo si configura l'esimente dell'adozione di 'tutte le misure idonee ad evitare il danno'? Si discuta la cumulabilità della responsabilità oggettiva con la responsabilità per danno cagionato da cose in custodia (Art. 2051 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 79, "document_id": 79, "status": "pending", "created_at": "2024-10-01T12:01:19.000000+02:00", "priority": 0.9 },
+      "document": { "id": 79, "text": "Quali sono i limiti alla deducibilità dei costi 'black list' ai fini IRES e IRAP (Art. 110, co. 10, TUIR)? Si esamini il D.L. 4/2019 e la sua abrogazione parziale. Si discuta l'onere probatorio del contribuente per dimostrare l'effettiva esistenza e inerenza della spesa (Art. 2697 c.c.) e l'impatto della presunzione di elusione (Art. 10-bis Legge 212/2000).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 80, "document_id": 80, "status": "pending", "created_at": "2024-10-01T12:01:20.000000+02:00", "priority": 0.9 },
+      "document": { "id": 80, "text": "Si esamini la disciplina dei contratti di rete (D.L. 5/2009, Art. 3, co. 4-ter) e la loro differenza con il consorzio (Art. 2602 c.c.). Quali sono gli effetti dell'iscrizione del contratto nel Registro delle Imprese (Art. 2193 c.c.)? Si valuti il regime di responsabilità patrimoniale e se si applichi la disciplina del fallimento (liquidazione giudiziale, CCII) al contratto di rete privo di soggettività giuridica.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 81, "document_id": 81, "status": "pending", "created_at": "2024-10-01T12:01:21.000000+02:00", "priority": 0.9 },
+      "document": { "id": 81, "text": "Analisi della disciplina sul c.d. 'diritto all'oblio' nel contesto del GDPR (Art. 17 Reg. UE 2016/679) e della Direttiva 2000/31/CE (E-Commerce). In che modo si bilancia tale diritto con la libertà di informazione (Art. 21 Cost.)? Si discuta la responsabilità del motore di ricerca (Google Spain) e l'esecuzione degli ordini di rimozione, tenendo conto dell'Art. 2-undecies del D.Lgs. 196/2003 (Codice Privacy).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 82, "document_id": 82, "status": "pending", "created_at": "2024-10-01T12:01:22.000000+02:00", "priority": 0.9 },
+      "document": { "id": 82, "text": "Si esamini la disciplina della ricusazione del giudice (Art. 51 c.p.c.) nel processo civile e i motivi per cui può essere proposta (Art. 52 c.p.c.). Quali sono le conseguenze della ricusazione sull'attività processuale già svolta (Art. 161 c.p.c.)? Si valuti la differenza tra ricusazione e astensione obbligatoria (Art. 51 c.p.c.) e la competenza a decidere sulla ricusazione (Art. 53 c.p.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 83, "document_id": 83, "status": "pending", "created_at": "2024-10-01T12:01:23.000000+02:00", "priority": 0.9 },
+      "document": { "id": 83, "text": "Analisi dei reati di inosservanza dei provvedimenti dell'Autorità (Art. 650 c.p.) e della loro applicazione ai provvedimenti della P.A. (es. ordinanze sindacali). Si discuta la sussidiarietà del reato rispetto ad altre fattispecie. Si valuti la configurabilità del concorso di reati tra l'Art. 650 c.p. e i reati urbanistici (D.P.R. 380/2001, Art. 44) o ambientali (D.Lgs. 152/2006, Art. 256).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 84, "document_id": 84, "status": "pending", "created_at": "2024-10-01T12:01:24.000000+02:00", "priority": 0.9 },
+      "document": { "id": 84, "text": "Si esamini la tutela del *brevetto* e la sua differenza con il *modello di utilità* (D.Lgs. 30/2005, CPI, Art. 82). Quali sono i requisiti di brevettabilità (novità, attività inventiva, industrialità, Art. 45 CPI)? Si discuta l'azione di nullità del brevetto (Art. 76 CPI) e il risarcimento del danno per contraffazione (Art. 125 CPI), anche in assenza di dolo o colpa del contraffattore (Art. 124 CPI).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 85, "document_id": 85, "status": "pending", "created_at": "2024-10-01T12:01:25.000000+02:00", "priority": 0.9 },
+      "document": { "id": 85, "text": "Analisi della giurisdizione del Giudice di Pace in materia di risarcimento del danno derivante dalla circolazione dei veicoli (Art. 7 c.p.c.). Quali sono i limiti di valore della sua competenza? Si valuti la proposizione della domanda riconvenzionale per un valore superiore alla competenza del G.d.P. (Art. 36 c.p.c.) e l'istituto della responsabilità solidale tra conducente e proprietario (Art. 2054 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 86, "document_id": 86, "status": "pending", "created_at": "2024-10-01T12:01:26.000000+02:00", "priority": 0.9 },
+      "document": { "id": 86, "text": "Si esamini l'istituto dell'opposizione di terzo (Art. 404 c.p.c.) e la sua ammissibilità per far valere un proprio diritto incompatibile con la sentenza. Si discuta la differenza tra opposizione ordinaria e revocatoria (Art. 395 c.p.c.). Si valuti l'onere della prova a carico del terzo e il regime di sospensione della esecutività della sentenza impugnata (Art. 283 c.p.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 87, "document_id": 87, "status": "pending", "created_at": "2024-10-01T12:01:27.000000+02:00", "priority": 0.9 },
+      "document": { "id": 87, "text": "Analisi dei criteri per la configurazione di una stabile organizzazione in Italia ai fini IRES (Art. 162 TUIR). Si discuta l'impatto della Convenzione OCSE e dei Trattati contro le doppie imposizioni. Si valuti il reato di occultamento o distruzione di scritture contabili (Art. 10 D.Lgs. 74/2000) in relazione all'attività della stabile organizzazione e la responsabilità amministrativa dell'ente (D.Lgs. 231/2001).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 88, "document_id": 88, "status": "pending", "created_at": "2024-10-01T12:01:28.000000+02:00", "priority": 0.9 },
+      "document": { "id": 88, "text": "Si esamini la disciplina delle prove scientifiche e l'uso del DNA nel processo penale (Art. 359 c.p.p. e Art. 360 c.p.p.). Quali sono le garanzie difensive (Art. 360 c.p.p.) in caso di accertamenti tecnici irripetibili? Si valuti il ruolo del consulente tecnico di parte (Art. 225 c.p.p. e Art. 233 c.p.p.) e la sindacabilità della perizia d'ufficio (Art. 220 c.p.p.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 89, "document_id": 89, "status": "pending", "created_at": "2024-10-01T12:01:29.000000+02:00", "priority": 0.9 },
+      "document": { "id": 89, "text": "Analisi della giurisdizione del Giudice di Pace in materia di sanzioni amministrative (Legge 689/1981, Art. 22). Si discuta l'onere della prova a carico dell'opponente e i limiti del sindacato del giudice sull'atto amministrativo presupposto. Si valuti l'applicabilità del principio del *ne bis in idem* tra sanzione amministrativa e penale (Art. 649 c.p.p.), alla luce della giurisprudenza CEDU (caso Engel).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 90, "document_id": 90, "status": "pending", "created_at": "2024-10-01T12:01:30.000000+02:00", "priority": 0.9 },
+      "document": { "id": 90, "text": "Si esamini il regime di responsabilità oggettiva del vettore aereo (Convenzione di Montreal 1999) per il danno al passeggero. Quali sono i limiti risarcitori (Art. 21 della Convenzione) e le eccezioni che consentono di superarli (dolo o colpa grave)? Si valuti il termine di prescrizione biennale per l'azione di risarcimento (Art. 35 della Convenzione) e l'applicazione dell'Art. 2050 c.c. in caso di attività pericolosa.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 91, "document_id": 91, "status": "pending", "created_at": "2024-10-01T12:01:31.000000+02:00", "priority": 0.9 },
+      "document": { "id": 91, "text": "Analisi del requisito della 'forma scritta' *ad substantiam* nel contratto preliminare di compravendita immobiliare (Art. 1351 c.c. e Art. 1350 c.c.). Quali sono le conseguenze della sua violazione (nullità, Art. 1418 c.c.)? Si discuta l'azione di esecuzione specifica dell'obbligo di concludere il contratto (Art. 2932 c.c.) e l'importanza della trascrizione del preliminare (Art. 2645-bis c.c.) ai fini della tutela contro terzi.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 92, "document_id": 92, "status": "pending", "created_at": "2024-10-01T12:01:32.000000+02:00", "priority": 0.9 },
+      "document": { "id": 92, "text": "Si esamini il regime di responsabilità amministrativa dell'ente per reati commessi all'estero (Art. 4 D.Lgs. 231/2001). In che misura la responsabilità è subordinata alla doppia incriminazione e all'assenza di giudicato nello Stato estero (Art. 7 D.Lgs. 231/2001)? Si valuti l'applicazione del principio di non retroattività (Art. 2 c.p.) alla disciplina 231.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 93, "document_id": 93, "status": "pending", "created_at": "2024-10-01T12:01:33.000000+02:00", "priority": 0.9 },
+      "document": { "id": 93, "text": "Analisi del principio di tassatività e determinatezza della norma penale (Art. 25, co. 2, Cost.). Si discuta il divieto di analogia penale *in malam partem* (Art. 1 c.p.) e il ruolo della giurisprudenza nell'interpretazione evolutiva delle fattispecie. Si valuti la legittimità costituzionale delle norme penali in bianco (Art. 23 Cost.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 94, "document_id": 94, "status": "pending", "created_at": "2024-10-01T12:01:34.000000+02:00", "priority": 0.9 },
+      "document": { "id": 94, "text": "Si esamini la disciplina dei poteri istruttori d'ufficio del giudice del lavoro (Art. 421 c.p.c.) e la deroga al principio dispositivo delle prove (Art. 115 c.p.c.). In che misura il giudice può disporre l'ammissione di prove non richieste dalle parti (es. testimonianza, Art. 244 c.p.c.)? Si valuti il ruolo del tentativo obbligatorio di conciliazione (Art. 410 c.p.c.) prima della fase dibattimentale.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 95, "document_id": 95, "status": "pending", "created_at": "2024-10-01T12:01:35.000000+02:00", "priority": 0.9 },
+      "document": { "id": 95, "text": "Analisi della tutela del diritto d'autore sull'opera musicale (Legge 633/1941, Art. 2). Si discuta la differenza tra diritto morale e diritto patrimoniale (Art. 12 Legge 633/1941) e il termine di durata della tutela (Art. 25 Legge 633/1941). Si valuti l'azione di accertamento della violazione e risarcimento del danno (Art. 158 Legge 633/1941), anche tramite l'inibitoria d'urgenza (Art. 700 c.p.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 96, "document_id": 96, "status": "pending", "created_at": "2024-10-01T12:01:36.000000+02:00", "priority": 0.9 },
+      "document": { "id": 96, "text": "Si esamini il regime di responsabilità del debitore in caso di cessione del credito (Art. 1260 c.c.). In che modo la notifica della cessione (Art. 1264 c.c.) rende la cessione opponibile al debitore ceduto e ai terzi? Si discuta la differenza tra cessione *pro soluto* e *pro solvendo* (Art. 1267 c.c.) e la garanzia dell'esistenza del credito (Art. 1266 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 97, "document_id": 97, "status": "pending", "created_at": "2024-10-01T12:01:37.000000+02:00", "priority": 0.9 },
+      "document": { "id": 97, "text": "Analisi della tutela giurisdizionale contro i dinieghi di accesso agli atti amministrativi (Art. 25 Legge 241/1990). Si discuta la giurisdizione del TAR in materia di accesso (Art. 116 CPA) e l'ammissibilità del ricorso straordinario al Presidente della Repubblica (D.P.R. 1199/1971). Si valuti il bilanciamento tra l'accesso e la tutela della riservatezza (Art. 22 Legge 241/1990) e l'esclusione dall'accesso per i documenti coperti da segreto di Stato.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 98, "document_id": 98, "status": "pending", "created_at": "2024-10-01T12:01:38.000000+02:00", "priority": 0.9 },
+      "document": { "id": 98, "text": "Si esamini il reato di riciclaggio (Art. 648-bis c.p.) e la sua distinzione dal reato di impiego di denaro, beni o utilità di provenienza illecita (Art. 648-ter c.p.). Qual è la differenza tra reato presupposto doloso e colposo? Si valuti il concorso tra il riciclaggio e il reato di autoriciclaggio (Art. 648-ter.1 c.p.) e la disciplina della confisca (Art. 240-bis c.p.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 99, "document_id": 99, "status": "pending", "created_at": "2024-10-01T12:01:39.000000+02:00", "priority": 0.9 },
+      "document": { "id": 99, "text": "Analisi della disciplina dell'istituto della 'curatela speciale' nel processo penale (Art. 120 c.p.p.), con particolare riferimento alla nomina per il minorenne o per il soggetto incapace. Quando la curatela è necessaria per l'esercizio dei diritti e delle facoltà processuali? Si discuta la differenza tra la curatela speciale e l'assistenza del difensore d'ufficio (Art. 97 c.p.p.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 100, "document_id": 100, "status": "pending", "created_at": "2024-10-01T12:01:40.000000+02:00", "priority": 0.9 },
+      "document": { "id": 100, "text": "Si esamini il regime di responsabilità del preponente per il fatto illecito del preposto (Art. 2049 c.c.). Quali sono i requisiti del rapporto di preposizione e il nesso di occasionalità necessaria tra l'attività e il danno? Si discuta la responsabilità solidale del preponente (Art. 2055 c.c.) e l'azione di regresso (Art. 1299 c.c.) nei confronti del preposto. Si valuti l'applicabilità dell'Art. 2049 c.c. agli enti pubblici.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 101, "document_id": 101, "status": "pending", "created_at": "2024-10-01T12:01:41.000000+02:00", "priority": 0.9 },
+      "document": { "id": 101, "text": "Analisi dei criteri per la determinazione del giudice competente per territorio nel processo civile (Art. 18 c.p.c.) e la deroga per le cause relative a diritti reali immobiliari (Art. 21 c.p.c.). Si discuta la validità delle clausole di deroga della competenza (Art. 28 c.p.c.) e i limiti imposti ai contratti con i consumatori (Art. 33 Codice del Consumo). Si valuti la rilevabilità d'ufficio dell'incompetenza (Art. 38 c.p.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 102, "document_id": 102, "status": "pending", "created_at": "2024-10-01T12:01:42.000000+02:00", "priority": 0.9 },
+      "document": { "id": 102, "text": "Si esamini la disciplina dei *patti successori* (Art. 458 c.c.) e il divieto assoluto di disporre della propria successione. Quali sono le conseguenze della violazione del divieto (nullità assoluta, Art. 1418 c.c.)? Si discuta la differenza con la donazione *mortis causa* e il legato in conto di legittima (Art. 551 c.c.). Si valuti l'ammissibilità del patto di famiglia (Art. 768-bis c.c.) come eccezione legale al divieto.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 103, "document_id": 103, "status": "pending", "created_at": "2024-10-01T12:01:43.000000+02:00", "priority": 0.9 },
+      "document": { "id": 103, "text": "Analisi del requisito della *colpa* e dell'*assenza di colpa* nella responsabilità amministrativa dell'ente (Art. 5 D.Lgs. 231/2001). In che modo l'onere probatorio relativo all'adozione del Modello Organizzativo (Art. 6 D.Lgs. 231/2001) si differenzia dalla prova della colpa individuale del reo (Art. 43 c.p.)? Si valuti il ruolo dell'Organismo di Vigilanza (OdV) e la sua autonomia come condizione per l'efficacia esimente del Modello.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 104, "document_id": 104, "status": "pending", "created_at": "2024-10-01T12:01:44.000000+02:00", "priority": 0.9 },
+      "document": { "id": 104, "text": "Quali sono le condizioni per l'applicazione delle misure di prevenzione patrimoniali (D.Lgs. 159/2011, Codice Antimafia)? Si discuta la differenza tra sequestro di prevenzione (Art. 20, D.Lgs. 159/2011) e confisca di prevenzione (Art. 24, D.Lgs. 159/2011) e l'onere della prova a carico dello Stato (sproporzione tra redditi e patrimonio). Si valuti la confisca allargata ex Art. 240-bis c.p. in relazione ai reati tributari.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 105, "document_id": 105, "status": "pending", "created_at": "2024-10-01T12:01:45.000000+02:00", "priority": 0.9 },
+      "document": { "id": 105, "text": "Si esamini la disciplina delle associazioni di partecipazione (Art. 2549 c.c.) e la loro differenza rispetto alle società. Quali sono i limiti alla partecipazione agli utili e alle perdite? Si valuti la responsabilità dell'associato verso i terzi (Art. 2551 c.c.) e l'applicabilità delle norme sulla gestione sociale. Si discuta la possibilità di esercitare l'azione revocatoria (Art. 2901 c.c.) in caso di conferimenti in conto capitale simulati.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 106, "document_id": 106, "status": "pending", "created_at": "2024-10-01T12:01:46.000000+02:00", "priority": 0.9 },
+      "document": { "id": 106, "text": "Analisi dei presupposti e dei limiti della responsabilità oggettiva del proprietario di animali (Art. 2052 c.c.). In che modo il concetto di 'custodia' si applica a animali selvatici o randagi? Si discuta l'onere della prova liberatoria (caso fortuito) e il concorso di colpa del danneggiato (Art. 1227 c.c.). Si valuti l'interazione con l'Art. 2043 c.c. in caso di colpa provata del proprietario.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 107, "document_id": 107, "status": "pending", "created_at": "2024-10-01T12:01:47.000000+02:00", "priority": 0.9 },
+      "document": { "id": 107, "text": "Si esamini la disciplina della scissione di società (Art. 2506 c.c.) e la tutela dei creditori (Art. 2506-bis c.c.). Quali sono le conseguenze della mancata opposizione dei creditori (Art. 2503 c.c.)? Si valuti la responsabilità solidale delle società beneficiarie per i debiti della scissa (Art. 2506-quater c.c.) e la sua derogabilità. Si discuta l'azione di nullità della scissione (Art. 2506-ter c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 108, "document_id": 108, "status": "pending", "created_at": "2024-10-01T12:01:48.000000+02:00", "priority": 0.9 },
+      "document": { "id": 108, "text": "Analisi del requisito della *giusta causa* e del *giustificato motivo* per il licenziamento individuale (Art. 2119 c.c. e Legge 604/1966, Art. 3). Si discuta l'onere probatorio del datore di lavoro (Art. 5 Legge 604/1966) e le conseguenze del licenziamento illegittimo in caso di reintegra (Art. 18 Statuto dei Lavoratori) o indennità risarcitoria (D.Lgs. 23/2015). Si valuti la differenza tra il recesso *ad nutum* e il licenziamento disciplinare.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 109, "document_id": 109, "status": "pending", "created_at": "2024-10-01T12:01:49.000000+02:00", "priority": 0.9 },
+      "document": { "id": 109, "text": "Si esamini l'istituto dell'interpello (Art. 11 Legge 212/2000, Statuto del Contribuente) in materia fiscale. Quali sono gli effetti vincolanti della risposta dell'Amministrazione finanziaria sul contribuente (Art. 11, co. 3, Legge 212/2000)? Si discuta l'applicazione dell'istituto alla contestazione di abuso del diritto (Art. 10-bis Legge 212/2000) e il ruolo della Direzione Centrale per la gestione degli interpelli.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 110, "document_id": 110, "status": "pending", "created_at": "2024-10-01T12:01:50.000000+02:00", "priority": 0.9 },
+      "document": { "id": 110, "text": "Analisi delle condizioni per l'applicazione dell'Art. 50 c.p. (consenso dell'avente diritto) come causa di giustificazione. In che modo si distingue dal consenso presunto? Si discuta la rilevanza del consenso informato (Legge 219/2017) in campo medico e la sua relazione con il reato di lesioni personali (Art. 582 c.p.). Si valuti il principio di indisponibilità dei beni fondamentali (Art. 5 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 111, "document_id": 111, "status": "pending", "created_at": "2024-10-01T12:01:51.000000+02:00", "priority": 0.9 },
+      "document": { "id": 111, "text": "Si esamini la disciplina dell'azione di classe (Art. 840-bis c.p.c.) nel processo civile. Quali sono i requisiti di omogeneità dei diritti per l'ammissibilità dell'azione? Si discuta la differenza tra la class action italiana e quella statunitense e il ruolo del giudice nella fase di ammissibilità. Si valuti l'azione inibitoria a tutela degli interessi collettivi (Art. 37 D.Lgs. 206/2005, Codice del Consumo).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 112, "document_id": 112, "status": "pending", "created_at": "2024-10-01T12:01:52.000000+02:00", "priority": 0.9 },
+      "document": { "id": 112, "text": "Analisi della giurisdizione esclusiva del Giudice Amministrativo in materia di danno ambientale (Art. 310 D.Lgs. 152/2006, TUA, e Art. 133, co. 1, lett. f), CPA). Quali sono i limiti del sindacato del G.A. e la sua competenza per il risarcimento del danno in forma specifica (ripristino ambientale)? Si valuti il principio 'chi inquina paga' (Art. 192 TUA) e la responsabilità del proprietario incolpevole (Art. 245 TUA).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 113, "document_id": 113, "status": "pending", "created_at": "2024-10-01T12:01:53.000000+02:00", "priority": 0.9 },
+      "document": { "id": 113, "text": "Si esamini il regime di responsabilità della P.A. per omessa vigilanza e rilascio di autorizzazioni illegittime (Art. 2043 c.c.). Si discuta la configurabilità del danno ingiusto in capo al terzo che si è affidato all'atto. Si valuti la giurisdizione del Giudice Amministrativo in caso di risarcimento del danno da esercizio illegittimo della funzione pubblica (Art. 7 CPA).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 114, "document_id": 114, "status": "pending", "created_at": "2024-10-01T12:01:54.000000+02:00", "priority": 0.9 },
+      "document": { "id": 114, "text": "Analisi della disciplina dell'istituto del fallimento simulato (Art. 217, co. 2, L.F., ora Art. 329 CCII). Quali sono gli elementi costitutivi del reato di bancarotta fraudolenta documentale (Art. 216, co. 1, n. 2, L.F.)? Si discuta l'onere probatorio a carico dell'accusa e l'applicazione del principio *in dubio pro reo* (Art. 530 c.p.p.). Si valuti l'estensione della bancarotta alle società collegate (Art. 217-bis L.F.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 115, "document_id": 115, "status": "pending", "created_at": "2024-10-01T12:01:55.000000+02:00", "priority": 0.9 },
+      "document": { "id": 115, "text": "Si esamini la tutela del contraente nel leasing finanziario (Legge 124/2017). Quali sono le conseguenze in caso di risoluzione del contratto per inadempimento dell'utilizzatore e la disciplina del riacquisto del bene da parte del concedente? Si valuti la clausola penale e i limiti alla sua validità (Art. 1384 c.c.). Si discuta l'applicabilità delle norme sulla vendita con riserva di proprietà (Art. 1523 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 116, "document_id": 116, "status": "pending", "created_at": "2024-10-01T12:01:56.000000+02:00", "priority": 0.9 },
+      "document": { "id": 116, "text": "Analisi della disciplina sul c.d. 'foro del consumatore' (Art. 33, co. 2, lett. u), Codice del Consumo). Quali sono i limiti di validità delle clausole che deroghino alla competenza territoriale? Si discuta la rilevabilità d'ufficio dell'incompetenza (Art. 38 c.p.c.) e l'applicazione del Regolamento (UE) 1215/2012 (Bruxelles I bis) in materia di competenza giurisdizionale internazionale.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 117, "document_id": 117, "status": "pending", "created_at": "2024-10-01T12:01:57.000000+02:00", "priority": 0.9 },
+      "document": { "id": 117, "text": "Si esamini il reato di caporalato (Art. 603-bis c.p.) e la responsabilità solidale per i crediti dei lavoratori (Art. 1218 c.c.). Quali sono le sanzioni amministrative per l'illecito e il concorso con la responsabilità amministrativa dell'ente (D.Lgs. 231/2001, Art. 25-quinquies)? Si valuti l'istituto della confisca obbligatoria dei beni strumentali (Art. 240 c.p.) in caso di condanna.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 118, "document_id": 118, "status": "pending", "created_at": "2024-10-01T12:01:58.000000+02:00", "priority": 0.9 },
+      "document": { "id": 118, "text": "Analisi della procedura di espropriazione forzata immobiliare (Art. 555 c.p.c.). Quali sono i requisiti del titolo esecutivo (Art. 474 c.p.c.) e la notifica del precetto (Art. 480 c.p.c.)? Si discuta la vendita forzata e l'effetto purgativo dei pesi e vincoli (Art. 586 c.p.c.). Si valuti l'opposizione agli atti esecutivi (Art. 617 c.p.c.) e l'opposizione di terzo (Art. 619 c.p.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 119, "document_id": 119, "status": "pending", "created_at": "2024-10-01T12:01:59.000000+02:00", "priority": 0.9 },
+      "document": { "id": 119, "text": "Si esamini la disciplina delle prove nel processo tributario (D.Lgs. 546/1992, Art. 7). Quali sono i limiti di ammissibilità della prova testimoniale e della prova per presunzioni (Art. 2727 c.c.)? Si discuta l'onere probatorio a carico dell'Amministrazione finanziaria (Art. 2697 c.c.) e la rilevanza della documentazione acquisita in sede penale (Art. 654 c.p.p.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 120, "document_id": 120, "status": "pending", "created_at": "2024-10-01T12:02:00.000000+02:00", "priority": 0.9 },
+      "document": { "id": 120, "text": "Analisi della giurisdizione del Giudice Amministrativo sulle controversie in materia di concessioni di beni pubblici (Art. 133, co. 1, lett. b), CPA). Si discuta la distinzione tra concessioni e contratti pubblici e l'ambito della giurisdizione esclusiva. Si valuti l'azione di nullità della concessione (Art. 29 CPA) e il risarcimento del danno (Art. 30 CPA) in caso di revoca illegittima (Art. 21-quinquies Legge 241/1990).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 121, "document_id": 121, "status": "pending", "created_at": "2024-10-01T12:02:01.000000+02:00", "priority": 0.9 },
+      "document": { "id": 121, "text": "Si esamini l'istituto della legittima difesa (Art. 52 c.p.) e i requisiti di proporzionalità e necessità. Si discuta la differenza tra legittima difesa domiciliare (Legge 36/2019) e legittima difesa ordinaria. Si valuti l'applicazione dell'eccesso colposo (Art. 55 c.p.) e la non punibilità in caso di 'grave turbamento' (Art. 52, co. 2, c.p.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 122, "document_id": 122, "status": "pending", "created_at": "2024-10-01T12:02:02.000000+02:00", "priority": 0.9 },
+      "document": { "id": 122, "text": "Analisi della responsabilità del medico chirurgo in caso di intervento rischioso. Si discuta la differenza tra colpa lieve e colpa grave (Legge 24/2017, Gelli-Bianco, Art. 6) e l'esenzione dalla responsabilità penale in caso di aderenza a linee guida accreditate (Art. 590-sexies c.p.). Si valuti l'azione di regresso (Art. 9 Legge 24/2017) della struttura sanitaria verso il medico per colpa grave.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 123, "document_id": 123, "status": "pending", "created_at": "2024-10-01T12:02:03.000000+02:00", "priority": 0.9 },
+      "document": { "id": 123, "text": "Si esamini il regime di responsabilità della società a responsabilità limitata (Art. 2476 c.c.) e l'azione di responsabilità dei soci di minoranza. Quali sono i limiti all'azione sociale di responsabilità promossa dalla minoranza (Art. 2476, co. 3, c.c.)? Si discuta la responsabilità personale e solidale dell'amministratore (Art. 2476, co. 6, c.c.) in caso di violazione dei doveri fiduciari e la sua prescrizione (Art. 2949 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 124, "document_id": 124, "status": "pending", "created_at": "2024-10-01T12:02:04.000000+02:00", "priority": 0.9 },
+      "document": { "id": 124, "text": "Analisi della disciplina dell'istituto del c.d. *diritto di opzione* (Art. 2441 c.c.) in caso di aumento di capitale sociale. Quali sono le eccezioni al diritto di opzione (Art. 2441, co. 4, c.c.) e la tutela dei soci in caso di esclusione illegittima (risarcimento del danno, Art. 1453 c.c.)? Si discuta l'impugnazione della delibera assembleare (Art. 2377 c.c.) in caso di violazione del diritto di opzione.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 125, "document_id": 125, "status": "pending", "created_at": "2024-10-01T12:02:05.000000+02:00", "priority": 0.9 },
+      "document": { "id": 125, "text": "Si esamini il regime di nullità delle clausole contrattuali che prevedono un termine essenziale (Art. 1457 c.c.) in caso di violazione del termine stesso. Quali sono i requisiti dell'essenzialità del termine? Si discuta la diffida ad adempiere (Art. 1454 c.c.) come strumento per la risoluzione di diritto e la clausola risolutiva espressa (Art. 1456 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 126, "document_id": 126, "status": "pending", "created_at": "2024-10-01T12:02:06.000000+02:00", "priority": 0.9 },
+      "document": { "id": 126, "text": "Analisi della disciplina sul c.d. *permesso di costruire in sanatoria* (Art. 36 D.P.R. 380/2001, Testo Unico Edilizia). Quali sono le condizioni per la sanabilità degli abusi edilizi (doppia conformità)? Si discuta l'applicazione delle sanzioni pecuniarie (Art. 34 D.P.R. 380/2001) e il reato di lottizzazione abusiva (Art. 44 D.P.R. 380/2001). Si valuti la giurisdizione del Giudice Amministrativo in materia edilizia (Art. 133, CPA).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 127, "document_id": 127, "status": "pending", "created_at": "2024-10-01T12:02:07.000000+02:00", "priority": 0.9 },
+      "document": { "id": 127, "text": "Si esamini la disciplina della mediazione obbligatoria nel processo civile (D.Lgs. 28/2010, Art. 5). Quali sono le materie per cui è prevista l'obbligatorietà (es. diritti reali, Art. 5, co. 1-bis, D.Lgs. 28/2010)? Si discuta l'improcedibilità dell'azione in caso di mancato esperimento della mediazione (Art. 5, co. 2, D.Lgs. 28/2010) e la sua efficacia in caso di accordo (Art. 12 D.Lgs. 28/2010).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 128, "document_id": 128, "status": "pending", "created_at": "2024-10-01T12:02:08.000000+02:00", "priority": 0.9 },
+      "document": { "id": 128, "text": "Analisi del reato di estorsione (Art. 629 c.p.) e la sua distinzione dalla rapina (Art. 628 c.p.) e dalla truffa (Art. 640 c.p.). Qual è l'elemento differenziatore della costrizione (violenza o minaccia)? Si valuti il concorso tra l'estorsione e l'usura (Art. 644 c.p.) e l'istituto delle misure cautelari personali (Art. 272 c.p.p.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 129, "document_id": 129, "status": "pending", "created_at": "2024-10-01T12:02:09.000000+02:00", "priority": 0.9 },
+      "document": { "id": 129, "text": "Si esamini il regime di responsabilità per l'attività della centrale rischi (Banca d'Italia). Quali sono i limiti alla segnalazione e la tutela del soggetto segnalato (Art. 104, D.Lgs. 385/1993, TUBA)? Si discuta l'azione di risarcimento del danno per segnalazione illegittima (Art. 2043 c.c.) e l'onere probatorio del soggetto danneggiato (Art. 2697 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 130, "document_id": 130, "status": "pending", "created_at": "2024-10-01T12:02:10.000000+02:00", "priority": 0.9 },
+      "document": { "id": 130, "text": "Analisi della disciplina dell'abuso d'ufficio (Art. 323 c.p.) dopo la riforma del 2020. Quali sono i requisiti del dolo specifico (fine di procurare a sé o ad altri un ingiusto vantaggio patrimoniale)? Si discuta la differenza con il reato di omissione o rifiuto di atti d'ufficio (Art. 328 c.p.) e la responsabilità amministrativa dell'ente (D.Lgs. 231/2001, Art. 25).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 131, "document_id": 131, "status": "pending", "created_at": "2024-10-01T12:02:11.000000+02:00", "priority": 0.9 },
+      "document": { "id": 131, "text": "Si esamini la tutela del *marchio comunitario* (Regolamento UE 2017/1001) e i limiti di coesistenza con il marchio nazionale (D.Lgs. 30/2005, CPI). Quali sono le cause di nullità e decadenza del marchio (Art. 51 Reg. UE 2017/1001)? Si valuti l'azione di contraffazione (Art. 124 CPI) e l'azione di accertamento di non contraffazione (Art. 120 CPI).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 132, "document_id": 132, "status": "pending", "created_at": "2024-10-01T12:02:12.000000+02:00", "priority": 0.9 },
+      "document": { "id": 132, "text": "Analisi della disciplina sull'equo indennizzo in caso di espropriazione per pubblica utilità (Art. 37 D.P.R. 327/2001, TUE). Si discuta la differenza tra indennizzo e risarcimento del danno (Art. 2043 c.c.). Si valuti il regime speciale per l'area edificabile e l'area non edificabile e il ruolo della Corte Europea dei Diritti dell'Uomo (Art. 1 Protocollo 1 CEDU) nel garantire la proporzionalità dell'indennità.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 133, "document_id": 133, "status": "pending", "created_at": "2024-10-01T12:02:13.000000+02:00", "priority": 0.9 },
+      "document": { "id": 133, "text": "Si esamini la disciplina delle prove documentali nel processo civile (Art. 2699 c.c. ss.). Qual è l'efficacia probatoria dell'atto pubblico e della scrittura privata (Art. 2702 c.c.)? Si discuta la procedura di verificazione della scrittura privata (Art. 216 c.p.c.) e la querela di falso (Art. 221 c.p.c.). Si valuti l'uso delle presunzioni semplici (Art. 2729 c.c.) in assenza di prove dirette.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 134, "document_id": 134, "status": "pending", "created_at": "2024-10-01T12:02:14.000000+02:00", "priority": 0.9 },
+      "document": { "id": 134, "text": "Analisi del reato di turbata libertà degli incanti (Art. 353 c.p.) e la sua applicazione nelle gare telematiche (Art. 353-bis c.p.). Si discuta la differenza tra turbativa d'asta e corruzione (Art. 319 c.p.). Si valuti l'azione di annullamento del contratto pubblico da parte del Giudice Amministrativo (Art. 120 CPA) e il risarcimento del danno (Art. 30 CPA).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 135, "document_id": 135, "status": "pending", "created_at": "2024-10-01T12:02:15.000000+02:00", "priority": 0.9 },
+      "document": { "id": 135, "text": "Si esamini la disciplina del recesso unilaterale dal contratto (Art. 1373 c.c.) e i suoi limiti, distinguendolo dal diritto di recesso del consumatore (Art. 52 Codice del Consumo). Quali sono i requisiti formali per l'esercizio del recesso? Si valuti la caparra penitenziale (Art. 1386 c.c.) come corrispettivo del recesso e la sua differenza con la caparra confirmatoria (Art. 1385 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 136, "document_id": 136, "status": "pending", "created_at": "2024-10-01T12:02:16.000000+02:00", "priority": 0.9 },
+      "document": { "id": 136, "text": "Analisi della figura del custode dei beni pignorati (Art. 559 c.p.c.) nell'esecuzione forzata. Quali sono gli obblighi e le responsabilità del custode (Art. 2051 c.c.)? Si discuta la rimozione del custode (Art. 560 c.p.c.) e la sanzione penale per l'omessa custodia (Art. 388 c.p.). Si valuti la possibilità di chiedere la liberazione dell'immobile (Art. 560, co. 3, c.p.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 137, "document_id": 137, "status": "pending", "created_at": "2024-10-01T12:02:17.000000+02:00", "priority": 0.9 },
+      "document": { "id": 137, "text": "Si esamini la disciplina dell'assegno sociale (Legge 335/1995) e i requisiti reddituali per la sua concessione (Art. 3, co. 6, Legge 335/1995). Quali sono le cause di sospensione o revoca dell'assegno (Art. 3, co. 7, Legge 335/1995)? Si valuti la giurisdizione del Giudice del Lavoro in controversie previdenziali (Art. 409 c.p.c.) e il ricorso contro l'INPS.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 138, "document_id": 138, "status": "pending", "created_at": "2024-10-01T12:02:18.000000+02:00", "priority": 0.9 },
+      "document": { "id": 138, "text": "Analisi del regime di responsabilità per l'attività di vigilanza del CONSOB e della Banca d'Italia. In che modo l'omessa vigilanza può generare responsabilità extracontrattuale (Art. 2043 c.c.) dello Stato? Si discuta la giurisdizione del Giudice Amministrativo (Art. 133 CPA) per l'impugnazione degli atti sanzionatori e la rilevanza della sentenza della Corte di Giustizia UE (caso C-311/18, Schrems II).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 139, "document_id": 139, "status": "pending", "created_at": "2024-10-01T12:02:19.000000+02:00", "priority": 0.9 },
+      "document": { "id": 139, "text": "Si esamini il reato di appropriazione indebita (Art. 646 c.p.) e la sua differenza con il furto (Art. 624 c.p.) e la truffa (Art. 640 c.p.). Qual è l'elemento differenziatore del possesso legittimo della cosa mobile altrui? Si valuti il concorso tra l'appropriazione indebita e la bancarotta fraudolenta (Art. 216 L.F.) in caso di liquidazione giudiziale (CCII).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 140, "document_id": 140, "status": "pending", "created_at": "2024-10-01T12:02:20.000000+02:00", "priority": 0.9 },
+      "document": { "id": 140, "text": "Analisi della disciplina dell'istituto della riserva di legge in materia penale (Art. 25 Cost.) e i limiti della discrezionalità del legislatore. Si discuta la legittimità costituzionale delle norme penali che prevedono margini di indeterminatezza (Art. 1 c.p.). Si valuti il ruolo della Corte Costituzionale nell'annullare le norme penali per eccesso di indeterminatezza (sentenza 364/1988).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 141, "document_id": 141, "status": "pending", "created_at": "2024-10-01T12:02:21.000000+02:00", "priority": 0.9 },
+      "document": { "id": 141, "text": "Si esamini la disciplina dei poteri ispettivi dell'Autorità Garante per la Concorrenza e il Mercato (AGCM) in materia di pratiche commerciali scorrette (D.Lgs. 206/2005, Art. 27). Quali sono i poteri cautelari e sanzionatori dell'AGCM (Art. 27, co. 12, Codice del Consumo)? Si valuti il ricorso giurisdizionale contro le delibere AGCM (TAR Lazio con giurisdizione esclusiva, Art. 133 CPA).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 142, "document_id": 142, "status": "pending", "created_at": "2024-10-01T12:02:22.000000+02:00", "priority": 0.9 },
+      "document": { "id": 142, "text": "Analisi della disciplina sul c.d. *patto di riscatto* (Art. 1500 c.c.) nella compravendita e il suo termine massimo di durata (Art. 1501 c.c.). Quali sono le conseguenze in caso di violazione del termine (nullità, Art. 1418 c.c.)? Si discuta la differenza con il patto di retrovendita e l'azione di riscatto (Art. 1504 c.c.) nei confronti del terzo acquirente.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 143, "document_id": 143, "status": "pending", "created_at": "2024-10-01T12:02:23.000000+02:00", "priority": 0.9 },
+      "document": { "id": 143, "text": "Si esamini la disciplina dell'avocazione delle indagini preliminari da parte del Procuratore Generale (Art. 412 c.p.p.). Quali sono i presupposti per l'avocazione d'ufficio e per l'avocazione su istanza (Art. 409 c.p.p.)? Si valuti il ruolo della Corte di Cassazione nel risolvere i conflitti di competenza tra uffici del Pubblico Ministero (Art. 11 c.p.p.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 144, "document_id": 144, "status": "pending", "created_at": "2024-10-01T12:02:24.000000+02:00", "priority": 0.9 },
+      "document": { "id": 144, "text": "Analisi della disciplina dell'anatocismo nei contratti bancari (Art. 1283 c.c. e Art. 120 D.Lgs. 385/1993, TUBA). Quali sono le conseguenze della sua illegittimità (nullità della clausola, Art. 1418 c.c.)? Si discuta la prescrizione decennale per l'azione di ripetizione dell'indebito (Art. 2946 c.c.) e il momento di decorrenza (estinzione del rapporto).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 145, "document_id": 145, "status": "pending", "created_at": "2024-10-01T12:02:25.000000+02:00", "priority": 0.9 },
+      "document": { "id": 145, "text": "Si esamini il regime di responsabilità della P.A. per le occupazioni *sine titulo* (occupazione acquisitiva e usurpativa) e la conseguente retroattività (Art. 42-bis D.P.R. 327/2001). Quali sono i limiti costituzionali (Art. 42 Cost.) all'acquisizione coattiva della proprietà? Si valuti l'azione di restituzione del bene (Art. 2043 c.c.) e l'indennità risarcitoria dovuta per il danno (Art. 37 TUE).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 146, "document_id": 146, "status": "pending", "created_at": "2024-10-01T12:02:26.000000+02:00", "priority": 0.9 },
+      "document": { "id": 146, "text": "Analisi della disciplina della *mediazione* obbligatoria e facoltativa in materia di controversie civili (D.Lgs. 28/2010). Quali sono le conseguenze della mancata partecipazione delle parti al primo incontro (sanzione pecuniaria, Art. 8, co. 4-bis, D.Lgs. 28/2010)? Si discuta l'efficacia del verbale di conciliazione (Art. 12 D.Lgs. 28/2010) e il suo valore di titolo esecutivo (Art. 474 c.p.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 147, "document_id": 147, "status": "pending", "created_at": "2024-10-01T12:02:27.000000+02:00", "priority": 0.9 },
+      "document": { "id": 147, "text": "Si esamini il reato di *truffa contrattuale* (Art. 640 c.p.) e la sua differenza dalla frode civile (Art. 1439 c.c.). Qual è il nesso causale tra l'artificio/raggiri e l'ingiusto profitto con altrui danno? Si valuti l'applicabilità dell'aggravante dell'aver cagionato un danno patrimoniale di rilevante gravità (Art. 61, n. 7, c.p.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 148, "document_id": 148, "status": "pending", "created_at": "2024-10-01T12:02:28.000000+02:00", "priority": 0.9 },
+      "document": { "id": 148, "text": "Analisi della tutela del consumatore nel caso di multiproprietà (D.Lgs. 206/2005, Codice del Consumo, Art. 72). Quali sono gli obblighi informativi precontrattuali e il diritto di recesso (Art. 73 Codice del Consumo)? Si discuta la nullità del contratto in caso di mancata indicazione del prezzo o delle spese di gestione (Art. 1418 c.c.). Si valuti l'azione inibitoria dell'AGCM contro le pratiche scorrette (Art. 27 Codice del Consumo).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 149, "document_id": 149, "status": "pending", "created_at": "2024-10-01T12:02:29.000000+02:00", "priority": 0.9 },
+      "document": { "id": 149, "text": "Si esamini il regime di responsabilità del venditore nella vendita di cosa futura (Art. 1472 c.c.). Quali sono le conseguenze se la cosa non viene ad esistenza (risoluzione del contratto, Art. 1453 c.c.)? Si discuta la differenza tra la vendita di cosa futura e la vendita aleatoria. Si valuti l'azione di risarcimento del danno (Art. 1218 c.c.) per la mancata produzione della cosa, dovuta a colpa del venditore.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 150, "document_id": 150, "status": "pending", "created_at": "2024-10-01T12:02:30.000000+02:00", "priority": 0.9 },
+      "document": { "id": 150, "text": "Analisi della disciplina sul c.d. *accertamento sintetico* del reddito (Art. 38 D.P.R. 600/1973) basato sul redditometro. Quali sono i limiti di utilizzo delle presunzioni semplici (Art. 2727 c.c.) e l'onere probatorio del contribuente per dimostrare che il maggior reddito è stato finanziato da proventi esenti o già tassati (Art. 38, co. 6, D.P.R. 600/1973)? Si valuti il ruolo della giurisprudenza di Cassazione in merito.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 151, "document_id": 151, "status": "pending", "created_at": "2024-10-01T12:02:31.000000+02:00", "priority": 0.9 },
+      "document": { "id": 151, "text": "Si esamini la disciplina dell'intercettazione di comunicazioni tra presenti (Art. 266 c.p.p.) e il requisito dei 'gravi indizi di reato'. Quali sono i limiti di utilizzabilità delle intercettazioni (Art. 271 c.p.p.) in caso di violazione delle procedure? Si discuta la tutela delle comunicazioni riservate (Art. 15 Cost.) e il ruolo del GIP nell'autorizzare la misura (Art. 267 c.p.p.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 152, "document_id": 152, "status": "pending", "created_at": "2024-10-01T12:02:32.000000+02:00", "priority": 0.9 },
+      "document": { "id": 152, "text": "Analisi della disciplina dell'istituto del *collegamento societario* (Art. 2359 c.c.) e la sua rilevanza ai fini della responsabilità (Art. 2497 c.c.) in caso di abuso di direzione e coordinamento. Quali sono i requisiti della prova del danno risarcibile (Art. 2497, co. 1, c.c.)? Si discuta la differenza tra collegamento e controllo societario e l'azione di responsabilità dei soci di minoranza (Art. 2393 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 153, "document_id": 153, "status": "pending", "created_at": "2024-10-01T12:02:33.000000+02:00", "priority": 0.9 },
+      "document": { "id": 153, "text": "Si esamini la disciplina della *lesione di interessi legittimi* da parte della P.A. e la sua risarcibilità (Art. 2043 c.c. e Art. 7 CPA). Quali sono i criteri giurisprudenziali per la qualificazione del danno come 'ingiusto'? Si valuti la distinzione tra interessi legittimi pretensivi e oppositivi e l'azione di adempimento dinanzi al Giudice Amministrativo (Art. 30 CPA).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 154, "document_id": 154, "status": "pending", "created_at": "2024-10-01T12:02:34.000000+02:00", "priority": 0.9 },
+      "document": { "id": 154, "text": "Analisi della disciplina delle prove in materia di usura (Art. 644 c.p. e Legge 108/1996). Quali sono i criteri per la determinazione del tasso soglia (T.E.G.M.)? Si discuta la rilevanza dell'usura nel contratto di mutuo (Art. 1815, co. 2, c.c.) e la sua conseguente nullità. Si valuti l'azione di ripetizione dell'indebito (Art. 2033 c.c.) per gli interessi corrisposti in violazione di legge.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 155, "document_id": 155, "status": "pending", "created_at": "2024-10-01T12:02:35.000000+02:00", "priority": 0.9 },
+      "document": { "id": 155, "text": "Si esamini la disciplina della vendita con patto di riservato dominio (Art. 1523 c.c.). Quali sono le conseguenze in caso di risoluzione per inadempimento del compratore (Art. 1526 c.c.)? Si discuta la differenza con la vendita a rate e la sua opponibilità ai terzi (Art. 2643 c.c.). Si valuti l'azione di rivendicazione del venditore (Art. 948 c.c.) in caso di mancato pagamento.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 156, "document_id": 156, "status": "pending", "created_at": "2024-10-01T12:02:36.000000+02:00", "priority": 0.9 },
+      "document": { "id": 156, "text": "Analisi della disciplina dell'istituto del *danno punitivo* nel sistema italiano (Art. 2043 c.c. e Art. 2059 c.c.). Si discuta la sua ammissibilità in Italia, limitatamente al riconoscimento delle sentenze straniere che lo prevedono (Sezioni Unite 2017). Quali sono i limiti di ordine pubblico per il riconoscimento (Art. 64 Legge 218/1995)?", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 157, "document_id": 157, "status": "pending", "created_at": "2024-10-01T12:02:37.000000+02:00", "priority": 0.9 },
+      "document": { "id": 157, "text": "Si esamini la disciplina delle controversie in materia di brevetti e marchi (D.Lgs. 30/2005, CPI) e la competenza delle Sezioni Specializzate in materia di impresa (D.Lgs. 168/2003). Quali sono i poteri istruttori del giudice (Art. 121-bis CPI) e l'azione di descrizione e ispezione (Art. 129 CPI)? Si valuti l'azione di nullità del brevetto (Art. 76 CPI).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 158, "document_id": 158, "status": "pending", "created_at": "2024-10-01T12:02:38.000000+02:00", "priority": 0.9 },
+      "document": { "id": 158, "text": "Analisi del reato di dichiarazione fraudolenta mediante altri artifici (Art. 3 D.Lgs. 74/2000) e la differenza con l'uso di fatture inesistenti (Art. 2 D.Lgs. 74/2000). Qual è la soglia di punibilità (Art. 3, co. 2, D.Lgs. 74/2000)? Si valuti la responsabilità amministrativa dell'ente (D.Lgs. 231/2001, Art. 25-quinquies) in caso di reati fiscali. Si discuta la confisca del profitto (Art. 12-bis D.Lgs. 74/2000).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 159, "document_id": 159, "status": "pending", "created_at": "2024-10-01T12:02:39.000000+02:00", "priority": 0.9 },
+      "document": { "id": 159, "text": "Si esamini la disciplina della comunione legale tra coniugi (Art. 159 c.c.) e l'inclusione dei beni acquisiti dopo il matrimonio (Art. 177 c.c.). Quali sono gli atti di straordinaria amministrazione che richiedono il consenso di entrambi i coniugi (Art. 180 c.c.)? Si discuta l'annullabilità degli atti compiuti da un coniuge senza il consenso dell'altro (Art. 184 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 160, "document_id": 160, "status": "pending", "created_at": "2024-10-01T12:02:40.000000+02:00", "priority": 0.9 },
+      "document": { "id": 160, "text": "Analisi della disciplina sul c.d. *accertamento con adesione* (D.Lgs. 218/1997) e gli effetti sulla sanzione penale (Art. 13 D.Lgs. 74/2000). Si valuti la differenza con il ravvedimento operoso (Art. 13 D.Lgs. 472/1997) e il regime di sospensione dei termini di impugnazione (Art. 6 D.Lgs. 218/1997). Si discuta l'esclusione dall'accertamento con adesione per i reati di frode fiscale (Art. 2 D.Lgs. 74/2000).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 161, "document_id": 161, "status": "pending", "created_at": "2024-10-01T12:02:41.000000+02:00", "priority": 0.9 },
+      "document": { "id": 161, "text": "Si esamini la disciplina dei *patti di esclusiva* nella fornitura e il loro limite temporale (Art. 1566 c.c.). Quali sono le conseguenze della violazione del patto (risoluzione, Art. 1453 c.c.)? Si valuti l'applicabilità delle norme antitrust (Legge 287/1990) in caso di patto che determini un abuso di posizione dominante (Art. 3 Legge 287/1990). Si discuta la tutela del contraente debole (Art. 1341 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 162, "document_id": 162, "status": "pending", "created_at": "2024-10-01T12:02:42.000000+02:00", "priority": 0.9 },
+      "document": { "id": 162, "text": "Analisi del regime di responsabilità per omicidio colposo (Art. 589 c.p.) e lesioni colpose (Art. 590 c.p.) in ambito sanitario. Si discuta l'applicazione della causa di non punibilità per imperizia (Art. 590-sexies c.p.). Si valuti il concorso di colpa del danneggiato (Art. 1227 c.c.) e la costituzione di parte civile (Art. 74 c.p.p.) per il risarcimento del danno non patrimoniale (Art. 2059 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 163, "document_id": 163, "status": "pending", "created_at": "2024-10-01T12:02:43.000000+02:00", "priority": 0.9 },
+      "document": { "id": 163, "text": "Si esamini la disciplina delle *procedure negoziate senza bando* nel Codice dei Contratti Pubblici (D.Lgs. 36/2023, Art. 76). Quali sono i requisiti stringenti per il ricorso a tali procedure (assenza di concorrenza, ragioni di urgenza)? Si discuta l'azione di annullamento e il risarcimento del danno (Art. 120 CPA) per l'aggiudicazione illegittima. Si valuti il ruolo dell'ANAC e la sua vigilanza (Legge 190/2012).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 164, "document_id": 164, "status": "pending", "created_at": "2024-10-01T12:02:44.000000+02:00", "priority": 0.9 },
+      "document": { "id": 164, "text": "Analisi della disciplina dell'istituto della *comunione legale* tra coniugi (Art. 159 c.c.) e l'esclusione dei beni personali (Art. 179 c.c.). Quali sono i limiti alla vendita di beni immobili in comunione (Art. 180 c.c.)? Si discuta la differenza con la separazione dei beni (Art. 215 c.c.) e l'azione di annullamento (Art. 184 c.c.) per gli atti compiuti senza il consenso dell'altro coniuge.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 165, "document_id": 165, "status": "pending", "created_at": "2024-10-01T12:02:45.000000+02:00", "priority": 0.9 },
+      "document": { "id": 165, "text": "Si esamini il regime di responsabilità della P.A. per le omissioni in materia di sicurezza (Art. 2043 c.c.), in particolare per la mancata manutenzione di strade (Art. 2051 c.c.). Qual è il nesso causale tra l'omissione e il danno ingiusto? Si valuti l'applicabilità del concorso di colpa del danneggiato (Art. 1227 c.c.) in caso di disattenzione del conducente e la giurisdizione del giudice ordinario (Art. 7 c.p.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 166, "document_id": 166, "status": "pending", "created_at": "2024-10-01T12:02:46.000000+02:00", "priority": 0.9 },
+      "document": { "id": 166, "text": "Analisi della disciplina del *procedimento sommario di cognizione* (Art. 702-bis c.p.c.) e i suoi presupposti (cause che non richiedono istruttoria complessa). Quali sono i poteri del giudice (ordinanza esecutiva, Art. 702-ter c.p.c.) e i limiti alla conversione nel rito ordinario? Si valuti l'appellabilità dell'ordinanza (Art. 702-quater c.p.c.) e la sua efficacia di giudicato (Art. 2909 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 167, "document_id": 167, "status": "pending", "created_at": "2024-10-01T12:02:47.000000+02:00", "priority": 0.9 },
+      "document": { "id": 167, "text": "Si esamini la disciplina dell'istituto del *ravvedimento operoso* in materia tributaria (Art. 13 D.Lgs. 472/1997). Quali sono i termini e le riduzioni delle sanzioni (Art. 13, co. 1, D.Lgs. 472/1997)? Si discuta l'ammissibilità del ravvedimento dopo l'inizio di verifiche fiscali e il suo impatto sui reati tributari (Art. 13 D.Lgs. 74/2000).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 168, "document_id": 168, "status": "pending", "created_at": "2024-10-01T12:02:48.000000+02:00", "priority": 0.9 },
+      "document": { "id": 168, "text": "Analisi dei reati di inquinamento ambientale (Art. 452-bis c.p.) e di disastro ambientale (Art. 452-quater c.p.). Qual è la differenza tra la soglia di rilevanza e il danno ambientale (Art. 300 D.Lgs. 152/2006)? Si valuti la responsabilità amministrativa dell'ente (D.Lgs. 231/2001, Art. 25-undecies) e la confisca obbligatoria per equivalente (Art. 452-undecies c.p.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 169, "document_id": 169, "status": "pending", "created_at": "2024-10-01T12:02:49.000000+02:00", "priority": 0.9 },
+      "document": { "id": 169, "text": "Si esamini il regime di responsabilità per l'attività dei social media provider (D.Lgs. 70/2003 e Reg. UE 2022/2065, DSA). Quali sono gli obblighi di monitoraggio e rimozione dei contenuti illeciti (Art. 14 Dir. E-Commerce)? Si valuti la responsabilità civile (Art. 2043 c.c.) per omessa rimozione e la tutela del diritto all'onore (Art. 595 c.p.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 170, "document_id": 170, "status": "pending", "created_at": "2024-10-01T12:02:50.000000+02:00", "priority": 0.9 },
+      "document": { "id": 170, "text": "Analisi della disciplina dell'azione di responsabilità contro gli amministratori di società controllate (Art. 2497 c.c.). Quali sono i presupposti per la responsabilità della capogruppo (abuso di direzione e coordinamento)? Si discuta l'azione sociale di responsabilità (Art. 2393 c.c.) e l'azione individuale del socio o del terzo creditore (Art. 2497, co. 3, c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 171, "document_id": 171, "status": "pending", "created_at": "2024-10-01T12:02:51.000000+02:00", "priority": 0.9 },
+      "document": { "id": 171, "text": "Si esamini la disciplina della *forma del testamento* (Art. 601 c.c.) e i requisiti del testamento olografo (Art. 602 c.c.) e pubblico (Art. 603 c.c.). Quali sono le cause di nullità e annullabilità (Art. 606 c.c. e Art. 624 c.c.)? Si valuti il termine di prescrizione per l'azione di annullamento (cinque anni, Art. 606, co. 2, c.c.) e l'azione di riduzione (dieci anni, Art. 2946 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 172, "document_id": 172, "status": "pending", "created_at": "2024-10-01T12:02:52.000000+02:00", "priority": 0.9 },
+      "document": { "id": 172, "text": "Analisi della disciplina del *procedimento ingiuntivo* (Art. 633 c.p.c.) e i requisiti per l'emissione del decreto. Quali sono i limiti di ammissibilità della prova documentale? Si discuta l'opposizione a decreto ingiuntivo (Art. 645 c.p.c.) e la concessione della provvisoria esecuzione (Art. 648 c.p.c.). Si valuti l'onere della prova a carico dell'opponente (Art. 2697 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 173, "document_id": 173, "status": "pending", "created_at": "2024-10-01T12:02:53.000000+02:00", "priority": 0.9 },
+      "document": { "id": 173, "text": "Si esamini la disciplina dell'istituto del *soccorso istruttorio* nel Codice dei Contratti Pubblici (D.Lgs. 36/2023, Art. 101). Quali sono i limiti del soccorso per la regolarizzazione delle offerte (Art. 101, co. 3, D.Lgs. 36/2023)? Si valuti l'azione di annullamento della procedura di gara (Art. 120 CPA) e il ricorso incidentale escludente (Art. 120, co. 6, CPA).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 174, "document_id": 174, "status": "pending", "created_at": "2024-10-01T12:02:54.000000+02:00", "priority": 0.9 },
+      "document": { "id": 174, "text": "Analisi del reato di *disastro innominato* (Art. 434 c.p.) e la sua interpretazione giurisprudenziale in ambito ambientale. Si discuta la differenza con il reato di inquinamento ambientale (Art. 452-bis c.p.). Si valuti l'istituto della messa in sicurezza d'emergenza (Art. 245 D.Lgs. 152/2006) e la responsabilità amministrativa dell'ente (D.Lgs. 231/2001).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 175, "document_id": 175, "status": "pending", "created_at": "2024-10-01T12:02:55.000000+02:00", "priority": 0.9 },
+      "document": { "id": 175, "text": "Si esamini la disciplina del *diritto di prelazione* del coerede (Art. 732 c.c.) e il suo esercizio in caso di vendita della quota ereditaria. Quali sono le conseguenze della violazione del diritto (riscatto, Art. 732 c.c.)? Si valuti il termine di decadenza per l'esercizio del diritto e la sua opponibilità ai terzi acquirenti (Art. 2644 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 176, "document_id": 176, "status": "pending", "created_at": "2024-10-01T12:02:56.000000+02:00", "priority": 0.9 },
+      "document": { "id": 176, "text": "Analisi della disciplina dell'istituto della *delegazione di pagamento* (Art. 1269 c.c.) e la sua differenza con la delegazione di debito (Art. 1268 c.c.). Quali sono le eccezioni opponibili dal delegato al delegatario (Art. 1271 c.c.)? Si discuta la responsabilità del delegante (Art. 1270 c.c.) e l'estinzione dell'obbligazione originaria in caso di delegazione privativa.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 177, "document_id": 177, "status": "pending", "created_at": "2024-10-01T12:02:57.000000+02:00", "priority": 0.9 },
+      "document": { "id": 177, "text": "Si esamini il regime di responsabilità del difensore nel processo penale per la mancata impugnazione di una sentenza (Art. 581 c.p.p.). Quali sono i limiti al diritto di rinuncia al mandato (Art. 107 c.p.p.)? Si valuti l'istituto della rimessione in termini (Art. 175 c.p.p.) per la proposizione dell'impugnazione in caso di negligenza del difensore.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 178, "document_id": 178, "status": "pending", "created_at": "2024-10-01T12:02:58.000000+02:00", "priority": 0.9 },
+      "document": { "id": 178, "text": "Analisi della disciplina delle *fusioni transfrontaliere* (D.Lgs. 19/2023, attuazione Dir. UE 2019/2121). Quali sono i requisiti procedurali e la tutela dei creditori (Art. 14 D.Lgs. 19/2023)? Si discuta l'opposizione dei creditori (Art. 2503 c.c.) e la legittimità della fusione in presenza di abuso fiscale (Art. 10-bis Legge 212/2000).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 179, "document_id": 179, "status": "pending", "created_at": "2024-10-01T12:02:59.000000+02:00", "priority": 0.9 },
+      "document": { "id": 179, "text": "Si esamini il regime di responsabilità del titolare del trattamento dei dati per i danni derivanti dalla violazione del GDPR (Art. 82 Reg. UE 2016/679). Qual è l'onere probatorio a carico del titolare per dimostrare l'assenza di colpa (Art. 82, co. 3, GDPR)? Si valuti la quantificazione del danno non patrimoniale (Art. 2059 c.c.) per la lesione dei diritti fondamentali (Art. 2 Cost.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 180, "document_id": 180, "status": "pending", "created_at": "2024-10-01T12:03:00.000000+02:00", "priority": 0.9 },
+      "document": { "id": 180, "text": "Analisi della disciplina dell'istituto della *riserva di legge* in materia di tributi (Art. 23 Cost.) e i limiti della discrezionalità amministrativa. Si discuta la legittimità delle sanzioni amministrative pecuniarie (Legge 689/1981) e la sua interazione con la riserva di legge penale (Art. 25 Cost.). Si valuti il principio di capacità contributiva (Art. 53 Cost.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 181, "document_id": 181, "status": "pending", "created_at": "2024-10-01T12:03:01.000000+02:00", "priority": 0.9 },
+      "document": { "id": 181, "text": "Si esamini il reato di *corruzione in atti giudiziari* (Art. 319-ter c.p.) e la differenza con la corruzione per atto contrario ai doveri d'ufficio (Art. 319 c.p.). Qual è l'elemento differenziatore della finalità di favorire o danneggiare una parte in un processo civile o penale? Si valuti la responsabilità amministrativa dell'ente (D.Lgs. 231/2001, Art. 25) e la confisca del profitto (Art. 240 c.p.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 182, "document_id": 182, "status": "pending", "created_at": "2024-10-01T12:03:02.000000+02:00", "priority": 0.9 },
+      "document": { "id": 182, "text": "Analisi della disciplina del *pignoramento presso terzi* (Art. 543 c.p.c.) e l'obbligo di dichiarazione del terzo (Art. 547 c.p.c.). Quali sono le conseguenze della mancata o falsa dichiarazione (Art. 549 c.p.c.)? Si discuta la tutela del terzo pignorato (Art. 615 c.p.c.) e i limiti al pignoramento dei crediti di lavoro (Art. 545 c.p.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 183, "document_id": 183, "status": "pending", "created_at": "2024-10-01T12:03:03.000000+02:00", "priority": 0.9 },
+      "document": { "id": 183, "text": "Si esamini la disciplina della *riabilitazione* (Art. 178 c.p.) come causa di estinzione della pena accessoria. Quali sono i requisiti di buona condotta e il termine quinquennale (Art. 179 c.p.)? Si valuti la revoca della riabilitazione (Art. 180 c.p.) e l'impatto sul certificato penale (Art. 689 c.p.p.). Si discuta la differenza con l'amnistia (Art. 151 c.p.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 184, "document_id": 184, "status": "pending", "created_at": "2024-10-01T12:03:04.000000+02:00", "priority": 0.9 },
+      "document": { "id": 184, "text": "Analisi della disciplina del *risarcimento del danno da ritardo* nel processo amministrativo (Art. 30 CPA). Quali sono i limiti di ammissibilità (Art. 30, co. 3, CPA) e la sua interazione con l'azione di adempimento? Si discuta l'onere probatorio del privato in relazione al nesso causale e al danno ingiusto (Art. 2043 c.c.). Si valuti il termine di prescrizione quinquennale (Art. 2947 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 185, "document_id": 185, "status": "pending", "created_at": "2024-10-01T12:03:05.000000+02:00", "priority": 0.9 },
+      "document": { "id": 185, "text": "Si esamini la disciplina del *licenziamento del dirigente* (Art. 2118 c.c.) e l'assenza di tutela reale. Quali sono i limiti del licenziamento per giusta causa o giustificato motivo? Si valuti l'indennità supplementare (Art. 3 Legge 108/1990) e l'applicazione dei contratti collettivi nazionali (Art. 396 c.c.p.). Si discuta il regime di preavviso (Art. 2118 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 186, "document_id": 186, "status": "pending", "created_at": "2024-10-01T12:03:06.000000+02:00", "priority": 0.9 },
+      "document": { "id": 186, "text": "Analisi della disciplina del *ravvedimento operoso* (Art. 13 D.Lgs. 472/1997) in materia IVA. Quali sono le riduzioni delle sanzioni per omesso versamento (Art. 13 D.Lgs. 472/1997)? Si valuti l'applicazione del reato di omesso versamento IVA (Art. 10-ter D.Lgs. 74/2000) e la sua soglia di punibilità. Si discuta l'esclusione della punibilità per i contribuenti che aderiscono alla definizione agevolata.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 187, "document_id": 187, "status": "pending", "created_at": "2024-10-01T12:03:07.000000+02:00", "priority": 0.9 },
+      "document": { "id": 187, "text": "Si esamini la disciplina del *diritto di prelazione* agraria (Legge 817/1971, Art. 8) per l'affittuario coltivatore diretto. Quali sono i requisiti di esercizio del diritto (due anni di insediamento)? Si discuta l'azione di riscatto (Art. 8, co. 5, Legge 817/1971) e la sua opponibilità ai terzi (Art. 2644 c.c.). Si valuti l'applicabilità delle norme sulla vendita (Art. 1470 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 188, "document_id": 188, "status": "pending", "created_at": "2024-10-01T12:03:08.000000+02:00", "priority": 0.9 },
+      "document": { "id": 188, "text": "Analisi del reato di *rifiuto di atti d'ufficio* (Art. 328 c.p.) e la sua differenza con l'omissione di atti d'ufficio. Qual è il termine entro cui l'atto deve essere compiuto ('trenta giorni dalla richiesta' o 'senza ritardo')? Si discuta la responsabilità amministrativa dell'ente (D.Lgs. 231/2001, Art. 25) in caso di reati contro la P.A. e l'azione risarcitoria (Art. 2043 c.c.) del privato danneggiato.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 189, "document_id": 189, "status": "pending", "created_at": "2024-10-01T12:03:09.000000+02:00", "priority": 0.9 },
+      "document": { "id": 189, "text": "Si esamini la disciplina delle *intercettazioni telefoniche* nel processo penale (Art. 266 c.p.p.). Quali sono i presupposti per la loro autorizzazione (gravi indizi e necessità assoluta)? Si valuti l'inutilizzabilità delle intercettazioni eseguite in violazione di legge (Art. 271 c.p.p.) e la tutela della riservatezza (Art. 15 Cost.). Si discuta la distruzione delle registrazioni (Art. 269 c.p.p.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 190, "document_id": 190, "status": "pending", "created_at": "2024-10-01T12:03:10.000000+02:00", "priority": 0.9 },
+      "document": { "id": 190, "text": "Analisi della disciplina del *contratto di agenzia* (Art. 1742 c.c.) e il diritto dell'agente all'indennità di fine rapporto (Art. 1751 c.c.). Quali sono le eccezioni al diritto all'indennità (Art. 1751, co. 2, c.c.)? Si valuti il patto di non concorrenza post-contrattuale (Art. 1751-bis c.c.) e il suo corrispettivo. Si discuta la giurisdizione del Giudice del Lavoro (Art. 409 c.p.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 191, "document_id": 191, "status": "pending", "created_at": "2024-10-01T12:03:11.000000+02:00", "priority": 0.9 },
+      "document": { "id": 191, "text": "Si esamini il regime di *responsabilità per vizi* nell'appalto (Art. 1667 c.c.) e la differenza con la responsabilità decennale per rovina (Art. 1669 c.c.). Quali sono i termini di decadenza (60 giorni) e di prescrizione (due anni) per la denuncia dei vizi (Art. 1667 c.c.)? Si valuti l'azione di risoluzione (Art. 1453 c.c.) o la riduzione del prezzo (Art. 1668 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 192, "document_id": 192, "status": "pending", "created_at": "2024-10-01T12:03:12.000000+02:00", "priority": 0.9 },
+      "document": { "id": 192, "text": "Analisi della disciplina della *risoluzione dei contratti pendenti* nella liquidazione giudiziale (CCII, Art. 172). Quali sono i contratti che si sciolgono automaticamente (Art. 182 CCII)? Si discuta la sorte del contratto preliminare (Art. 195 CCII) e il diritto del contraente in bonis a chiedere il risarcimento (Art. 196 CCII). Si valuti il ruolo del curatore (Art. 122 CCII) nell'esercizio del diritto di subentro.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 193, "document_id": 193, "status": "pending", "created_at": "2024-10-01T12:03:13.000000+02:00", "priority": 0.9 },
+      "document": { "id": 193, "text": "Si esamini la disciplina del *conflitto di interessi* degli amministratori (Art. 2391 c.c.) e la sua rilevanza per l'impugnazione delle delibere assembleari (Art. 2377 c.c.). Quali sono le condizioni per l'annullabilità della delibera (danno potenziale alla società)? Si discuta l'azione di responsabilità contro gli amministratori (Art. 2393 c.c.) per la violazione dei doveri fiduciari.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 194, "document_id": 194, "status": "pending", "created_at": "2024-10-01T12:03:14.000000+02:00", "priority": 0.9 },
+      "document": { "id": 194, "text": "Analisi della disciplina dell'istituto del *litigante professionale* nel processo civile (Art. 96 c.p.c., lite temeraria). Quali sono le sanzioni pecuniarie per chi agisce con malafede o colpa grave (Art. 96, co. 3, c.p.c.)? Si valuti la differenza con l'azione di risarcimento del danno (Art. 2043 c.c.) e la giurisdizione del giudice ordinario (Art. 7 c.p.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 195, "document_id": 195, "status": "pending", "created_at": "2024-10-01T12:03:15.000000+02:00", "priority": 0.9 },
+      "document": { "id": 195, "text": "Si esamini la disciplina del *diritto di recesso* del socio (Art. 2437 c.c.) nella società per azioni. Quali sono le cause legali e statutarie di recesso? Si discuta la liquidazione della partecipazione (Art. 2437-ter c.c.) e il ricorso al Tribunale in caso di controversia (Art. 2437-quater c.c.). Si valuti l'azione di annullamento (Art. 2377 c.c.) per delibere che modificano i diritti del socio.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 196, "document_id": 196, "status": "pending", "created_at": "2024-10-01T12:03:16.000000+02:00", "priority": 0.9 },
+      "document": { "id": 196, "text": "Analisi della disciplina del *lavoro a termine* (D.Lgs. 81/2015, Art. 19) e i limiti di durata (24 mesi). Quali sono le sanzioni in caso di violazione (conversione in contratto a tempo indeterminato, Art. 29 D.Lgs. 81/2015)? Si discuta il regime di causali (Art. 19, co. 1, D.Lgs. 81/2015) e l'applicazione del termine di decadenza per l'impugnazione (Art. 6 Legge 604/1966).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 197, "document_id": 197, "status": "pending", "created_at": "2024-10-01T12:03:17.000000+02:00", "priority": 0.9 },
+      "document": { "id": 197, "text": "Si esamini il reato di *falsa testimonianza* (Art. 372 c.p.) e la sua applicazione nel processo civile (Art. 249 c.p.c.) e penale (Art. 194 c.p.p.). Qual è l'elemento differenziatore della reticenza? Si valuti il reato di favoreggiamento personale (Art. 378 c.p.) e il concorso tra i due reati. Si discuta la differenza tra testimonianza e dichiarazioni rese al P.M. (Art. 350 c.p.p.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 198, "document_id": 198, "status": "pending", "created_at": "2024-10-01T12:03:18.000000+02:00", "priority": 0.9 },
+      "document": { "id": 198, "text": "Analisi della disciplina del *diritto di prelazione* in caso di vendita di immobili vincolati (Art. 60 D.Lgs. 42/2004, Codice dei beni culturali). Quali sono gli obblighi di denuncia del proprietario (Art. 59 D.Lgs. 42/2004)? Si valuti l'azione di riscatto (Art. 61 D.Lgs. 42/2004) e il suo termine di decadenza (60 giorni). Si discuta la differenza tra prelazione legale e prelazione volontaria (Art. 1351 c.c.).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 199, "document_id": 199, "status": "pending", "created_at": "2024-10-01T12:03:19.000000+02:00", "priority": 0.9 },
+      "document": { "id": 199, "text": "Si esamini la disciplina della *compensazione tributaria* (Art. 17 D.Lgs. 241/1997) e i limiti per l'utilizzo dei crediti. Quali sono le sanzioni in caso di compensazione inesistente o non spettante (Art. 13 D.Lgs. 471/1997)? Si valuti l'azione di risarcimento del danno (Art. 2043 c.c.) per il diniego illegittimo di compensazione. Si discuta l'interazione con l'istituto della conciliazione giudiziale (Art. 48 D.Lgs. 546/1992).", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    },
+    {
+      "task": { "id": 200, "document_id": 200, "status": "pending", "created_at": "2024-10-01T12:03:20.000000+02:00", "priority": 0.9 },
+      "document": { "id": 200, "text": "Analisi della disciplina del *mandato ad litem* (procura alle liti, Art. 83 c.p.c.) e i suoi requisiti formali. Quali sono le conseguenze della sua invalidità (nullità degli atti, Art. 156 c.p.c.)? Si discuta la differenza tra mandato generale e speciale. Si valuti la responsabilità del difensore (Art. 1176 c.c.) per i danni causati dalla mancanza o invalidità del mandato.", "created_at": "2024-10-01T12:00:00.000000+02:00" },
+      "entities": []
+    }
+  ]

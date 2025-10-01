@@ -11,5 +11,12 @@ __pycache__/*
 .cursorignore
 *.log
 *.meta
+*/*.meta
+legal-ner-api/models/*
+legal-ner-api/config/*
+legal-ner-api/temp/*
+legal-ner-api/logs/*
+legal-ner-api/data/.minio.sys/*
+.*
 *.bkp
 xl*
