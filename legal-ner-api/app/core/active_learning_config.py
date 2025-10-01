@@ -39,7 +39,7 @@ class TrainingConfig:
     learning_rate: float
     warmup_steps: int
     weight_decay: float
-    evaluation_strategy: str
+    eval_strategy: str
     save_strategy: str
     load_best_model_at_end: bool
     metric_for_best_model: str
