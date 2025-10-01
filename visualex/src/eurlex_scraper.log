@@ -1,9 +1,0 @@
-2025-07-23 15:36:32,558 INFO Generating URN for act_type: codice civile, date: None, act_number: None, article: None, annex: None, version: None, version_date: None, urn_flag: False
-2025-07-23 15:36:32,558 INFO URN found in codici_urn: regio.decreto:1942-03-16;262:2
-2025-07-23 15:36:32,558 INFO Final URN: https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:regio.decreto:1942-03-16;262:2
-2025-07-23 15:36:32,558 INFO NormattivaScraper initialized
-2025-07-23 15:36:32,558 INFO EurlexScraper initialized
-2025-07-23 15:36:32,560 INFO Initializing BrocardiScraper
-2025-07-23 15:36:32,560 INFO Initializing BrocardiScraper
-2025-07-23 15:36:32,560 INFO WebDriverManager initialized
-2025-07-23 15:36:32,574 INFO Running on http://0.0.0.0:5000 (CTRL + C to quit)
