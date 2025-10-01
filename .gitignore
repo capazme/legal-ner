@@ -9,9 +9,6 @@ __pycache__/*
 .idea/
 .cursorrules
 .cursorignore
-.cursorignore
-CLAUDE.md
-GEMINI.md
 *.log
 *.meta
 *.bkp
